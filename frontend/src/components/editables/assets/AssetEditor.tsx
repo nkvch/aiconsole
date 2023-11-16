@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { unstable_useBlocker as useBlocker, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { CodeInput } from '@/components/editables/assets/CodeInput';
 import { SimpleInput } from '@/components/editables/assets/TextInput';
@@ -28,7 +28,6 @@ import { MaterialContentNames, getMaterialContentName } from '@/utils/editables/
 import { EditablesAPI } from '../../../api/api/EditablesAPI';
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { ConfirmationModal } from '@/components/common/ConfirmationModal';
-import { useDiscardAssetChangesStore } from '@/store/editables/asset/useDiscardAssetChangesStore';
 
 const MaterialContent = ({ material }: { material: Material }) => {
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
@@ -93,7 +92,6 @@ export function AssetEditor() {
   const asset = useAssetStore((state) => state.selectedAsset);
   const lastSavedAsset = useAssetStore((state) => state.lastSavedSelectedAsset);
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
-  const { setIsChanged, setConfirmCallback, confirmCallback } = useDiscardAssetChangesStore();
 
   const searchParams = useSearchParams()[0];
   const [preview, setPreview] = useState<RenderedMaterial | undefined>(undefined);
@@ -121,9 +119,9 @@ export function AssetEditor() {
     return changedFields.length > 0;
   })();
 
-  useEffect(() => {
-    setIsChanged(isAssetChanged);
-  }, [isAssetChanged, setIsChanged]);
+  const blocker = useBlocker(isAssetChanged);
+
+  const { reset, proceed, state: blockerState } = blocker || {};
 
   const isAssetStatusChanged = (() => {
     if (!asset || !lastSavedAsset) {
@@ -197,20 +195,8 @@ export function AssetEditor() {
     }
 
     useAssetStore.setState({ lastSavedSelectedAsset: asset });
-    setIsChanged(false);
-    setConfirmCallback(null);
-  };
-
-  const handleCloseDiscardConfirmation = () => {
-    setConfirmCallback(null);
-  };
-
-  const handleDiscardChanges = () => {
-    if (confirmCallback) {
-      confirmCallback();
-    }
-    setIsChanged(false);
-    setConfirmCallback(null);
+    // setIsChanged(false);
+    // setConfirmCallback(null);
   };
 
   useEffect(() => {
@@ -292,9 +278,9 @@ export function AssetEditor() {
       <ConfirmationModal
         confirmButtonText="Yes"
         cancelButtonText="No"
-        opened={Boolean(confirmCallback)}
-        onClose={handleCloseDiscardConfirmation}
-        onConfirm={handleDiscardChanges}
+        opened={blockerState === 'blocked'}
+        onClose={reset}
+        onConfirm={proceed || null}
         title="Do you want to discard your changes and continue?"
       />
     </div>

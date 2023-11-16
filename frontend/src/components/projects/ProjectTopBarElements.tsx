@@ -16,7 +16,6 @@
 
 import { ProjectsAPI } from '@/api/api/ProjectsAPI';
 import { Button } from '@/components/common/Button';
-import { useDiscardAssetChangesStore } from '@/store/editables/asset/useDiscardAssetChangesStore';
 import { useProjectStore } from '@/store/projects/useProjectStore';
 import { useAddMenu } from '@/utils/editables/useAddMenu';
 import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
@@ -30,14 +29,8 @@ export function ProjectTopBarElements() {
   const { showContextMenu: showProjectContextMenu } = useProjectContextMenu();
   const { showContextMenu: showPlusMenu } = useAddMenu();
 
-  const { isChanged, setConfirmCallback } = useDiscardAssetChangesStore();
-
   const handleBackToProjects = () => {
-    if (isChanged) {
-      setConfirmCallback(() => ProjectsAPI.closeProject());
-    } else {
-      ProjectsAPI.closeProject();
-    }
+    ProjectsAPI.closeProject();
   };
 
   return (
