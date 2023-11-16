@@ -30,6 +30,10 @@ export function ProjectTopBarElements() {
   const { showContextMenu: showPlusMenu } = useAddMenu();
 
   const handleBackToProjects = () => {
+    if (!window.confirm(`Are you sure you want to leave this project? Any unsaved changes will be lost.`)) {
+      return;
+    }
+
     ProjectsAPI.closeProject();
   };
 
