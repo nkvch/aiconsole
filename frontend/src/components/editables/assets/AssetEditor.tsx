@@ -28,6 +28,9 @@ import { MaterialContentNames, getMaterialContentName } from '@/utils/editables/
 import { EditablesAPI } from '../../../api/api/EditablesAPI';
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { ConfirmationModal } from '@/components/common/ConfirmationModal';
+import { localStorageTyped } from '@/utils/common/localStorage';
+
+const { setItem } = localStorageTyped<boolean>('isAssetChanged');
 
 const MaterialContent = ({ material }: { material: Material }) => {
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
@@ -123,6 +126,10 @@ export function AssetEditor() {
 
   const { reset, proceed, state: blockerState } = blocker || {};
 
+  useEffect(() => {
+    setItem(isAssetChanged);
+  }, [isAssetChanged]);
+
   const isAssetStatusChanged = (() => {
     if (!asset || !lastSavedAsset) {
       return true;
@@ -195,8 +202,6 @@ export function AssetEditor() {
     }
 
     useAssetStore.setState({ lastSavedSelectedAsset: asset });
-    // setIsChanged(false);
-    // setConfirmCallback(null);
   };
 
   useEffect(() => {
