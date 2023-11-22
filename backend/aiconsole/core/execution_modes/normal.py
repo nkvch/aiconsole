@@ -73,5 +73,6 @@ async def execution_mode_normal(
     finally:
         await UpdateMessageWSMessage(
             stage=SequenceStage.END,
+            aborted=True,
             id=message_id,
         ).send_to_chat(context.chat.id)

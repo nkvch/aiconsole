@@ -21,6 +21,7 @@ class UpdateAnalysisWSMessage(BaseWSMessage):
 class UpdateMessageWSMessage(BaseWSMessage):
     id: str
     stage: SequenceStage
+    aborted: bool | None = None
 
     text_delta: str | None = None
 

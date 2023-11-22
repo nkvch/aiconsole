@@ -30,6 +30,7 @@ export type UpdateMessageWSMessage = {
   type: 'UpdateMessageWSMessage';
   id: string;
   stage: SequenceStage;
+  aborted?: boolean;
   text_delta?: string;
 };
 

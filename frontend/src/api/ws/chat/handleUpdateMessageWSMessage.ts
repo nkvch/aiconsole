@@ -53,7 +53,7 @@ export async function handleUpdateMessageWSMessage(data: UpdateMessageWSMessage)
           ranCode = getLastMessage(chat)?.message.tool_calls.length !== 0;
         }
 
-        if (!ranCode) {
+        if (!ranCode && !data.aborted) {
           await useChatStore.getState().doAnalysis();
         }
       }
