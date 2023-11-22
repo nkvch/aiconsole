@@ -42,6 +42,8 @@ async def execution_mode_normal(
         id=message_id,
     ).send_to_chat(context.chat.id)
 
+    aborted = False
+
     try:
         async for chunk in gpt_executor.execute(
             GPTRequest(
@@ -70,9 +72,15 @@ async def execution_mode_normal(
 
     except asyncio.CancelledError:
         _log.warning("Cancelled execution_mode_normal")
-    finally:
+        aborted = True
         await UpdateMessageWSMessage(
             stage=SequenceStage.END,
             aborted=True,
             id=message_id,
         ).send_to_chat(context.chat.id)
+    finally:
+        if not aborted:
+            await UpdateMessageWSMessage(
+                stage=SequenceStage.END,
+                id=message_id,
+            ).send_to_chat(context.chat.id)
