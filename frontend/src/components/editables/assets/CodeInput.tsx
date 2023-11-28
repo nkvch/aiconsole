@@ -98,6 +98,7 @@ export function CodeInput({
 
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
+      console.log((event.target as HTMLElement).parentElement);
       if ((event.target as HTMLElement)?.tagName.toUpperCase() === 'BUTTON') {
         if (textareaRef.current) {
           textareaRef.current.focus();
