@@ -17,6 +17,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ContextMenuProvider } from 'mantine-contextmenu';
+import * as Sentry from '@sentry/react';
 
 import '@mantine/core/styles.css';
 import '@mantine/core/styles.layer.css';
@@ -29,6 +30,26 @@ import { initStore } from './store/initStore.ts';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { Router } from './components/Router.tsx';
+import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
+
+Sentry.init({
+  dsn: 'https://370c52dd1eee4886a999803f8bf94c2f@sentry.10clouds.com/590',
+  integrations: [
+    new Sentry.BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+        React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes,
+      ),
+    }),
+    new Sentry.Replay(),
+  ],
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
