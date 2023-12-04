@@ -343,6 +343,11 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   const isSubmitEnabled = enableSubmit();
   const disableSubmit = !isSubmitEnabled && !isSavedButtonLabel;
 
+  const confirmPageEscape = () => {
+    getInitialAsset();
+    proceed?.();
+  };
+
   return (
     <div className="flex flex-col w-full h-full max-h-full overflow-auto">
       <EditorHeader
@@ -423,7 +428,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
               cancelButtonText="No"
               opened={blockerState === 'blocked'}
               onClose={reset}
-              onConfirm={proceed || null}
+              onConfirm={confirmPageEscape}
               title="Do you want to discard your changes and continue?"
             />
           </div>
