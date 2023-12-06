@@ -27,7 +27,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 sentry_sdk.init(
-    dsn="https://f95439ad5ebf44f08637de3a99211893@sentry.10clouds.com/589",
+    dsn=os.environ.get("BE_SENTRY_DSN", ""),
     enable_tracing=True,
 )
 
