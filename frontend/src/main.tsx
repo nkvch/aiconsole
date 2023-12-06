@@ -33,7 +33,7 @@ import { Router } from './components/Router.tsx';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
 
 Sentry.init({
-  dsn: 'https://370c52dd1eee4886a999803f8bf94c2f@sentry.10clouds.com/590',
+  dsn: import.meta.env.VITE_SENTRY_DSN,
   integrations: [
     new Sentry.BrowserTracing({
       routingInstrumentation: Sentry.reactRouterV6Instrumentation(
