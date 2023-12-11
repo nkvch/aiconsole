@@ -17,7 +17,6 @@
 import os
 from contextlib import asynccontextmanager
 from logging import config
-import sentry_sdk
 
 from aiconsole.api.routers import app_router
 from aiconsole.consts import log_config
@@ -26,10 +25,6 @@ from aiconsole.core.settings import project_settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-sentry_sdk.init(
-    dsn=os.environ.get("BE_SENTRY_DSN", ""),
-    enable_tracing=True,
-)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

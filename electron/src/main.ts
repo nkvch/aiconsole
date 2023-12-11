@@ -23,15 +23,11 @@ import {
   IpcMainEvent,
   MenuItemConstructorOptions,
   shell,
-} from "electron";
-import { spawn } from "child_process";
-import path from "path";
-import net from "net";
-import * as Sentry from "@sentry/electron/main";
-
-Sentry.init({
-  dsn: process.env.VITE_SENTRY_DSN || "",
-});
+  ipcRenderer,
+} from 'electron';
+import { spawn } from 'child_process';
+import path from 'path';
+import net from 'net';
 
 const LoadingStages = {
   Initializing: 30,
@@ -42,7 +38,7 @@ const LoadingStages = {
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
-const isMac = process.platform === "darwin";
+const isMac = process.platform === 'darwin';
 
 let loaderWindow: BrowserWindow;
 let mainWindow: BrowserWindow;
@@ -68,14 +64,10 @@ const windowManager: {
     });
   },
   removeWindow: (targetWindow) => {
-    windowManager.windows = windowManager.windows.filter(
-      ({ browserWindow }) => browserWindow !== targetWindow
-    );
+    windowManager.windows = windowManager.windows.filter(({ browserWindow }) => browserWindow !== targetWindow);
   },
   findBackendByWindow: (targetWindow) => {
-    const window = windowManager.windows.find(
-      ({ browserWindow }) => browserWindow === targetWindow
-    );
+    const window = windowManager.windows.find(({ browserWindow }) => browserWindow === targetWindow);
     return window ? window.backendProcess : null;
   },
 };
@@ -85,7 +77,7 @@ async function log(browserWindow: BrowserWindow, message: string) {
     return;
   }
 
-  browserWindow.webContents.send("log", message);
+  browserWindow.webContents.send('log', message);
 }
 
 async function error(browserWindow: BrowserWindow, message: string) {
@@ -93,7 +85,7 @@ async function error(browserWindow: BrowserWindow, message: string) {
     return;
   }
 
-  browserWindow.webContents.send("error", message);
+  browserWindow.webContents.send('error', message);
 }
 
 async function waitForServerToStart(window: AIConsoleWindow) {
@@ -110,7 +102,7 @@ async function waitForServerToStart(window: AIConsoleWindow) {
           loaderWindow.hide();
           mainWindow.show();
         }, 500);
-        window.browserWindow.webContents.send("set-backend-port", window.port);
+        window.browserWindow.webContents.send('set-backend-port', window.port);
       })
       .catch((e) => {});
   }, RETRY_INTERVAL);
@@ -120,8 +112,8 @@ async function tryPort(port: number) {
   return new Promise<boolean>((resolve) => {
     const server = net.createServer();
     server.unref();
-    server.once("error", () => resolve(false));
-    server.listen(port, "0.0.0.0", () => {
+    server.once('error', () => resolve(false));
+    server.listen(port, '0.0.0.0', () => {
       server.close(() => {
         resolve(true);
       });
@@ -147,38 +139,36 @@ async function findEmptyPort(startingFrom = 1024, endingAt = 65535) {
     }
   }
 
-  throw new Error("No empty port found within the range.");
+  throw new Error('No empty port found within the range.');
 }
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
-    backgroundColor: "#111111",
+    backgroundColor: '#111111',
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
     },
-    icon: "../assets/icon.png",
+    icon: '../assets/icon.png',
     show: false,
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: "deny" };
+    return { action: 'deny' };
   });
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-    );
+    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
   // Add an event listener to handle the main window's close event.
-  mainWindow.on("closed", () => {
+  mainWindow.on('closed', () => {
     const backendProcess = windowManager.findBackendByWindow(mainWindow);
     if (backendProcess) {
       backendProcess.kill();
@@ -193,13 +183,13 @@ async function createWindow() {
 
 const updateLoadingProgress = (progress: number) => {
   if (loaderWindow) {
-    loaderWindow.webContents.send("progress-update", progress);
+    loaderWindow.webContents.send('progress-update', progress);
   }
 };
 
 const sendVersionInfo = () => {
   if (loaderWindow) {
-    loaderWindow.webContents.send("get-version", app.getVersion());
+    loaderWindow.webContents.send('get-version', app.getVersion());
   }
 };
 
@@ -215,15 +205,15 @@ function createLoaderWindow() {
     },
   });
 
-  loaderWindow.loadFile(path.join(__dirname, "./src/loader.html"));
+  loaderWindow.loadFile(path.join(__dirname, './src/loader.html'));
 
-  loaderWindow.webContents.once("dom-ready", () => {
+  loaderWindow.webContents.once('dom-ready', () => {
     sendVersionInfo();
     setTimeout(() => {
       updateLoadingProgress(LoadingStages.Initializing);
     }, 150);
   });
-  loaderWindow.on("closed", () => {
+  loaderWindow.on('closed', () => {
     loaderWindow = null;
   });
 }
@@ -231,20 +221,20 @@ function createLoaderWindow() {
 function findPathToPython() {
   let pythonPath;
 
-  if (process.platform === "win32") {
-    pythonPath = path.join("python", "python.exe");
+  if (process.platform === 'win32') {
+    pythonPath = path.join('python', 'python.exe');
   } else {
-    pythonPath = path.join("python", "bin", "python3.10");
+    pythonPath = path.join('python', 'bin', 'python3.10');
   }
 
   if (app.isPackaged) {
     return path.join(process.resourcesPath, pythonPath);
   } else {
-    return path.join(__dirname, "../..", pythonPath);
+    return path.join(__dirname, '../..', pythonPath);
   }
 }
 
-const { updateElectronApp } = require("update-electron-app");
+const { updateElectronApp } = require('update-electron-app');
 updateElectronApp();
 
 const handleDirPicker = async (event: IpcMainEvent) => {
@@ -258,7 +248,7 @@ const handleDirPicker = async (event: IpcMainEvent) => {
 
   try {
     const { canceled, filePaths } = await dialog.showOpenDialog(window.browserWindow, {
-      properties: ["openDirectory", "createDirectory"],
+      properties: ['openDirectory', 'createDirectory'],
     });
 
     if (!canceled && filePaths?.length) {
@@ -269,29 +259,29 @@ const handleDirPicker = async (event: IpcMainEvent) => {
   }
 };
 
-ipcMain.on("request-backend-port", async (event) => {
+ipcMain.on('request-backend-port', async (event) => {
   updateLoadingProgress(LoadingStages.BackendSetup);
   for (const window of windowManager.windows) {
     if (event.sender === window.browserWindow.webContents) {
       window.port = await findEmptyPort();
 
       window.backendProcess = spawn(findPathToPython(), [
-        "-m",
-        "aiconsole.electron",
+        '-m',
+        'aiconsole.electron',
         `--port=${window.port}`,
         `--origin=${MAIN_WINDOW_VITE_DEV_SERVER_URL}`,
       ]);
 
       //close the app when backend process exits
-      window.backendProcess.on("exit", () => {
-        log(window.browserWindow, "Backend process exited");
+      window.backendProcess.on('exit', () => {
+        log(window.browserWindow, 'Backend process exited');
       });
 
-      window.backendProcess.on("error", (e: Error) => {
+      window.backendProcess.on('error', (e: Error) => {
         error(window.browserWindow, `Error from backend process: ${e.message}`);
       });
 
-      window.backendProcess.stdout.on("data", (data: Buffer) => {
+      window.backendProcess.stdout.on('data', (data: Buffer) => {
         //data ends with \n ? strip it
         if (data[data.length - 1] == 10) {
           data = Uint8Array.prototype.slice.call(data, 0, -1);
@@ -300,7 +290,7 @@ ipcMain.on("request-backend-port", async (event) => {
         console.log(`${data}`);
       });
 
-      window.backendProcess.stderr.on("data", (data: Buffer) => {
+      window.backendProcess.stderr.on('data', (data: Buffer) => {
         //data ends with \n ? strip it
         if (data[data.length - 1] == 10) {
           data = Uint8Array.prototype.slice.call(data, 0, -1);
@@ -309,7 +299,7 @@ ipcMain.on("request-backend-port", async (event) => {
         error(window.browserWindow, `${data}`);
       });
 
-      window.backendProcess.on("exit", (code: string) => {
+      window.backendProcess.on('exit', (code: string) => {
         log(window.browserWindow, `FastAPI server exited with code ${code}`);
       });
 
@@ -320,47 +310,47 @@ ipcMain.on("request-backend-port", async (event) => {
 });
 
 app.whenReady().then(() => {
-  ipcMain.handle("open-dir-picker", handleDirPicker);
-  ipcMain.handle("open-finder", async (event, path) => {
+  ipcMain.handle('open-dir-picker', handleDirPicker);
+  ipcMain.handle('open-finder', async (event, path) => {
     shell.showItemInFolder(path);
   });
   createLoaderWindow();
 
-  app.on("will-quit", () => {
+  app.on('will-quit', () => {
     windowManager.windows.forEach(({ backendProcess }) => {
       backendProcess.kill();
     });
   });
 
-  app.on("window-all-closed", function () {
+  app.on('window-all-closed', function () {
     app.quit();
   });
 
-  app.on("activate", function () {
+  app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
   createWindow();
 
   // main/index.js
-  if (require("electron-squirrel-startup") === true) app.quit();
+  if (require('electron-squirrel-startup') === true) app.quit();
 });
 // This should be placed in your main process code
-app.on("ready", () => {
+app.on('ready', () => {
   if (isMac) {
     // Define a template for your menu
     const dockMenu = Menu.buildFromTemplate([
       {
-        label: "New Window",
+        label: 'New Window',
         click() {
           createWindow();
         },
       },
-      { type: "separator" },
+      { type: 'separator' },
       {
-        label: "Settings",
+        label: 'Settings',
         click(_, browserWindow) {
-          browserWindow.webContents.send("log", "Settings");
+          browserWindow.webContents.send('log', 'Settings');
           // Code to open settings
         },
       },
@@ -371,80 +361,75 @@ app.on("ready", () => {
   }
 });
 
-app.on("ready", () => {
+app.on('ready', () => {
   const template = [
     ...(isMac
       ? [
           {
             label: app.name,
             submenu: [
-              { role: "about" },
-              { type: "separator" },
-              { role: "services" },
-              { type: "separator" },
-              { role: "hide" },
-              { role: "hideOthers" },
-              { role: "unhide" },
-              { type: "separator" },
-              { role: "quit" },
+              { role: 'about' },
+              { type: 'separator' },
+              { role: 'services' },
+              { type: 'separator' },
+              { role: 'hide' },
+              { role: 'hideOthers' },
+              { role: 'unhide' },
+              { type: 'separator' },
+              { role: 'quit' },
             ],
           },
         ]
       : []),
     {
-      label: "File",
+      label: 'File',
       submenu: [
         {
-          label: "New Window",
+          label: 'New Window',
           click() {
             createWindow();
           },
         },
-        { role: "quit" },
+        { role: 'quit' },
       ],
     },
     {
-      label: "Edit",
+      label: 'Edit',
       submenu: [
-        { role: "undo" },
-        { role: "redo" },
-        { type: "separator" },
-        { role: "cut" },
-        { role: "copy" },
-        { role: "paste" },
-        { role: "delete" },
-        { role: "selectAll" },
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { role: 'selectAll' },
       ],
     },
     {
-      label: "View",
+      label: 'View',
       submenu: [
-        { role: "reload" },
-        { role: "forceReload" },
-        { role: "toggleDevTools" },
-        { type: "separator" },
-        { role: "resetZoom" },
-        { role: "zoomIn" },
-        { role: "zoomOut" },
-        { type: "separator" },
-        { role: "togglefullscreen" },
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
       ],
     },
     {
-      label: "Window",
+      label: 'Window',
       submenu: [
-        { role: "minimize" },
-        { role: "zoom" },
+        { role: 'minimize' },
+        { role: 'zoom' },
         ...(isMac
-          ? [
-              { type: "separator" },
-              { role: "front" },
-              { type: "separator" },
-              { role: "window" },
-            ]
-          : [{ role: "close" }]),
+          ? [{ type: 'separator' }, { role: 'front' }, { type: 'separator' }, { role: 'window' }]
+          : [{ role: 'close' }]),
         {
-          label: "Show Developer Tools",
+          label: 'Show Developer Tools',
           click(_, browserWindow: BrowserWindow) {
             browserWindow.webContents.openDevTools();
           },
@@ -452,13 +437,13 @@ app.on("ready", () => {
       ],
     },
     {
-      role: "help",
+      role: 'help',
       submenu: [
         {
-          label: "Learn More",
+          label: 'Learn More',
           click: async () => {
-            const { shell } = require("electron");
-            await shell.openExternal("https://github.com/10clouds/aiconsole");
+            const { shell } = require('electron');
+            await shell.openExternal('https://github.com/10clouds/aiconsole');
           },
         },
       ],
