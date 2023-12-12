@@ -107,7 +107,7 @@ export const EmptyChat = () => {
           className="max-w-[700px]"
         >
           {activeSystemAgents.map((agent) => (
-            <SwiperSlide className="width-[110px]">
+            <SwiperSlide className="width-[110px]" key={agent.id}>
               <EmptyChatAgentAvatar key={agent.id} agent={agent} />
             </SwiperSlide>
           ))}

@@ -1,15 +1,18 @@
-import { AICMessage, AICMessageGroup } from '../../../../types/editables/chatTypes';
-import { ToolCall } from './ToolCall';
-
 import { useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import rehypeRaw from 'rehype-raw';
+import { PluggableList } from 'react-markdown/lib/react-markdown';
 import { duotoneDark as vs2015 } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import { BlinkingCursor } from '@/components/editables/chat/BlinkingCursor';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useAPIStore } from '@/store/useAPIStore';
 import { EditableContentMessage } from './EditableContentMessage';
+import { AICMessage, AICMessageGroup } from '../../../../types/editables/chatTypes';
+import { ToolCall } from './ToolCall';
+
+const urlRegex = /^https?:\/\//;
 
 interface MessageProps {
   group: AICMessageGroup;
@@ -55,6 +58,7 @@ export function MessageComponent({ message, group }: MessageProps) {
                 <div className="flex-grow">
                   <div className="prose prose-stone dark:prose-invert sidebar-typography w-full max-w-full">
                     <ReactMarkdown
+                      rehypePlugins={[rehypeRaw] as PluggableList}
                       components={{
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         a: ({ node, href, ...props }) => {
@@ -85,14 +89,11 @@ export function MessageComponent({ message, group }: MessageProps) {
                           );
                         },
                         img: ({ src, ...props }) => {
+                          const imgSrc = urlRegex.test(src || '') ? src : `${getBaseURL()}/image?path=${src}`;
+
                           return (
-                            <a href={`${getBaseURL()}/image?path=${src}`} target="_blank">
-                              <img
-                                src={`${getBaseURL()}/image?path=${src}`}
-                                {...props}
-                                className=" max-w-xs rounded-md mr-5"
-                                alt={props.alt}
-                              />
+                            <a href={imgSrc} target="_blank">
+                              <img src={imgSrc} {...props} className=" max-w-xs rounded-md mr-5" alt={props.alt} />
                             </a>
                           );
                         },

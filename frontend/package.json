@@ -36,6 +36,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.5.3",
     "reconnecting-websocket": "^4.4.0",
+    "rehype-raw": "^7.0.0",
     "swiper": "^11.0.5",
     "tailwind-merge": "^1.14.0",
     "uuid": "^9.0.1",
