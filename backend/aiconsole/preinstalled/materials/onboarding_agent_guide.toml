@@ -47,7 +47,7 @@ You should see the results of your request above the input.
 Congratulations! That's your first [...]
 
 
-HINT: If you ever get stuck on any of the tasks click “Guide me” and the console will help you with the next steps.
+HINT: If you ever get stuck on any of the tasks click “Guide me and the console will help you with the next steps.
 
 
 2. Material
@@ -84,7 +84,7 @@ To select specific agents you want to include in your inputs click on the agent 
 ![image info](./tutorial/agents_2_image.png)
 
 Ok, time to create your own agent. Going back to cooking. We have the recipe, we have the ingredients, we miss a chef. Let's create one!
-ACTION: Click on the +NEW button and select “New agent…”. First, give it a name, describe what it will be used for, and all the characteristics of the chef. When you are done save the agent. If you need help with creating an agent have a look at the example below.
+ACTION: Click on the +NEW button and select “New agent…. First, give it a name, describe what it will be used for, and all the characteristics of the chef. When you are done save the agent. If you need help with creating an agent have a look at the example below.
 
 ![image info](./tutorial/add_agent_material.png)
 
