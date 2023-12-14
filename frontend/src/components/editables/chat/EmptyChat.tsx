@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useRef, MouseEvent } from 'react';
+import { useRef, MouseEvent, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
@@ -93,6 +93,11 @@ export const EmptyChat = () => {
     }
   };
 
+  const remainingAssetCount = useMemo(
+    () => aiChoiceMaterials.length - MAX_ASSETS_TO_DISPLAY,
+    [aiChoiceMaterials.length],
+  );
+
   return (
     <section className="flex flex-col items-center justify-center container mx-auto px-6 py-[80px] select-none">
       <img src="chat-page-glow.png" alt="glow" className="absolute top-[40px] -z-[1]" />
@@ -162,7 +167,7 @@ export const EmptyChat = () => {
           </div>
         )}
         {hasAiChoiceMaterials || hasForcedMaterials ? (
-          <p className=" text-gray-500 text-right text-[14px]">and X more...</p>
+          <p className=" text-gray-500 text-right text-[14px]">and {remainingAssetCount} more...</p>
         ) : null}
       </div>
     </section>

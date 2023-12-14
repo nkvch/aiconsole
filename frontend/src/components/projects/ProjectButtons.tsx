@@ -13,13 +13,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { useMemo } from 'react';
+import { Plus } from 'lucide-react';
 
 import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
-import { Plus } from 'lucide-react';
 import { Button } from '../common/Button';
 import { cn } from '@/utils/common/cn';
 import { Icon } from '../common/icons/Icon';
 import AlertDialog from '../common/AlertDialog';
+import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
 
 interface ProjectButtonsProps {
   className?: string;
@@ -36,6 +38,13 @@ export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element 
     openProjectConfirmation,
     tempPath,
   } = useProjectFileManager();
+
+  const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
+
+  const addButtonLabel = useMemo(
+    () => (recentProjects.length ? 'Add project' : 'Add your first project '),
+    [recentProjects.length],
+  );
 
   return (
     <div className={cn(className)}>
@@ -57,7 +66,7 @@ export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element 
       </AlertDialog>
 
       <Button small onClick={newProject}>
-        Add your first project <Icon icon={Plus} />
+        {addButtonLabel} <Icon icon={Plus} />
       </Button>
 
       <Button small variant="secondary" onClick={openProject}>
