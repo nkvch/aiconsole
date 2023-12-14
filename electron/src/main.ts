@@ -263,6 +263,13 @@ ipcMain.on('request-backend-port', async (event) => {
   updateLoadingProgress(LoadingStages.BackendSetup);
   for (const window of windowManager.windows) {
     if (event.sender === window.browserWindow.webContents) {
+      // If the window already has a backend process, don't spawn a new one
+      const backendProcess = windowManager.findBackendByWindow(window.browserWindow);
+      if (backendProcess) {
+        window.browserWindow.webContents.send('set-backend-port', window.port);
+        return;
+      }
+
       window.port = await findEmptyPort();
 
       window.backendProcess = spawn(findPathToPython(), [

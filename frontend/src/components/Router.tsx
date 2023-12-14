@@ -32,6 +32,7 @@ import { ChatPage } from './editables/chat/ChatPage';
 import SideBar from './editables/sidebar/SideBar';
 import { Home } from './projects/Home';
 import { GlobalSettingsModal } from './settings/GlobalSettingsModal';
+import { useAPIStore } from '@/store/useAPIStore';
 
 function MustHaveProject() {
   const isProjectOpen = useProjectStore((state) => state.isProjectOpen);
@@ -63,6 +64,12 @@ const HomeRoute = () => (
 );
 
 export function Router() {
+  const port = useAPIStore((state) => state.port);
+
+  if (!port) {
+    return null;
+  }
+
   return (
     <RouterProvider
       router={createHashRouter(
