@@ -42,7 +42,7 @@ export const windowStateTracker = async (windowName: string) => {
 
     // TODO: Fix the event typing in the handler
     // @ts-ignore
-    ['resize', 'move', 'close'].forEach((e: string) => win.on(e, updateState));
+    ['resize', 'move'].forEach((e: string) => win.on(e, updateState));
   };
 
   await initState();
