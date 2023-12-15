@@ -334,7 +334,7 @@ app.whenReady().then(() => {
 
   app.on('will-quit', () => {
     windowManager.windows.forEach(({ backendProcess }) => {
-      backendProcess.kill();
+      backendProcess?.kill();
     });
   });
 
