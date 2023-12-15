@@ -28,6 +28,9 @@ import {
 import { spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
+import { v4 as uuidv4 } from 'uuid';
+
+import { windowStateTracker } from './windowStateTracker';
 
 const LoadingStages = {
   Initializing: 30,
@@ -143,9 +146,13 @@ async function findEmptyPort(startingFrom = 1024, endingAt = 65535) {
 }
 
 async function createWindow() {
+  const stateTracker = await windowStateTracker(!windowManager.windows.length ? 'main' : uuidv4());
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width: stateTracker.width,
+    height: stateTracker.height,
+    x: stateTracker.x,
+    y: stateTracker.y,
     backgroundColor: '#111111',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -154,6 +161,8 @@ async function createWindow() {
     icon: '../assets/icon.png',
     show: false,
   });
+
+  stateTracker.track(mainWindow);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
