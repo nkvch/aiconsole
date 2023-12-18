@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { app, BrowserWindow, ipcMain, Menu, dialog, IpcMainEvent, MenuItemConstructorOptions, shell } from 'electron';
-import { spawn } from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
 import { v4 as uuidv4 } from 'uuid';
@@ -38,7 +38,7 @@ let mainWindow: BrowserWindow;
 
 type AIConsoleWindow = {
   browserWindow: BrowserWindow;
-  backendProcess?: any;
+  backendProcess?: ChildProcess;
   port?: number;
 };
 
@@ -46,7 +46,7 @@ const windowManager: {
   windows: AIConsoleWindow[];
   addWindow: (browserWindow: BrowserWindow) => void;
   removeWindow: (targetWindow: BrowserWindow) => void;
-  findBackendByWindow: (targetWindow: BrowserWindow) => any;
+  findBackendByWindow: (targetWindow: BrowserWindow) => ChildProcess;
 } = {
   windows: [],
   addWindow: (browserWindow) => {
@@ -170,6 +170,7 @@ async function createWindow() {
   mainWindow.on('closed', () => {
     const backendProcess = windowManager.findBackendByWindow(mainWindow);
     if (backendProcess) {
+      backendProcess.removeAllListeners();
       backendProcess.kill();
     }
     windowManager.removeWindow(mainWindow);
@@ -320,6 +321,7 @@ app.whenReady().then(() => {
 
   app.on('will-quit', () => {
     windowManager.windows.forEach(({ backendProcess }) => {
+      backendProcess?.removeAllListeners();
       backendProcess?.kill();
     });
   });
