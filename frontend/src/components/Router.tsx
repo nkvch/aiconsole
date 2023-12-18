@@ -14,9 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { TopBar } from '@/components/common/TopBar';
-import { ProjectTopBarElements } from '@/components/projects/ProjectTopBarElements';
-import { useProjectStore } from '@/store/projects/useProjectStore';
+import { useEffect } from 'react';
+import { v4 as uuid } from 'uuid';
 import {
   createHashRouter,
   createRoutesFromElements,
@@ -26,13 +25,17 @@ import {
   RouterProvider,
   Routes,
 } from 'react-router-dom';
-import { v4 as uuid } from 'uuid';
+
+import { TopBar } from '@/components/common/TopBar';
+import { ProjectTopBarElements } from '@/components/projects/ProjectTopBarElements';
+import { useProjectStore } from '@/store/projects/useProjectStore';
 import { AssetEditor } from './editables/assets/AssetEditor';
 import { ChatPage } from './editables/chat/ChatPage';
 import SideBar from './editables/sidebar/SideBar';
 import { Home } from './projects/Home';
 import { GlobalSettingsModal } from './settings/GlobalSettingsModal';
 import { useAPIStore } from '@/store/useAPIStore';
+import { useToastsStore } from '@/store/common/useToastsStore';
 
 function MustHaveProject() {
   const isProjectOpen = useProjectStore((state) => state.isProjectOpen);
@@ -65,6 +68,23 @@ const HomeRoute = () => (
 
 export function Router() {
   const port = useAPIStore((state) => state.port);
+
+  const showToast = useToastsStore.getState().showToast;
+
+  useEffect(() => {
+    window.electron?.onBackendExit(() => {
+      showToast({
+        title: 'Application Error',
+        message: 'Please restart the app.',
+        variant: 'error',
+      });
+    });
+
+    return () => {
+      window.electron.disposeBackendExitListener();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!port) {
     return null;

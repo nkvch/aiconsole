@@ -14,17 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  dialog,
-  IpcMainEvent,
-  MenuItemConstructorOptions,
-  shell,
-  ipcRenderer,
-} from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, dialog, IpcMainEvent, MenuItemConstructorOptions, shell } from 'electron';
 import { spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
@@ -288,11 +278,6 @@ ipcMain.on('request-backend-port', async (event) => {
         `--origin=${MAIN_WINDOW_VITE_DEV_SERVER_URL}`,
       ]);
 
-      //close the app when backend process exits
-      window.backendProcess.on('exit', () => {
-        log(window.browserWindow, 'Backend process exited');
-      });
-
       window.backendProcess.on('error', (e: Error) => {
         error(window.browserWindow, `Error from backend process: ${e.message}`);
       });
@@ -316,6 +301,7 @@ ipcMain.on('request-backend-port', async (event) => {
       });
 
       window.backendProcess.on('exit', (code: string) => {
+        window.browserWindow.webContents.send('backend-exit');
         log(window.browserWindow, `FastAPI server exited with code ${code}`);
       });
 

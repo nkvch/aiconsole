@@ -14,47 +14,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IpcMainEvent, IpcRendererEvent } from "electron";
+import { IpcRendererEvent } from 'electron';
 
-const { contextBridge, ipcRenderer } = require("electron");
-const { shell } = require("electron");
+const { contextBridge, ipcRenderer } = require('electron');
+const { shell } = require('electron');
 
-contextBridge.exposeInMainWorld("electron", {
+contextBridge.exposeInMainWorld('electron', {
   requestBackendPort: async () => {
     return new Promise((resolve, reject) => {
       const listener = (_event: IpcRendererEvent, port: number) => {
-        console.log("Backend at port:", port);
+        console.log('Backend at port:', port);
         resolve(port);
-        ipcRenderer.removeListener("set-backend-port", listener);
+        ipcRenderer.removeListener('set-backend-port', listener);
       };
-      ipcRenderer.on("set-backend-port", listener);
+      ipcRenderer.on('set-backend-port', listener);
 
       const log = (_event: IpcRendererEvent, message: string) => {
         console.log(message);
       };
-      ipcRenderer.on("log", log);
+      ipcRenderer.on('log', log);
 
       const error = (_event: IpcRendererEvent, message: string) => {
         console.error(message);
       };
-      ipcRenderer.on("error", error);
+      ipcRenderer.on('error', error);
 
-      ipcRenderer.send("request-backend-port");
+      ipcRenderer.send('request-backend-port');
     });
   },
-  openDirectoryPicker: async () => ipcRenderer.invoke("open-dir-picker"),
+  openDirectoryPicker: async () => ipcRenderer.invoke('open-dir-picker'),
   openFinder: async (path: string) => {
-    ipcRenderer.invoke("open-finder", path);
+    ipcRenderer.invoke('open-finder', path);
   },
+  onBackendExit: (callback: () => void) => ipcRenderer.on('backend-exit', () => callback()),
+  disposeBackendExitListener: () => ipcRenderer.removeAllListeners('backend-exit'),
   getFileManagerName: () => {
-    if (process.platform === "darwin") {
-      return "Finder";
+    if (process.platform === 'darwin') {
+      return 'Finder';
     }
 
-    if (process.platform === "win32") {
-      return "Explorer";
+    if (process.platform === 'win32') {
+      return 'Explorer';
     }
 
-    return "File Manager";
+    return 'File Manager';
   },
 });

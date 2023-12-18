@@ -23,6 +23,8 @@ declare global {
       openDirectoryPicker: () => Promise<string | undefiend>;
       openFinder: (path: string) => Promise<void>;
       getFileManagerName: () => string;
+      onBackendExit: (callback: () => void) => void;
+      disposeBackendExitListener: () => void;
     };
   }
 }
