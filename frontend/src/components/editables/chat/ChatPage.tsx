@@ -37,6 +37,7 @@ import { useToastsStore } from '@/store/common/useToastsStore';
 import { ContextMenu } from '@/components/common/ContextMenu';
 import AlertDialog from '@/components/common/AlertDialog';
 import { QuestionMarkIcon } from '@/components/common/icons/QuestionMarkIcon';
+import { Spinner } from './Spinner';
 
 // Electron adds the path property to File objects
 interface FileWithPath extends File {
@@ -171,7 +172,11 @@ export function ChatPage() {
   }, [chat?.id, isProjectOpen]); //Initentional trigger when chat_id changes
 
   if (!chat) {
-    return null;
+    return (
+      <div className="flex flex-1 justify-center items-center">
+        <Spinner width={40} height={40} />
+      </div>
+    );
   }
 
   const handleRename = async (newName: string) => {

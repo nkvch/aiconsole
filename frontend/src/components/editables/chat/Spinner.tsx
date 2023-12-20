@@ -17,6 +17,11 @@
 import { Icon } from '@/components/common/icons/Icon';
 import { Settings } from 'lucide-react';
 
-export function Spinner() {
-  return <Icon icon={Settings} width={20} height={20} className="animate-spin" />;
+interface SpinnerProps {
+  width?: number;
+  height?: number;
+}
+
+export function Spinner({ width = 20, height = 20 }: SpinnerProps) {
+  return <Icon icon={Settings} width={width} height={height} className="animate-spin" />;
 }
