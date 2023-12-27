@@ -19,8 +19,13 @@ import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
 import { v4 as uuidv4 } from 'uuid';
+import { initialize } from '@aptabase/electron/main';
 
 import { windowStateTracker } from './windowStateTracker';
+
+if (import.meta.env.VITE_APTABASE_KEY) {
+  initialize(import.meta.env.VITE_APTABASE_KEY);
+}
 
 const LoadingStages = {
   Initializing: 30,
