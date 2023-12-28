@@ -14,11 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { app, BrowserWindow, ipcMain, Menu, dialog, IpcMainEvent, MenuItemConstructorOptions, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  dialog,
+  IpcMainEvent,
+  MenuItemConstructorOptions,
+  shell,
+  Notification,
+} from 'electron';
 import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
-import { v4 as uuidv4 } from 'uuid';
 
 import { windowStateTracker } from './windowStateTracker';
 
@@ -136,7 +145,7 @@ async function findEmptyPort(startingFrom = 1024, endingAt = 65535) {
 }
 
 async function createWindow() {
-  const stateTracker = await windowStateTracker(!windowManager.windows.length ? 'main' : uuidv4());
+  const stateTracker = await windowStateTracker(!windowManager.windows.length ? 'main' : `${Date.now().toString()}`);
 
   mainWindow = new BrowserWindow({
     width: stateTracker.width,
