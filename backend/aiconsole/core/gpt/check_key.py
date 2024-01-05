@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import openai
 from openai import OpenAI
+
+_log = logging.getLogger(__name__)
 
 from aiconsole.core.gpt.consts import (
     GPT_MODE_COST_MODEL,
@@ -32,22 +36,19 @@ async def check_key(key: str) -> bool:
         return True
 
     client = OpenAI(api_key=key)
-    try:
-        # set key
-        openai.api_key = key
-        models = openai.Model.list(key=key)["data"]  # type: ignore
-        available_models = [model["id"] for model in models]
-        needed_models = [
-            GPT_MODE_COST_MODEL,
-            GPT_MODE_QUALITY_MODEL,
-            GPT_MODE_SPEED_MODEL,
-        ]
+    # set key
+    openai.api_key = key
+    models = client.models.list()  # type: ignore
+    available_models = [model.id for model in models]
+    needed_models = [
+        GPT_MODE_COST_MODEL,
+        GPT_MODE_QUALITY_MODEL,
+        GPT_MODE_SPEED_MODEL,
+    ]
 
-        good = set(needed_models).issubset(set(available_models))
+    good = set(needed_models).issubset(set(available_models))
 
-        if good:
-            cached_good_keys.add(key)
+    if good:
+        cached_good_keys.add(key)
 
-        return good
-    except Exception:
-        return False
+    return good

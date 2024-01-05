@@ -50,7 +50,7 @@ _log = logging.getLogger(__name__)
 
 class GPTModeConfig(BaseModel):
     name: str
-    max_tokens: int
+    max_tokens: int = 10000
     encoding: GPTEncoding = GPTEncoding.GPT_4
     model: str | None = None
     api_key: str | None = None
@@ -133,6 +133,8 @@ class Settings:
 
     async def reload(self, initial: bool = False):
         self._settings = await self.__load()
+        _log.debug(f"Loaded gpt modes: {self._settings.gpt_modes}")
+
         await SettingsServerMessage(
             initial=initial
             or not (
@@ -183,7 +185,10 @@ class Settings:
             raise ValueError(f"Unknown asset type {asset_type}")
 
     def get_mode_config(self, gpt_mode: GPTMode) -> GPTModeConfig:
-        mode_config = self._settings.gpt_modes[gpt_mode]
+        mode_config = self._settings.gpt_modes.get(gpt_mode, None)
+
+        if mode_config is None:
+            raise ValueError(f"Unknown mode {gpt_mode}, available modes: {self._settings.gpt_modes}")
 
         # if api_key refers to any other setting, use that setting
 
@@ -260,8 +265,6 @@ class Settings:
             _log.debug(f"Loading gpt mode: {model_config}")
             name = model_config.get("name")
             gpt_modes[name] = GPTModeConfig(**model_config)
-
-        _log.debug(f"Loaded gpt modes: {gpt_modes}")
 
         extra_settings = {}
         for key, value in settings.get("settings", {}).items():
