@@ -21,7 +21,7 @@ from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
 from aiconsole.core.assets.agents.agent import Agent, AgentWithStatus
 from aiconsole.core.assets.asset import AssetLocation, AssetStatus, AssetType
-from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 from aiconsole.core.project import project
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -42,7 +42,7 @@ async def agent_get(request: Request, agent_id: str):
             usage_examples=[],
             status=AssetStatus.ENABLED,
             defined_in=AssetLocation.PROJECT_DIR,
-            gpt_mode=GPTMode.QUALITY,
+            gpt_mode=QUALITY_GPT_MODE,
             system="",
             override=False,
         ),

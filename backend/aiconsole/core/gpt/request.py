@@ -17,11 +17,13 @@
 import json
 import logging
 from typing import Any, Literal
+from aiconsole.core.settings.project_settings import get_aiconsole_settings
+from aiconsole.dev.settings import get_settings
 from pydantic import BaseModel
 
 import tiktoken
 
-from aiconsole.core.gpt.consts import MODEL_DATA, GPTMode, GPTModel
+from aiconsole.core.gpt.consts import SPEED_GPT_MODE, GPTMode
 from aiconsole.core.gpt.types import EnforcedFunctionCall, GPTRequestMessage, GPTRequestTextMessage
 from aiconsole.core.gpt.token_error import TokenError
 
@@ -72,7 +74,7 @@ class GPTRequest:
         # Checks if the given prompt can fit within a specified range of token lengths for the specified AI model.
 
         used_tokens = self.count_tokens() + EXTRA_BUFFER_FOR_ENCODING_OVERHEAD
-        available_tokens = self.model_max_tokens - used_tokens
+        available_tokens = self.model_config.max_tokens - used_tokens
 
         if available_tokens < min_tokens:
             _log.error(
@@ -98,22 +100,22 @@ class GPTRequest:
             return self.messages
 
     @property
-    def model(self):
-        return self.get_model(self.gpt_mode)
+    def llm_settings(self):
+        config = self.model_config
+        return {
+            "model": config.model,
+            **({"api_base": config.api_base} if config.api_base else {}),
+            **({"api_key": config.api_key} if config.api_key else {}),
+            **config.extra,
+        }
 
     @property
-    def model_data(self):
-        return MODEL_DATA[self.model]
-
-    @property
-    def model_max_tokens(self):
-        if self.gpt_mode == GPTMode.SPEED:
-            return MODEL_DATA[GPTModel.GPT_35_TURBO_16k_0613].max_tokens
-
-        return self.model_data.max_tokens
+    def model_config(self):
+        settings = get_aiconsole_settings()
+        return settings.get_mode_config(self.gpt_mode)
 
     def count_tokens(self):
-        encoding = tiktoken.encoding_for_model(self.model_data.encoding)
+        encoding = tiktoken.encoding_for_model(self.model_config.encoding)
 
         if self.tools:
             functions_tokens = len(encoding.encode(",".join(json.dumps(f.model_dump()) for f in self.tools)))
@@ -122,7 +124,7 @@ class GPTRequest:
         return self.count_messages_tokens(encoding) + functions_tokens
 
     def count_tokens_for_model(self, model):
-        encoding = tiktoken.encoding_for_model(MODEL_DATA[model].encoding)
+        encoding = tiktoken.encoding_for_model(self.model_config.encoding)
         return self.count_messages_tokens(encoding)
 
     def count_messages_tokens(self, encoding):
@@ -132,7 +134,7 @@ class GPTRequest:
         return messages_tokens
 
     def count_tokens_output(self, message_content: str, message_function_call: dict | None):
-        encoding = tiktoken.encoding_for_model(self.model_data.encoding)
+        encoding = tiktoken.encoding_for_model(self.model_config.encoding)
 
         return len(encoding.encode(message_content)) + (
             len(encoding.encode(json.dumps(message_function_call))) if message_function_call else 0
@@ -144,7 +146,7 @@ class GPTRequest:
         """
 
         used_tokens = self.count_tokens()
-        model_max_tokens = self.model_max_tokens
+        model_max_tokens = self.model_config.max_tokens
 
         if used_tokens - model_max_tokens >= self.max_tokens:
             _log.error(
@@ -155,14 +157,3 @@ class GPTRequest:
             raise TokenError(
                 f"Exceeded the token limit by {self.max_tokens - (used_tokens - model_max_tokens)}, delete/edit some messages or reorganise materials."
             )
-
-    def get_model(self, mode: GPTMode) -> str:
-        model = GPTModel.GPT_4_11106_PREVIEW
-        # if mode == GPTMode.SPEED:
-        #     model = GPTModel.GPT_35_TURBO_16k_0613
-        #     used_tokens = self.count_tokens_for_model(model) + self.max_tokens
-        #
-        #     if used_tokens < MODEL_DATA[GPTModel.GPT_35_TURBO_0613].max_tokens * 0.9:
-        #        model = GPTModel.GPT_35_TURBO_0613
-
-        return model.value

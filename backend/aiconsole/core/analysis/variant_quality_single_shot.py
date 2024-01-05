@@ -18,7 +18,7 @@ from aiconsole.core.analysis.create_agents_str import create_agents_str
 from aiconsole.core.analysis.create_materials_str import create_materials_str
 from aiconsole.core.analysis.gpt_analysis_function_step import gpt_analysis_function_step
 from aiconsole.core.chat.types import Chat
-from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 
 
 async def variant_quality_single_shot(chat: Chat, request_id: str):
@@ -29,7 +29,7 @@ async def variant_quality_single_shot(chat: Chat, request_id: str):
     await gpt_analysis_function_step(
         request_id=request_id,
         chat=chat,
-        gpt_mode=GPTMode.QUALITY,
+        gpt_mode=QUALITY_GPT_MODE,
         initial_system_prompt=f"""
 You are a director of a multiple AI Agents, doing everything to help the user.
 You have multiple AI Agents at your disposal, each with their own unique capabilities.

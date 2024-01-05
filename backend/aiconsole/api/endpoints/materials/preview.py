@@ -20,7 +20,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.chat.types import Chat
-from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, SPEED_GPT_MODE, GPTMode
 from aiconsole.core.assets.materials.content_evaluation_context import ContentEvaluationContext
 from aiconsole.core.assets.materials.material import Material
 
@@ -38,10 +38,10 @@ async def materials_preview(material: Material):
             usage_examples=[],
             system="",
             defined_in=AssetLocation.AICONSOLE_CORE,
-            gpt_mode=GPTMode.QUALITY,
+            gpt_mode=QUALITY_GPT_MODE,
             override=False,
         ),
-        gpt_mode=GPTMode.SPEED,
+        gpt_mode=SPEED_GPT_MODE,
         relevant_materials=[],
     )
 

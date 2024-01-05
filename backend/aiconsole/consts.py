@@ -15,9 +15,8 @@
 # limitations under the License.
 from pathlib import Path
 
-from aiconsole.core.gpt.consts import GPTMode
 import litellm
-
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE
 
 # FIXME: Move it to a more appropriate place
 litellm.set_verbose = False
@@ -46,7 +45,7 @@ LOG_HANDLERS: list[str] = ["console"]
 HISTORY_LIMIT: int = 1000
 COMMANDS_HISTORY_JSON: str = "command_history.json"
 
-DEFAULT_MODE: str = GPTMode.SPEED.value
+DEFAULT_MODE: str = QUALITY_GPT_MODE
 FUNCTION_CALL_OUTPUT_LIMIT: int = 2000
 
 

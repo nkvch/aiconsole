@@ -18,14 +18,14 @@ from aiconsole.core.assets.asset import Asset, AssetStatus, AssetType
 from pydantic import BaseModel
 from aiconsole.core.chat.types import Chat
 
-from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
 
 
 class Agent(Asset):
     type: AssetType = AssetType.AGENT
     system: str
-    gpt_mode: GPTMode = GPTMode.QUALITY
+    gpt_mode: GPTMode = QUALITY_GPT_MODE
     execution_mode: str = "aiconsole.core.execution_modes.normal:execution_mode_normal"
 
 

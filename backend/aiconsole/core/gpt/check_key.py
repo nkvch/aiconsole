@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aiconsole.core.gpt.consts import MODEL_DATA
+from aiconsole.core.gpt.consts import GPT_MODE_COST_MODEL, GPT_MODE_QUALITY_MODEL, GPT_MODE_SPEED_MODEL
 import openai
 
 cached_good_keys = set()
@@ -30,7 +30,11 @@ async def check_key(key: str) -> bool:
         openai.api_key = key
         models = openai.Model.list(key=key)["data"]  # type: ignore
         available_models = [model["id"] for model in models]
-        needed_models = MODEL_DATA.keys()
+        needed_models = [
+            GPT_MODE_COST_MODEL,
+            GPT_MODE_QUALITY_MODEL,
+            GPT_MODE_SPEED_MODEL,
+        ]
 
         good = set(needed_models).issubset(set(available_models))
 

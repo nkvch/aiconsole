@@ -25,7 +25,7 @@ from aiconsole.core.assets.asset import AssetLocation, AssetStatus
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.chat.chat_outgoing_messages import SequenceStage, UpdateAnalysisWSMessage
 from aiconsole.core.chat.types import Chat
-from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
 from aiconsole.core.gpt.request import GPTRequest, ToolDefinition, ToolFunctionDefinition
 from aiconsole.core.gpt.types import EnforcedFunctionCall, EnforcedFunctionCallFuncSpec, GPTRequestTextMessage
@@ -53,7 +53,7 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
             usage_examples=[],
             system="",
             defined_in=AssetLocation.AICONSOLE_CORE,
-            gpt_mode=GPTMode.QUALITY,
+            gpt_mode=QUALITY_GPT_MODE,
             override=False,
         )
     else:
