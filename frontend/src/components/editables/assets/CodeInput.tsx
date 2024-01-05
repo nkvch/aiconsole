@@ -20,7 +20,7 @@ import 'highlight.js/styles/vs2015.css';
 
 import { cn } from '@/utils/common/cn';
 import { FocusEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Icon } from '@/components/common/icons/Icon';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
@@ -168,7 +168,7 @@ export function CodeInput({
         }}
         className={cn(
           className,
-          'border-gray-500 w-[calc(100%-8px)] font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px] transition duration-100',
+          'border-gray-500 w-full font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px] transition duration-100',
           {
             'bg-gray-600 border-gray-400': focus,
             'hover:bg-gray-600 hover:placeholder:text-gray-300': !disabled && !readOnly,
@@ -205,7 +205,7 @@ export function CodeInput({
             width={24}
             height={24}
             className={cn(`absolute right-[25px] bottom-[80px] cursor-pointer text-gray-300 hover:text-white`, {
-              'right-[25px] bottom-[20px]': fullScreen,
+              'right-[25px] bottom-[75px]': fullScreen,
             })}
             onClick={toggleFullscreen}
           />

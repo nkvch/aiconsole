@@ -17,11 +17,11 @@
 import os
 from pathlib import Path
 
-from aiconsole.core.project.paths import get_project_directory
-from aiconsole.core.project.project import change_project_directory, is_project_initialized
-from aiconsole.core.project.venv import create_dedicated_venv
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
+
+from aiconsole.core.project.paths import get_project_directory
+from aiconsole.core.project.project import choose_project, is_project_initialized
 
 router = APIRouter()
 
@@ -69,10 +69,7 @@ async def is_project(params: ChooseParams):
 
 
 @router.post("/choose")
-async def choose_project(params: ChooseParams, background_tasks: BackgroundTasks):
-    directory = Path(params.directory) if params.directory else None
+async def choose_project_endpoint(params: ChooseParams, background_tasks: BackgroundTasks):
+    directory = Path(params.directory)
 
-    if directory:
-        await change_project_directory(directory)
-        # this will speed up the project creating a process
-        background_tasks.add_task(create_dedicated_venv)
+    await choose_project(directory, background_tasks)

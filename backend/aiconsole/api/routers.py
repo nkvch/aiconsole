@@ -14,30 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aiconsole.api.endpoints import run_code
-from aiconsole.api.endpoints import projects
 from fastapi import APIRouter
 
 from aiconsole.api.endpoints import (
-    chats,
-    commands_history,
-    profile,
-    image,
     agents,
-    ping,
-    ws,
-    materials,
-    project_settings,
+    chats,
     check_key,
+    commands_history,
+    image,
+    materials,
+    ping,
+    profile,
+    project_settings,
+    projects,
+    ws,
 )
-
 
 app_router = APIRouter()
 
 app_router.include_router(ping.router)
 app_router.include_router(image.router)
 app_router.include_router(check_key.router)
-app_router.include_router(run_code.router)
 app_router.include_router(profile.router, tags=["Profile"])
 app_router.include_router(chats.router, prefix="/api/chats", tags=["Chats"])
 app_router.include_router(materials.router, prefix="/api/materials", tags=["Materials"])

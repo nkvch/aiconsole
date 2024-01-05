@@ -24,22 +24,22 @@ export const useMaterialEditorContent = (material?: Material) => {
     {
       type: 'static_text',
       label: 'Text',
-      value: material.content_static_text,
-      onChange: setAsset('content_static_text'),
+      value: material.content,
+      onChange: setAsset('content'),
       codeLanguage: 'markdown',
     },
     {
       type: 'dynamic_text',
       label: 'Python function returning dynamic text',
-      value: material.content_dynamic_text,
-      onChange: setAsset('content_dynamic_text'),
+      value: material.content,
+      onChange: setAsset('content'),
       codeLanguage: 'python',
     },
     {
       type: 'api',
       label: 'API Module',
-      value: material.content_api,
-      onChange: setAsset('content_api'),
+      value: material.content,
+      onChange: setAsset('content'),
     },
   ];
 

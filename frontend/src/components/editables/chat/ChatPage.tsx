@@ -15,28 +15,26 @@
 // limitations under the License.
 
 import { EditablesAPI } from '@/api/api/EditablesAPI';
+import AlertDialog from '@/components/common/AlertDialog';
+import { ContextMenu } from '@/components/common/ContextMenu';
+import { QuestionMarkIcon } from '@/components/common/icons/QuestionMarkIcon';
+import { SendRotated } from '@/components/common/icons/SendRotated';
 import { EmptyChat } from '@/components/editables/chat/EmptyChat';
 import { MessageGroup } from '@/components/editables/chat/MessageGroup';
+import { useToastsStore } from '@/store/common/useToastsStore';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useProjectStore } from '@/store/projects/useProjectStore';
 import { Chat } from '@/types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
-import { useChat } from '@/utils/editables/useChat';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { ReplyIcon, Square } from 'lucide-react';
+import { ArrowDown, ReplyIcon, Square } from 'lucide-react';
 import { useEffect } from 'react';
-import { useParams, useSearchParams, unstable_useBlocker as useBlocker } from 'react-router-dom';
+import { unstable_useBlocker as useBlocker, useParams, useSearchParams } from 'react-router-dom';
 import ScrollToBottom, { useAnimating, useScrollToBottom, useSticky } from 'react-scroll-to-bottom';
 import { v4 as uuidv4 } from 'uuid';
 import { EditorHeader } from '../EditorHeader';
+import { Analysis } from './Analysis';
 import { CommandInput } from './CommandInput';
-import { GuideMe } from './GuideMe';
-import { ArrowDown } from 'lucide-react';
-import { SendRotated } from '@/components/common/icons/SendRotated';
-import { useToastsStore } from '@/store/common/useToastsStore';
-import { ContextMenu } from '@/components/common/ContextMenu';
-import AlertDialog from '@/components/common/AlertDialog';
-import { QuestionMarkIcon } from '@/components/common/icons/QuestionMarkIcon';
 import { Spinner } from './Spinner';
 
 // Electron adds the path property to File objects
@@ -87,7 +85,7 @@ export function ChatPage() {
   const chat = useChatStore((state) => state.chat);
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
   const loadingMessages = useChatStore((state) => state.loadingMessages);
-  const isAnalysisRunning = useChatStore((state) => state.isAnalysisRunning());
+  const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
   const stopWork = useChatStore((state) => state.stopWork);
   const submitCommand = useChatStore((state) => state.submitCommand);
@@ -97,7 +95,8 @@ export function ChatPage() {
   const appendFilePathToCommand = useChatStore((state) => state.appendFilePathToCommand);
   const showToast = useToastsStore((state) => state.showToast);
   const menuItems = useEditableObjectContextMenu({ editable: chat, editableObjectType: 'chat' });
-  const { setChat, renameChat } = useChat();
+  const renameChat = useChatStore((state) => state.renameChat);
+  const setChat = useChatStore((state) => state.setChat);
 
   const blocker = useBlocker(isAnalysisRunning || isExecutionRunning);
 
@@ -263,8 +262,6 @@ export function ChatPage() {
                   ))}
                 </div>
               )}
-
-              {isAnalysisRunning ? <GuideMe /> : null}
             </ScrollToBottom>
           ) : (
             <div className="h-full overflow-y-auto flex flex-col"></div>

@@ -70,6 +70,11 @@ def preprocess_python(code: str, materials: list[Material]):
     Add end of execution marker
     """
 
+    # If a line starts with "!" then it's a shell command, we need to wrap it appropriately
+    code = "\n".join(
+        [f"import os; os.system({line[1:]!r})" if line.startswith("!") else line for line in code.split("\n")]
+    )
+
     # Check for syntax errors in user's code
     try:
         ast.parse(code)
@@ -89,22 +94,21 @@ def preprocess_python(code: str, materials: list[Material]):
         return f"print(f'''{msg_for_user}''')\nprint('## end_of_execution ##')"
 
     api_materials = [material for material in materials if material.content_type == "api"]
-    apis = [material.content_api for material in api_materials]
+    apis = [material.inlined_content for material in api_materials]
 
     parsed_code = ast.parse("\n\n\n".join(apis))
     parsed_code.body = [b for b in parsed_code.body if not isinstance(b, ast.Expr) or not isinstance(b.value, ast.Str)]
     apis = ast.unparse(parsed_code)
 
     newline = "\n"
+    api_lines = [line for line in apis.split(newline) if line.strip()]
+    code_lines = [line for line in code.split(newline) if line.strip()]
+
     code = f"""
-{apis}
-
-
 import traceback
-from aiconsole.dev.credentials import MissingCredentialException
-
+from aiconsole_toolkit.credentials import MissingCredentialException
 try:
-{newline.join(("    " + line) for line in code.split(newline) if line.strip())}
+{newline.join(("    " + line) for line in [*api_lines, *code_lines])}
 except MissingCredentialException as e:
     print(e)
 except Exception:

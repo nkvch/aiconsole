@@ -42,7 +42,7 @@ export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element 
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
 
   const addButtonLabel = useMemo(
-    () => (recentProjects.length ? 'Add project' : 'Add your first project '),
+    () => (recentProjects.length ? 'New Project' : 'Create your first project'),
     [recentProjects.length],
   );
 
@@ -70,7 +70,7 @@ export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element 
       </Button>
 
       <Button small variant="secondary" onClick={openProject}>
-        Open Project
+        Open an Existing Project
       </Button>
     </div>
   );

@@ -44,43 +44,46 @@ interface MessageProps {
 }
 
 export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
-  const removeToolCallFromMessage = useChatStore((state) => state.removeToolCallFromMessage);
-  const editToolCall = useChatStore((state) => state.editToolCall);
+  const userMutateChat = useChatStore((state) => state.userMutateChat);
   const saveCommandAndMessagesToHistory = useChatStore((state) => state.saveCommandAndMessagesToHistory);
 
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
 
   const [folded, setFolded] = useState(alwaysExecuteCode);
-  const doRun = useChatStore((state) => state.doRun);
+  const doAcceptCode = useChatStore((state) => state.doAcceptCode);
   const enableAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
   const isViableForRunningCode = useChatStore((state) => state.isViableForRunningCode);
 
   const handleAlwaysRunClick = () => {
     enableAutoCodeExecution(true);
-    doRun(tool_call.id);
+    doAcceptCode(tool_call.id);
   };
 
   const handleRunClick = () => {
-    doRun(tool_call.id);
+    doAcceptCode(tool_call.id);
   };
 
   const handleAcceptedContent = useCallback(
     (content: string) => {
-      editToolCall((toolCall) => {
-        toolCall.code = content;
-      }, tool_call.id);
+      userMutateChat({
+        type: 'SetCodeToolCallMutation',
+        tool_call_id: tool_call.id,
+        code: content,
+      });
       saveCommandAndMessagesToHistory(content, group.role === 'user');
     },
-    [tool_call.id, editToolCall, saveCommandAndMessagesToHistory, group.role],
+    [tool_call.id, userMutateChat, saveCommandAndMessagesToHistory, group.role],
   );
 
   const handleRemoveClick = useCallback(() => {
-    removeToolCallFromMessage(tool_call.id);
-  }, [tool_call.id, removeToolCallFromMessage]);
+    userMutateChat({
+      type: 'DeleteToolCallMutation',
+      tool_call_id: tool_call.id,
+    });
+  }, [tool_call.id, userMutateChat]);
 
   //Either executing or streaming while there are still no output messages
-  const shouldDisplaySpinner =
-    tool_call.is_code_executing || (tool_call.is_streaming && tool_call.output === undefined);
+  const shouldDisplaySpinner = tool_call.is_executing || tool_call.is_streaming;
 
   const isError =
     tool_call.output?.toLowerCase().includes('traceback') ||
@@ -115,10 +118,10 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
         <div className="flex flex-row gap-2 items-center ">
           <div className="flex-grow flex flex-row gap-3 items-center">
             {shouldDisplaySpinner && <Icon icon={Loader} width={20} height={20} className="animate-spin" />}
-            {!shouldDisplaySpinner && !isError && tool_call.output === undefined && (
+            {!shouldDisplaySpinner && !isError && tool_call.output == undefined && (
               <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success" />
             )}
-            {!shouldDisplaySpinner && !isError && tool_call.output !== undefined && (
+            {!shouldDisplaySpinner && !isError && tool_call.output != undefined && (
               <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success" />
             )}
             {!shouldDisplaySpinner && isError && (
@@ -137,10 +140,9 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
         <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0">
           <div className="flex flex-row w-full">
             <div className="flex-grow overflow-auto">
-              <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language)}: </span>
+              <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
               <EditableContentMessage
                 initialContent={tool_call.code}
-                isStreaming={tool_call.is_streaming}
                 language={tool_call.language}
                 handleAcceptedContent={handleAcceptedContent}
                 handleRemoveClick={handleRemoveClick}
@@ -172,7 +174,9 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
           </div>
 
           <div>
-            {tool_call.output && <ToolOutput syntaxHighlighterCustomStyles={customVs2015} tool_call={tool_call} />}
+            {tool_call.output != undefined && (
+              <ToolOutput syntaxHighlighterCustomStyles={customVs2015} tool_call={tool_call} />
+            )}
           </div>
         </div>
       )}

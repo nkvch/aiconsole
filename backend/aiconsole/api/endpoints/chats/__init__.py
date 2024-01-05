@@ -17,11 +17,9 @@
 
 from fastapi import APIRouter
 
-from aiconsole.api.endpoints.chats import chat, index, analyse, execute
+from aiconsole.api.endpoints.chats import chat, index
 
 router = APIRouter()
 
 router.include_router(index.router)
 router.include_router(chat.router)
-router.include_router(analyse.router)
-router.include_router(execute.router)

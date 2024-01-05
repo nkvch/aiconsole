@@ -1,27 +1,25 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FormGroup } from '@/components/common/FormGroup';
-import { CodeInput } from './CodeInput';
-import { ErrorObject, TextInput } from './TextInput';
-import { Agent, Asset } from '@/types/editables/assetTypes';
-import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { Select } from '@/components/common/Select';
+import { useAssetStore } from '@/store/editables/asset/useAssetStore';
+import { Agent, Asset } from '@/types/editables/assetTypes';
 import { useState } from 'react';
+import { CodeInput } from './CodeInput';
 import { HelperLabel } from './HelperLabel';
-import ImageUploader from '@/components/common/ImageUploader';
-import { CodeInputFullScreen } from './CodeInputFullScreen';
+import { ErrorObject, TextInput } from './TextInput';
 
 const executionModes = [
   {
-    value: 'aiconsole.core.execution_modes.normal:execution_mode_normal',
-    label: 'Normal',
+    value: 'aiconsole.core.chat.execution_modes.normal:execution_mode',
+    label: 'Normal - conversational agent',
   },
   {
-    value: 'aiconsole.core.execution_modes.interpreter:execution_mode_interpreter',
-    label: 'Interpreter',
+    value: 'aiconsole.core.chat.execution_modes.interpreter:execution_mode',
+    label: 'Interpreter - code running agent',
   },
   {
     value: 'custom',
-    label: 'Custom',
+    label: 'Custom - (eg. custom.custom:custom_mode)',
   },
 ];
 
@@ -90,7 +88,7 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
             value={customExecutionMode}
             onChange={handleCustomExecutionModeChange}
             className="mb-[20px]"
-            helperText="Choose the right execution mode for your agent."
+            helperText="a Python module governing how the agent behaves."
             hidden={isCustomMode}
             labelChildren={
               <Select options={executionModes} placeholder="Choose execution mode" onChange={handleSetExecutionMode} />
@@ -98,7 +96,12 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
           />
           <CodeInput
             label="System prompt"
-            labelContent={<HelperLabel helperText="Add your system prompt if needed." className="py-[13px]" />}
+            labelContent={
+              <HelperLabel
+                helperText="System prompt will be injected at the begining of a context"
+                className="py-[13px]"
+              />
+            }
             value={agent.system}
             withFullscreen
             codeLanguage="markdown"

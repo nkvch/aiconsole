@@ -15,17 +15,6 @@
 # limitations under the License.
 from pathlib import Path
 
-from aiconsole.core.gpt.consts import GPTMode
-import litellm
-
-
-# FIXME: Move it to a more appropriate place
-litellm.set_verbose = False
-MAX_BUDGET = None
-
-if MAX_BUDGET:
-    litellm.max_budget = MAX_BUDGET
-
 # this is a path to the root of the project - usually the installed one
 # this is pointing to the backend/aiconsole directory
 AICONSOLE_PATH = Path(__file__).parent
@@ -42,12 +31,10 @@ LOG_STYLE: str = "{"
 LOG_LEVEL: str = "DEBUG"
 LOG_HANDLERS: list[str] = ["console"]
 
+DIR_WITH_AICONSOLE_PACKAGE = Path(__file__).parent.parent
 
 HISTORY_LIMIT: int = 1000
 COMMANDS_HISTORY_JSON: str = "command_history.json"
-
-DEFAULT_MODE: str = GPTMode.SPEED.value
-FUNCTION_CALL_OUTPUT_LIMIT: int = 2000
 
 
 DIRECTOR_MIN_TOKENS: int = 250

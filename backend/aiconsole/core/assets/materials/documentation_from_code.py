@@ -15,8 +15,8 @@
 # limitations under the License.
 
 import importlib.util
-import logging
 import inspect
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -50,6 +50,10 @@ def documentation_from_code(material: "Material", source: str):
         for name, obj in inspect.getmembers(python_module):
             # take only locally defined exports, no imports
             if name.startswith("_"):
+                continue
+
+            # if is imported from somewhere else, skip
+            if not hasattr(obj, "__module__") or obj.__module__ != "temp_module":
                 continue
 
             if inspect.isfunction(obj):

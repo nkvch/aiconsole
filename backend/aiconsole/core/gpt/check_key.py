@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from openai import AuthenticationError, OpenAI
+
 from aiconsole.core.gpt.consts import MODEL_DATA
-import openai
 
 cached_good_keys = set()
 
@@ -25,18 +27,17 @@ async def check_key(key: str) -> bool:
     if key in cached_good_keys:
         return True
 
+    client = OpenAI(api_key=key)
     try:
-        # set key
-        openai.api_key = key
-        models = openai.Model.list(key=key)["data"]  # type: ignore
-        available_models = [model["id"] for model in models]
-        needed_models = MODEL_DATA.keys()
-
-        good = set(needed_models).issubset(set(available_models))
-
-        if good:
-            cached_good_keys.add(key)
-
-        return good
-    except Exception:
+        models = client.models.list().data
+    except AuthenticationError:
         return False
+    available_models = [model.id for model in models]
+    needed_models = MODEL_DATA.keys()
+
+    good = set(needed_models).issubset(set(available_models))
+
+    if good:
+        cached_good_keys.add(key)
+
+    return good

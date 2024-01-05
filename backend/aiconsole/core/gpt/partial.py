@@ -14,50 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
-from aiconsole.core.gpt.types import GPTChoice, GPTFunctionCall, GPTResponse, GPTResponseMessage, GPTRole, GPTToolCall
+from litellm import ModelResponse
+from litellm.utils import Delta, StreamingChoices
+from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
 from pydantic import BaseModel
 
-
-def _parse_partial_json(s: str) -> dict | str:
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        pass
-
-    closing_chars_stack = []
-    escaped = False
-    completed_string = []
-
-    for char in s:
-        if closing_chars_stack and closing_chars_stack[-1] == '"':
-            if char == '"' and not escaped:
-                closing_chars_stack.pop()
-            elif char == "\\":
-                escaped = not escaped
-            elif char == "\n" and not escaped:
-                char = "\\n"
-            else:
-                escaped = False
-        else:
-            if char == '"':
-                closing_chars_stack.append('"')
-            elif char == "{":
-                closing_chars_stack.append("}")
-            elif char == "[":
-                closing_chars_stack.append("]")
-            elif char in ["}", "]"] and closing_chars_stack:
-                closing_chars_stack.pop()
-
-        completed_string.append(char)
-
-    completed_string.extend(reversed(closing_chars_stack))
-
-    try:
-        return json.loads("".join(completed_string))
-    except json.JSONDecodeError:
-        return s
+from aiconsole.core.gpt.parse_partial_json import parse_partial_json
+from aiconsole.core.gpt.types import (
+    GPTChoice,
+    GPTFunctionCall,
+    GPTResponse,
+    GPTResponseMessage,
+    GPTRole,
+    GPTToolCall,
+)
 
 
 class GPTPartialFunctionCall(BaseModel):
@@ -65,9 +35,13 @@ class GPTPartialFunctionCall(BaseModel):
     arguments_builder: list[str] = []
 
     @property
-    def arguments(self) -> dict | str:
+    def arguments(self) -> str:
         self.arguments_builder = ["".join(self.arguments_builder)]
-        return _parse_partial_json(self.arguments_builder[0])
+        return self.arguments_builder[0]
+
+    @property
+    def arguments_dict(self) -> dict | None:
+        return parse_partial_json(self.arguments)
 
 
 class GPTPartialToolsCall(BaseModel):
@@ -123,7 +97,8 @@ class GPTPartialResponse(BaseModel):
                                 id=tool_call.id,
                                 type=tool_call.type,
                                 function=GPTFunctionCall(
-                                    name=tool_call.function.name, arguments=tool_call.function.arguments
+                                    name=tool_call.function.name,
+                                    arguments=tool_call.function.arguments,
                                 ),
                             )
                             for tool_call in choice.message.tool_calls
@@ -136,33 +111,19 @@ class GPTPartialResponse(BaseModel):
             ],
         )
 
-    def apply_chunk(self, chunk: dict):
-        if "id" in chunk:
-            self.id = chunk["id"]
+    def apply_chunk(self, chunk: ModelResponse):
+        self.id = chunk.id
+        self.object = chunk.object
+        self.created = chunk.created
 
-        if "error" in chunk:
-            raise ValueError(chunk["error"])
+        if chunk.model is not None:
+            self.model = chunk.model
 
-        if "object" in chunk:
-            self.object = chunk["object"]
-
-        if "created" in chunk:
-            self.created = chunk["created"]
-
-        if "model" in chunk:
-            self.model = chunk["model"]
-
-        if "choices" in chunk:
-            chunk_choices = chunk["choices"]
+        if chunk.choices:
+            chunk_choices = chunk.choices
 
             for chunk_choice in chunk_choices:
-                index = None
-
-                if "index" in chunk_choice:
-                    index = int(chunk_choice["index"])
-
-                if index is None:
-                    raise ValueError("index not found")
+                index = chunk_choice.index
 
                 if index >= len(self.choices):
                     self.choices.append(GPTPartialChoice())
@@ -170,16 +131,13 @@ class GPTPartialResponse(BaseModel):
                 choice = self.choices[index]
                 choice.index = index
 
-                if "finish_reason" in chunk_choice:
-                    choice.finnish_reason = chunk_choice["finish_reason"]
-
-                if "role" in chunk_choice:
-                    choice.role = chunk_choice["role"]
+                if chunk_choice.finish_reason is not None:
+                    choice.finnish_reason = chunk_choice.finish_reason
 
                 message = choice.message
 
-                if "delta" in chunk_choice:
-                    chunk_delta = chunk_choice["delta"]
+                if isinstance(chunk_choice, StreamingChoices):
+                    chunk_delta = chunk_choice.delta
 
                     if "name" in chunk_delta:
                         message.name = chunk_delta["name"]
@@ -194,30 +152,31 @@ class GPTPartialResponse(BaseModel):
                         message.content_builder.append(chunk_delta["content"])
 
                     if "tool_calls" in chunk_delta:
-                        chunk_tool_calls = chunk_delta["tool_calls"]
+                        assert isinstance(chunk_delta, Delta)
+                        chunk_tool_calls = chunk_delta["tool_calls"] or []
 
                         for tool_call in chunk_tool_calls:
-                            chunk_tool_index: int = tool_call["index"]
-                            chunk_tool_function = tool_call["function"]
+                            assert isinstance(tool_call, ChoiceDeltaToolCall)
+
+                            chunk_tool_index: int = tool_call.index
+                            chunk_tool_function = tool_call.function
 
                             if chunk_tool_function:
-                                while len(message.tool_calls) < chunk_tool_index + 1:
+                                while len(message.tool_calls) < chunk_tool_index + 1 and tool_call.id:
                                     message.tool_calls.append(
                                         GPTPartialToolsCall(
-                                            id=tool_call["id"],
+                                            id=tool_call.id,
                                         )
                                     )
 
-                                if tool_call.get("type"):
-                                    message.tool_calls[chunk_tool_index].type = tool_call.get("type")
+                                if tool_call.type:
+                                    message.tool_calls[chunk_tool_index].type = tool_call.type
 
                                 if chunk_tool_function:
-                                    if "name" in chunk_tool_function:
-                                        message.tool_calls[chunk_tool_index].function.name = chunk_tool_function.get(
-                                            "name"
-                                        )
+                                    if chunk_tool_function.name is not None:
+                                        message.tool_calls[chunk_tool_index].function.name = chunk_tool_function.name
 
-                                    if "arguments" in chunk_tool_function:
+                                    if chunk_tool_function.arguments is not None:
                                         message.tool_calls[chunk_tool_index].function.arguments_builder.append(
-                                            chunk_tool_function.get("arguments")
+                                            chunk_tool_function.arguments
                                         )

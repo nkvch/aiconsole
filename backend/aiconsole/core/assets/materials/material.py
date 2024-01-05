@@ -13,22 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum
 import traceback
-
-from aiconsole.core.assets.asset import Asset, AssetLocation, AssetType
-from aiconsole.core.assets.asset import AssetStatus
-from aiconsole.core.assets.materials.documentation_from_code import documentation_from_code
-from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
+from enum import Enum
 from typing import TYPE_CHECKING
 
-from aiconsole.core.project.venv import (
-    get_current_project_venv_available_packages,
-    get_current_project_venv_python_path,
+from aiconsole.core.assets.asset import Asset, AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.materials.documentation_from_code import (
+    documentation_from_code,
 )
+from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
 
 if TYPE_CHECKING:
-    from aiconsole.core.assets.materials.content_evaluation_context import ContentEvaluationContext
+    from aiconsole.core.assets.materials.content_evaluation_context import (
+        ContentEvaluationContext,
+    )
 
 
 class MaterialContentType(str, Enum):
@@ -47,91 +45,40 @@ class Material(Asset):
 
     # Content, either static or dynamic
     content_type: MaterialContentType = MaterialContentType.STATIC_TEXT
-    content_static_text: str = """
+    content: str = ""
 
-content, content content
+    @property
+    def inlined_content(self):
+        # if starts with file:// then load the file, take into account file://./relative paths
+        if self.content.startswith("file://"):
+            content_file = self.content[len("file://") :]
 
-## Sub header
+            from aiconsole.core.project.paths import (
+                get_core_assets_directory,
+                get_project_assets_directory,
+            )
 
-Bullets in sub header:
-* Bullet 1
-* Bullet 2
-* Bullet 3
+            project_dir_path = get_project_assets_directory(self.type)
+            core_resource_path = get_core_assets_directory(self.type)
+            if self.defined_in == AssetLocation.PROJECT_DIR:
+                base_search_path = project_dir_path
+            else:
+                base_search_path = core_resource_path
+            with open(base_search_path / content_file, "r") as file:
+                return file.read()
 
-""".strip()
-    content_dynamic_text: str = """
-
-import random
-    
-async def content(context):
-    samples = ['sample 1' , 'sample 2', 'sample 3', 'sample 4']
-    return f'''
-# Examples of great content
-{random.sample(samples, 2)}
-
-'''.strip()
-
-""".strip()
-    content_api: str = """
-
-'''
-Add here general API description
-'''
-
-def create():
-    '''
-    Add comment when to use this function, and add example of usage:
-    ```python
-        create()
-    ```
-    '''
-    print("Created")
-
-
-def print_list():
-    '''
-    Use this function to print 'List'.
-    Sample of use:
-    ```python
-        print_list()
-    ```
-
-    '''
-    print("List")
-
-
-
-def fibonacci(n):
-    '''
-    Use it to calculate and return the nth term of the Fibonacci sequence.
-    Sample of use:
-    ```python
-      fibonacci(10)
-    ```
-    '''
-    if n <= 0:
-        return 0
-    elif n == 1:
-        return 1
-    return fibonacci(n - 1) + fibonacci(n - 2)
-""".strip()
+        return self.content
 
     async def render(self, context: "ContentEvaluationContext"):
         header = f"# {self.name}\n\n"
 
+        inline_content = self.inlined_content
+
         try:
             if self.content_type == MaterialContentType.DYNAMIC_TEXT:
                 # Try compiling the python code and run it
-                source_code = compile(self.content_dynamic_text, "<string>", "exec")
-                # local vars should provide all the virtualenv specific stuff like:
-                # - interpreter path
-                # - installed packages
-                local_vars = {
-                    # this list should be updated with all needed variables from venv
-                    "available_packages": get_current_project_venv_available_packages(),
-                    "python_path": get_current_project_venv_python_path(),
-                }
-                # TODO add try/cache to catch potential plain text execution errors
+                source_code = compile(inline_content, "<string>", "exec")
+                local_vars = {}
                 exec(source_code, local_vars)
                 # currently, getting the python object from another interpreter is quite limited, and
                 # using the dedicated local_vars is the easiest way (otherwise we would need to pickle
@@ -141,10 +88,10 @@ def fibonacci(n):
                     return RenderedMaterial(id=self.id, content=header + await content_func(context), error="")
                 return RenderedMaterial(id=self.id, content="", error="No callable content function found!")
             elif self.content_type == MaterialContentType.STATIC_TEXT:
-                return RenderedMaterial(id=self.id, content=header + self.content_static_text, error="")
+                return RenderedMaterial(id=self.id, content=header + inline_content, error="")
             elif self.content_type == MaterialContentType.API:
                 return RenderedMaterial(
-                    id=self.id, content=header + documentation_from_code(self, self.content_api)(context), error=""
+                    id=self.id, content=header + documentation_from_code(self, inline_content)(context), error=""
                 )
         except Exception:
             return RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
