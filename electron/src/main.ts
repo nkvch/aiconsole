@@ -14,11 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { app, BrowserWindow, ipcMain, Menu, dialog, IpcMainEvent, MenuItemConstructorOptions, shell } from 'electron';
-import { spawn } from 'child_process';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  dialog,
+  IpcMainEvent,
+  MenuItemConstructorOptions,
+  shell,
+  Notification,
+} from 'electron';
+import { ChildProcess, spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
-import { v4 as uuidv4 } from 'uuid';
 
 import { windowStateTracker } from './windowStateTracker';
 
@@ -34,11 +43,10 @@ declare const MAIN_WINDOW_VITE_NAME: string;
 const isMac = process.platform === 'darwin';
 
 let loaderWindow: BrowserWindow;
-let mainWindow: BrowserWindow;
 
 type AIConsoleWindow = {
   browserWindow: BrowserWindow;
-  backendProcess?: any;
+  backendProcess?: ChildProcess;
   port?: number;
 };
 
@@ -46,7 +54,8 @@ const windowManager: {
   windows: AIConsoleWindow[];
   addWindow: (browserWindow: BrowserWindow) => void;
   removeWindow: (targetWindow: BrowserWindow) => void;
-  findBackendByWindow: (targetWindow: BrowserWindow) => any;
+  findBackendByWindow: (targetWindow: BrowserWindow) => ChildProcess;
+  getLastWindow: () => BrowserWindow;
 } = {
   windows: [],
   addWindow: (browserWindow) => {
@@ -62,6 +71,9 @@ const windowManager: {
   findBackendByWindow: (targetWindow) => {
     const window = windowManager.windows.find(({ browserWindow }) => browserWindow === targetWindow);
     return window ? window.backendProcess : null;
+  },
+  getLastWindow: () => {
+    return windowManager.windows[windowManager.windows.length - 1].browserWindow;
   },
 };
 
@@ -93,7 +105,7 @@ async function waitForServerToStart(window: AIConsoleWindow) {
         clearInterval(interval);
         setTimeout(() => {
           loaderWindow.hide();
-          mainWindow.show();
+          windowManager.getLastWindow().show();
         }, 500);
         window.browserWindow.webContents.send('set-backend-port', window.port);
       })
@@ -136,9 +148,9 @@ async function findEmptyPort(startingFrom = 1024, endingAt = 65535) {
 }
 
 async function createWindow() {
-  const stateTracker = await windowStateTracker(!windowManager.windows.length ? 'main' : uuidv4());
+  const stateTracker = await windowStateTracker(!windowManager.windows.length ? 'main' : `${Date.now().toString()}`);
 
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: stateTracker.width,
     height: stateTracker.height,
     x: stateTracker.x,
@@ -170,9 +182,14 @@ async function createWindow() {
   mainWindow.on('closed', () => {
     const backendProcess = windowManager.findBackendByWindow(mainWindow);
     if (backendProcess) {
+      backendProcess.removeAllListeners();
       backendProcess.kill();
     }
     windowManager.removeWindow(mainWindow);
+
+    if (windowManager.windows.length === 0) {
+      app.quit();
+    }
   });
 
   windowManager.addWindow(mainWindow);
@@ -320,6 +337,7 @@ app.whenReady().then(() => {
 
   app.on('will-quit', () => {
     windowManager.windows.forEach(({ backendProcess }) => {
+      backendProcess?.removeAllListeners();
       backendProcess?.kill();
     });
   });

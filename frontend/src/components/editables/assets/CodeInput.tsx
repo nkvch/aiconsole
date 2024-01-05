@@ -19,14 +19,18 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/vs2015.css';
 
 import { cn } from '@/utils/common/cn';
-import { FocusEvent, useCallback, useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { FocusEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { useClickOutside } from '@/utils/common/useClickOutside';
+import { Icon } from '@/components/common/icons/Icon';
+import { Maximize2, Minimize2 } from 'lucide-react';
+import { CodeInputFullScreen } from './CodeInputFullScreen';
 
-const DEFAULT_MAX_HEIGHT = 'calc(100% - 50px)';
+const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
 
 interface CodeInputProps {
   label?: string;
   value: string;
+  labelContent?: ReactNode;
   className?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
@@ -35,6 +39,8 @@ interface CodeInputProps {
   readOnly?: boolean;
   transparent?: boolean;
   maxHeight?: string;
+  focused?: boolean;
+  withFullscreen?: boolean;
 }
 
 export function CodeInput({
@@ -48,8 +54,12 @@ export function CodeInput({
   readOnly = false,
   transparent = false,
   maxHeight = DEFAULT_MAX_HEIGHT,
+  labelContent,
+  focused,
+  withFullscreen,
 }: CodeInputProps) {
   const [focus, setFocus] = useState(false);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const editorBoxRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const onHighlight = (code: string) => {
@@ -93,7 +103,7 @@ export function CodeInput({
   }, []);
 
   const handleFocus = useCallback(({ target }: FocusEvent<HTMLDivElement> & FocusEvent<HTMLTextAreaElement>) => {
-    if (!textareaRef.current) {
+    if (!textareaRef.current || target !== textareaRef.current) {
       if (target) {
         textareaRef.current = target;
       }
@@ -112,20 +122,43 @@ export function CodeInput({
         return;
       }
 
-      setFocus(false);
-      onBlur?.();
+      if (focus) {
+        setFocus(false);
+        onBlur?.();
+      }
     },
-    [disabled, onBlur, readOnly],
+    [disabled, focus, onBlur, readOnly],
   );
 
   useClickOutside(editorBoxRef, handleClickOutside);
 
-  return (
-    <div className="h-full">
-      {label && (
-        <label htmlFor={label} className="font-bold block mb-4">
-          {label}:
-        </label>
+  useEffect(() => {
+    if (focused) {
+      setFocus(true);
+      textareaRef.current?.focus();
+    }
+  }, [focused]);
+
+  useEffect(() => {
+    if (!isFullscreenOpen) {
+      setFocus(false);
+      textareaRef.current?.blur();
+    }
+  }, [focused, isFullscreenOpen]);
+
+  const toggleFullscreen = () => {
+    setIsFullscreenOpen((prev) => !prev);
+  };
+
+  const codeInputCore = (fullScreen: boolean) => (
+    <div className="h-full relative">
+      {label && (fullScreen || !withFullscreen) && (
+        <div className="font-semibold text-white mb-[10px] flex ">
+          <label htmlFor={label} className="py-[12px]">
+            {label}
+          </label>{' '}
+          {labelContent}
+        </div>
       )}
       <div
         ref={editorBoxRef}
@@ -135,7 +168,7 @@ export function CodeInput({
         }}
         className={cn(
           className,
-          'border-gray-500  w-[calc(100%-8px)] font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px]  transition duration-100',
+          'border-gray-500 w-full font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px] transition duration-100',
           {
             'bg-gray-600 border-gray-400': focus,
             'hover:bg-gray-600 hover:placeholder:text-gray-300': !disabled && !readOnly,
@@ -148,11 +181,12 @@ export function CodeInput({
           disabled={disabled || readOnly}
           textareaId={label}
           onValueChange={handleValueChange}
+          placeholder="Write some text"
           onFocus={handleFocus}
           highlight={(code) => onHighlight(code)}
           padding={10}
           className={cn(
-            'resize-none appearance-none border border-transparent w-full leading-tight placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400  text-[15px] text-white  rounded-[8px]  ',
+            'resize-none appearance-none border border-transparent w-full leading-tight placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400  text-[15px] text-white  rounded-[8px]',
             {
               'opacity-[0.7] ': disabled,
               'bg-transparent': transparent,
@@ -160,11 +194,36 @@ export function CodeInput({
             },
           )}
           preClassName="!px-[20px] !py-[12px] "
-          textareaClassName={cn('focus:!outline-none focus:!shadow-none h-full !px-[20px] !py-[12px] ', {
+          textareaClassName={cn('focus:!outline-none focus:!shadow-none h-full !px-[20px] !py-[12px] h-full', {
             'cursor-not-allowed': disabled,
           })}
         />
+
+        {withFullscreen ? (
+          <Icon
+            icon={isFullscreenOpen ? Minimize2 : Maximize2}
+            width={24}
+            height={24}
+            className={cn(`absolute right-[25px] bottom-[80px] cursor-pointer text-gray-300 hover:text-white`, {
+              'right-[25px] bottom-[75px]': fullScreen,
+            })}
+            onClick={toggleFullscreen}
+          />
+        ) : null}
       </div>
     </div>
   );
+
+  if (withFullscreen) {
+    return (
+      <>
+        {codeInputCore(withFullscreen)}
+        <CodeInputFullScreen setOpen={setIsFullscreenOpen} open={isFullscreenOpen}>
+          {codeInputCore(false)}
+        </CodeInputFullScreen>
+      </>
+    );
+  }
+
+  return codeInputCore(false);
 }

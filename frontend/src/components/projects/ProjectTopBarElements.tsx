@@ -45,13 +45,13 @@ export function ProjectTopBarElements() {
     <>
       <div className="flex text-sm gap-2 items-center pr-5">
         <div className="flex items-center justify-center gap-[30px]">
-          <button className="w-12 h-12" onClick={handleBackToProjects}>
+          <button className="w-[36px] h-[36px]" onClick={handleBackToProjects}>
             <img src="favicon.png" className="shadows-lg h-full w-full" alt="Logo" />
           </button>
           <ContextMenu options={contextMenuItems}>
             <Link
               to={`/chats/${uuidv4()}`}
-              className="h-11 text-grey-300 font-bold  text-lg text-gray-300 hover:animate-pulse cursor-pointer flex gap-2 items-center mr-[20px] uppercase"
+              className="h-11 text-grey-300 font-bold  text-lg text-gray-400 hover:animate-pulse cursor-pointer flex gap-2 items-center mr-[32px] uppercase"
             >
               {projectName}
             </Link>

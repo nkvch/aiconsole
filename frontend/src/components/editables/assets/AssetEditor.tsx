@@ -15,96 +15,31 @@
 // limitations under the License.
 
 import { useCallback, useEffect, useState } from 'react';
-import { unstable_useBlocker as useBlocker, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { unstable_useBlocker as useBlocker, useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/common/Button';
-import { CodeInput } from '@/components/editables/assets/CodeInput';
-import { TextInput } from '@/components/editables/assets/TextInput';
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
-import {
-  Agent,
-  Asset,
-  AssetType,
-  Material,
-  MaterialContentType,
-  RenderedMaterial,
-} from '@/types/editables/assetTypes';
-import { convertNameToId } from '@/utils/editables/convertNameToId';
-import { MaterialContentNames, getMaterialContentName } from '@/utils/editables/getMaterialContentName';
+import { Agent, Asset, AssetType, Material } from '@/types/editables/assetTypes';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { useDeleteEditableObjectWithUserInteraction } from '@/utils/editables/useDeleteEditableObjectWithUserInteraction';
 import { EditablesAPI } from '../../../api/api/EditablesAPI';
 import { useAssetChanged } from '../../../utils/editables/useAssetChanged';
 import { EditorHeader } from '../EditorHeader';
 import { localStorageTyped } from '@/utils/common/localStorage';
 import { usePrevious } from '@mantine/hooks';
 import { useAssets } from '@/utils/editables/useAssets';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck, Trash } from 'lucide-react';
 import { Icon } from '@/components/common/icons/Icon';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { ContextMenu } from '../../common/ContextMenu';
 import AlertDialog from '@/components/common/AlertDialog';
+import { AssetInfoBar, RestoreButton } from './AssetInfoBar';
+import { MaterialForm } from './MaterialForm';
+import { useAssetEditor } from './useAssetEditor';
+import { AgentForm } from './AgentForm';
+import { cn } from '@/utils/common/cn';
+import { ErrorObject, checkErrors } from './TextInput';
 
 const { setItem } = localStorageTyped<boolean>('isAssetChanged');
-
-const MaterialContent = ({ material }: { material: Material }) => {
-  const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
-
-  return (
-    <>
-      {material.content_type === 'static_text' && (
-        <CodeInput
-          label="Text"
-          value={material.content_static_text}
-          onChange={(value) =>
-            setSelectedAsset({
-              ...material,
-              content_static_text: value,
-            } as Material)
-          }
-          className="flex-grow"
-          codeLanguage="markdown"
-        />
-      )}
-      {material.content_type === 'dynamic_text' && (
-        <CodeInput
-          label="Python function returning dynamic text"
-          value={material.content_dynamic_text}
-          onChange={(value) =>
-            setSelectedAsset({
-              ...material,
-              content_dynamic_text: value,
-            } as Material)
-          }
-          className="flex-grow"
-          codeLanguage="python"
-        />
-      )}
-      {material.content_type === 'api' && (
-        <CodeInput
-          label="API Module"
-          value={material.content_api}
-          onChange={(value) => setSelectedAsset({ ...material, content_api: value } as Material)}
-          className="flex-grow"
-        />
-      )}
-    </>
-  );
-};
-
-const AgentContent = ({ agent }: { agent: Agent }) => {
-  const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
-
-  return (
-    <CodeInput
-      label="System information"
-      value={agent.system}
-      onChange={(value) => setSelectedAsset({ ...agent, system: value } as Agent)}
-      className="flex-grow"
-      codeLanguage="markdown"
-    />
-  );
-};
 
 enum SubmitButtonLabels {
   Overwrite = 'Overwrite',
@@ -118,32 +53,34 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   const params = useParams();
   const id = params.id || '';
   const editableObjectType = assetType;
-  const searchParams = useSearchParams()[0];
-  const copyId = searchParams.get('copy');
+  const isNew = id === 'new';
+
+  const [newPath, setNewPath] = useState<string>('');
+  const [hasCore, setHasCore] = useState(false);
+  const [errors, setErrors] = useState<ErrorObject>({
+    executionMode: '',
+  });
   const asset = useAssetStore((state) => state.selectedAsset);
   const lastSavedAsset = useAssetStore((state) => state.lastSavedSelectedAsset);
   const setLastSavedSelectedAsset = useAssetStore((state) => state.setLastSavedSelectedAsset);
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
   const showToast = useToastsStore((state) => state.showToast);
-  const [preview, setPreview] = useState<RenderedMaterial | undefined>(undefined);
-  const [typeName, setTypeName] = useState<MaterialContentNames>('Material');
-  const [showPreview, setShowPreview] = useState(false);
-  const previewValue = preview ? preview?.content.split('\\n').join('\n') : 'Generating preview...';
-  const handleDeleteWithInteraction = useDeleteEditableObjectWithUserInteraction(assetType);
+
   const navigate = useNavigate();
   const isAssetChanged = useAssetChanged();
+  const blocker = useBlocker(isAssetChanged);
   const isPrevAssetChanged = usePrevious(isAssetChanged);
-  const [newPath, setNewPath] = useState<string>('');
-  const isNew = id === 'new';
   const { updateStatusIfNecessary, isAssetStatusChanged, renameAsset } = useAssets(assetType);
+  const { handleRevert, getInitialAsset, handleRename, handleDeleteWithInteraction } =
+    useAssetEditor(editableObjectType);
   const menuItems = useEditableObjectContextMenu({
     editable: asset,
     editableObjectType: assetType,
   });
+  const isSystemAsset = asset?.defined_in === 'aiconsole';
+  const isProjectAsset = asset?.defined_in === 'project';
   const wasAssetChangedInitially = !isPrevAssetChanged && isAssetChanged;
   const wasAssetUpdate = isPrevAssetChanged && !isAssetChanged;
-
-  const blocker = useBlocker(isAssetChanged);
 
   const { reset, proceed, state: blockerState } = blocker || {};
 
@@ -158,43 +95,47 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
     setItem(isAssetChanged);
   }, [isAssetChanged]);
 
-  function handleRevert(id: string) {
-    if (isAssetChanged) {
-      handleDiscardChanges();
-    } else {
-      handleDeleteWithInteraction(id);
-    }
-  }
-
-  const getInitialAsset = useCallback(() => {
-    if (copyId) {
-      setLastSavedSelectedAsset(undefined);
-
-      EditablesAPI.fetchEditableObject<Asset>({ editableObjectType, id: copyId }).then((assetToCopy) => {
-        assetToCopy.name += ' Copy';
-        assetToCopy.defined_in = 'project';
-        assetToCopy.id = convertNameToId(assetToCopy.name);
-        setSelectedAsset(assetToCopy);
-      });
-    } else {
-      //For id === 'new' This will get a default new asset
-      const raw_type = searchParams.get('type');
-      const type = raw_type ? raw_type : undefined;
-      EditablesAPI.fetchEditableObject<Asset>({ editableObjectType, id, type }).then((editable) => {
-        setLastSavedSelectedAsset(id !== 'new' ? editable : undefined); // for new assets, lastSavedAsset is undefined
-        setSelectedAsset(editable);
-      });
-    }
-  }, [copyId, editableObjectType, id, searchParams, setLastSavedSelectedAsset, setSelectedAsset]);
-
   // Acquire the initial object
   useEffect(() => {
     getInitialAsset();
+
     return () => {
       setSelectedAsset(undefined);
       setLastSavedSelectedAsset(undefined);
     };
   }, [getInitialAsset, setLastSavedSelectedAsset, setSelectedAsset]);
+
+  useEffect(() => {
+    if (!assetType || !asset?.id) {
+      setHasCore(false);
+      return;
+    }
+
+    if (
+      !wasAssetChangedInitially &&
+      Boolean(asset) &&
+      ((isProjectAsset && asset.override) || (isSystemAsset && !asset.override))
+    ) {
+      setHasCore(true);
+      return;
+    }
+
+    if (asset && isSystemAsset && wasAssetChangedInitially) {
+      EditablesAPI.doesEdibleExist(assetType, asset?.id, 'aiconsole').then((exists) => {
+        setHasCore(exists);
+        setSelectedAsset({ ...asset, defined_in: 'project', override: exists } as Asset);
+        setLastSavedSelectedAsset(undefined);
+      });
+    }
+  }, [
+    asset,
+    setSelectedAsset,
+    wasAssetChangedInitially,
+    setLastSavedSelectedAsset,
+    assetType,
+    isSystemAsset,
+    isProjectAsset,
+  ]);
 
   const handleSaveClick = useCallback(async () => {
     if (asset === undefined) {
@@ -202,7 +143,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
     }
 
     if (lastSavedAsset === undefined) {
-      await EditablesAPI.saveNewEditableObject(assetType, asset.id, asset);
+      await EditablesAPI.saveNewEditableObject(editableObjectType, asset.id, asset);
 
       await updateStatusIfNecessary();
 
@@ -220,7 +161,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
       });
     } else {
       if (isAssetChanged) {
-        await EditablesAPI.updateEditableObject(assetType, asset);
+        await EditablesAPI.updateEditableObject(editableObjectType, asset);
 
         showToast({
           title: 'Saved',
@@ -234,11 +175,11 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
 
     if (lastSavedAsset?.id !== asset.id) {
       useAssetStore.setState({ lastSavedSelectedAsset: asset });
-      setNewPath(`/${assetType}s/${asset.id}`);
+      setNewPath(`/${editableObjectType}s/${asset.id}`);
     } else {
       // Reload the asset from server
       const newAsset = await EditablesAPI.fetchEditableObject<Material>({
-        editableObjectType: assetType,
+        editableObjectType,
         id: asset.id,
       });
       setSelectedAsset(newAsset);
@@ -246,7 +187,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
     }
   }, [
     asset,
-    assetType,
+    editableObjectType,
     isAssetChanged,
     lastSavedAsset,
     setSelectedAsset,
@@ -255,84 +196,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
     showToast,
   ]);
 
-  const handleDiscardChanges = () => {
-    //set last selected asset to the same as selected asset
-
-    if (!asset) {
-      return;
-    }
-
-    if (lastSavedAsset === undefined) {
-      getInitialAsset();
-    } else {
-      setSelectedAsset({ ...lastSavedAsset } as Asset);
-    }
-  };
-
-  useEffect(() => {
-    setPreview(undefined);
-    if (!asset) {
-      return;
-    }
-    let timeout: NodeJS.Timeout;
-    if (assetType === 'material') {
-      const material: Material = asset as Material;
-      setShowPreview(true);
-      setTypeName(getMaterialContentName(material?.content_type));
-
-      if (lastSavedAsset === undefined) {
-        material.content_type = (searchParams.get('type') as MaterialContentType | null) || material.content_type;
-      }
-
-      timeout = setTimeout(() => {
-        EditablesAPI.previewMaterial(material).then((preview) => {
-          setPreview(preview);
-        });
-      }, 3000);
-    } else {
-      setTypeName('Agent');
-      setShowPreview(false);
-    }
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [asset, assetType, lastSavedAsset, searchParams]);
-
-  const [hasCore, setHasCore] = useState(false);
-
-  useEffect(() => {
-    if (!assetType || !asset?.id) {
-      setHasCore(false);
-      return;
-    }
-
-    if (
-      !wasAssetChangedInitially &&
-      Boolean(asset) &&
-      ((asset.defined_in === 'project' && asset.override) || (asset.defined_in === 'aiconsole' && !asset.override))
-    ) {
-      setHasCore(true);
-      return;
-    }
-
-    if (asset && asset.defined_in === 'aiconsole' && wasAssetChangedInitially) {
-      EditablesAPI.doesEdibleExist(assetType, asset?.id, 'aiconsole').then((exists) => {
-        setHasCore(exists);
-        setSelectedAsset({ ...asset, defined_in: 'project', override: exists } as Asset);
-        setLastSavedSelectedAsset(undefined);
-      });
-    }
-  }, [asset, setSelectedAsset, wasAssetChangedInitially, setLastSavedSelectedAsset, assetType]);
-
-  const handleRename = async (newName: string) => {
-    if (!asset) {
-      return;
-    }
-
-    setSelectedAsset({ ...asset, name: newName, id: convertNameToId(newName) });
-  };
-
-  const getSubmitButtonLabel = (): SubmitButtonLabels => {
+  const getSubmitButtonLabel = useCallback((): SubmitButtonLabels => {
     if (lastSavedAsset === undefined) {
       return hasCore ? SubmitButtonLabels.Overwrite : SubmitButtonLabels.Create;
     } else if (lastSavedAsset && lastSavedAsset.id !== asset?.id) {
@@ -340,7 +204,8 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
     } else {
       return isAssetChanged ? SubmitButtonLabels.SaveChanges : SubmitButtonLabels.Saved;
     }
-  };
+  }, [asset?.id, hasCore, isAssetChanged, lastSavedAsset]);
+
   const submitButtonLabel = getSubmitButtonLabel();
   const isSavedButtonLabel = submitButtonLabel === SubmitButtonLabels.Saved;
   const hasNameAndId = asset?.id && asset?.name;
@@ -353,93 +218,96 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
 
     return enableSubmitRule;
   };
+
   const isSubmitEnabled = enableSubmit();
-  const disableSubmit = !isSubmitEnabled && !isSavedButtonLabel;
+  const disableSubmit = (!isSubmitEnabled && !isSavedButtonLabel) || checkErrors(errors);
 
   const confirmPageEscape = () => {
     getInitialAsset();
     proceed?.();
   };
 
+  const assetSourceLabel = useCallback(() => {
+    switch (asset?.defined_in) {
+      case 'aiconsole':
+        return `System ${assetType}`;
+      case 'project':
+        return `Custom ${assetType}`;
+    }
+  }, [asset?.defined_in, assetType]);
+
+  const revertAsset = () => handleRevert(asset?.id);
+
   return (
     <div className="flex flex-col w-full h-full max-h-full overflow-auto">
       <ContextMenu options={menuItems}>
-        <EditorHeader editable={asset} onRename={handleRename} isChanged={isAssetChanged}>
-          (Defined in {asset?.defined_in})
+        <EditorHeader
+          editable={asset}
+          editableObjectType={editableObjectType}
+          onRename={handleRename}
+          isChanged={isAssetChanged}
+        >
+          <div className="flex gap-[20px] items-center">
+            <p className={cn('text-[15px]', { 'font-bold': isSystemAsset })}>
+              {assetSourceLabel()} {hasCore ? <span className="text-gray-300">(overwritten)</span> : null}
+            </p>
+            {isProjectAsset ? <RestoreButton onRevert={revertAsset} /> : null}
+          </div>
         </EditorHeader>
       </ContextMenu>
 
       <div className="flex-grow overflow-auto">
-        <div className="flex w-full h-full flex-col justify-between downlight">
-          <div className="w-full h-full overflow-auto">
-            <div className="flex-grow flex flex-col w-full h-full overflow-auto p-6 gap-4">
-              {asset && (
-                <>
-                  {hasCore && asset.defined_in === 'aiconsole' && (
-                    <div className="flex-none flex flex-row gap-2 bg-primary/10 px-6 py-2 items-center -m-6 mb-0 ">
-                      <span className="flex-grow">This is a system {assetType} start editing to overwrite it.</span>
-                    </div>
-                  )}
-                  {hasCore && asset.defined_in === 'project' && (
-                    <div className="flex-none flex flex-row gap-2 bg-secondary/10 px-6 py-2 items-center -m-6 mb-0 ">
-                      <span className="flex-grow">
-                        This {assetType} {lastSavedAsset !== undefined ? 'is overwriting' : 'will overwrite'} a default
-                        system {assetType}.
-                      </span>
-                      <Button
-                        variant="secondary"
-                        small
-                        classNames="self-end m-0 text-xs p-2 px-4"
-                        onClick={() => handleRevert(asset.id)}
-                      >
-                        Revert
-                      </Button>{' '}
-                    </div>
-                  )}
-                  <TextInput
-                    label="Usage"
-                    name="usage"
-                    placeholder="Write text here"
-                    value={asset.usage}
-                    onChange={(value) => setSelectedAsset({ ...asset, usage: value })}
-                    withTooltip
-                    tootltipText={`Usage is used to help identify when this ${typeName} should be used. `}
-                    resize
-                  />
-                  <div className="flex-grow flex flex-row w-full gap-2 overflow-clip">
-                    <div className="flex-1 w-1/2">
-                      {assetType === 'agent' ? (
-                        <AgentContent agent={asset as Agent} />
-                      ) : (
-                        <MaterialContent material={asset as Material} />
-                      )}
-                    </div>
-                    {showPreview && (
-                      <div className="flex-1 w-1/2">
-                        <CodeInput
-                          label="Preview of text to be injected into AI context"
-                          value={preview?.error ? preview.error : previewValue}
-                          readOnly={true}
-                          className="flex-grow"
-                          codeLanguage="markdown"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-[10px] ml-auto">
-                    <Button disabled={disableSubmit} onClick={handleSaveClick} active={isSavedButtonLabel}>
-                      {submitButtonLabel} {isSavedButtonLabel ? <Icon icon={CheckCheck} /> : null}
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
+        <div className="flex w-full h-full flex-col justify-between">
+          <div className="w-full h-full overflow-auto relative">
+            {asset && (
+              <AssetInfoBar
+                asset={asset}
+                hasCore={hasCore}
+                assetType={assetType}
+                lastSavedAsset={lastSavedAsset}
+                onRevert={revertAsset}
+              />
+            )}
+            {asset && (
+              <div className="flex-grow flex flex-col overflow-auto h-full px-[60px] py-[40px] pt-[90px] gap-5">
+                {assetType === 'material' ? (
+                  <MaterialForm material={asset as Material} />
+                ) : (
+                  <AgentForm agent={asset as Agent} setErrors={setErrors} errors={errors} />
+                )}
+                <div className="flex items-center justify-between w-full gap-[10px]">
+                  {isProjectAsset ? (
+                    <AlertDialog
+                      title={`Are you sure you want to delete this ${editableObjectType}?`}
+                      onConfirm={() => handleDeleteWithInteraction(asset.id)}
+                      openModalButton={
+                        <Button variant="tertiary">
+                          <Icon icon={Trash} /> Delete {assetType}
+                        </Button>
+                      }
+                    >
+                      This process is irreversible.
+                    </AlertDialog>
+                  ) : null}
+                  <Button
+                    disabled={disableSubmit}
+                    onClick={handleSaveClick}
+                    active={isSavedButtonLabel}
+                    classNames="ml-auto"
+                  >
+                    {submitButtonLabel} {isSavedButtonLabel ? <Icon icon={CheckCheck} /> : null}
+                  </Button>
+                </div>
+              </div>
+            )}
             <AlertDialog
-              title="Do you want to discard your changes and continue?"
+              title="Are you sure you want to close this window?"
               isOpen={blockerState === 'blocked'}
               onClose={reset}
               onConfirm={confirmPageEscape}
-            />
+            >
+              {`This ${assetType} is unsaved.\nYou may lose your changes.`}
+            </AlertDialog>
           </div>
         </div>
       </div>

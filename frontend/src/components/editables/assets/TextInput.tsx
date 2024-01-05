@@ -14,15 +14,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ChangeEvent } from 'react';
+import { ChangeEvent, ReactNode } from 'react';
 import { cn } from '@/utils/common/cn';
 import Tooltip from '@/components/common/Tooltip';
 import TextareaAutosize from 'react-textarea-autosize';
+import { HelperLabel } from './HelperLabel';
 
 const REQUIRED_ERROR_MESSAGE = 'This field is required.';
 
 export type ErrorObject = {
   [key: string]: string | null;
+};
+
+export const checkErrors = (errors: ErrorObject): boolean => {
+  for (const key in errors) {
+    if (errors[key as keyof ErrorObject]) {
+      return true;
+    }
+  }
+  return false;
 };
 
 interface TextInputProps {
@@ -41,6 +51,10 @@ interface TextInputProps {
   horizontal?: boolean;
   fullWidth?: boolean;
   resize?: boolean;
+  helperText?: string;
+  learnMoreLink?: string;
+  labelChildren?: ReactNode;
+  hidden?: boolean;
 }
 
 export function TextInput({
@@ -59,6 +73,10 @@ export function TextInput({
   tootltipText,
   fullWidth,
   resize,
+  helperText,
+  learnMoreLink,
+  labelChildren,
+  hidden,
 }: TextInputProps) {
   const checkIfEmpty = (value: string) => {
     if (required && value.trim() === '') {
@@ -89,6 +107,7 @@ export function TextInput({
     className: cn(
       className,
       'max-h-[120px] w-full overflow-y-auto border border-gray-500 placeholder:text-gray-400 bg-gray-800 text-[15px] text-white flex-grow resize-none rounded-[8px]  px-[20px] py-[12px] hover:bg-gray-600 hover:placeholder:text-gray-300 focus:bg-gray-600 focus:border-gray-400 focus:outline-none transition duration-100',
+      { 'border-danger': error },
     ),
     value,
     id: label,
@@ -112,18 +131,23 @@ export function TextInput({
       })}
     >
       {label ? (
-        <label htmlFor={label} className="font-semibold text-white text-[16px] flex items-center gap-1 w-fit-content">
-          {label}
-        </label>
+        <div className="font-semibold text-white text-[16px] flex items-center gap-[30px] ">
+          <label htmlFor={label} className="min-w-fit">
+            {label}
+          </label>
+          {labelChildren}
+          {helperText ? <HelperLabel helperText={helperText} learnMoreLink={learnMoreLink} /> : null}
+        </div>
       ) : null}
-      {withTooltip ? (
+
+      {withTooltip && !hidden ? (
         <Tooltip label={tootltipText} position="top" align="end" disableAnimation>
           {core}
         </Tooltip>
-      ) : (
-        core
-      )}
-      {error && <div className="text-red-700 text-sm absolute right-0">{error}</div>}
+      ) : null}
+
+      {!withTooltip && !hidden ? core : null}
+      {error && !hidden && <div className="text-danger text-sm absolute right-0 -bottom-[8px]">{error}</div>}
     </div>
   );
 }

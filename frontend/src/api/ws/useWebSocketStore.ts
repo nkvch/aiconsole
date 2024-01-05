@@ -15,23 +15,24 @@
 // limitations under the License.
 
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { create } from 'zustand';
 import { ErrorEvent } from 'reconnecting-websocket/events';
-import { useChatStore } from '../../store/editables/chat/useChatStore';
-import { OutgoingWSMessage } from './outgoingMessages';
-import { IncomingWSMessage } from './incomingMessages';
+import { create } from 'zustand';
 import { useAPIStore } from '../../store/useAPIStore';
-import { useSettingsStore } from '../../store/settings/useSettingsStore';
-import { useProjectStore } from '@/store/projects/useProjectStore';
-import { useEditablesStore } from '@/store/editables/useEditablesStore';
-import { handleChatMessage } from './chat/handleChatMessage';
-import { useToastsStore } from '@/store/common/useToastsStore';
+import { ClientMessage } from './clientMessages';
+import { handleServerMessage } from './handleServerMessage';
+import { ServerMessage } from './serverMessages';
 
 export type WebSockeStore = {
   ws: ReconnectingWebSocket | null;
   initWebSocket: () => void;
   disconnect: () => void;
-  sendMessage: (message: OutgoingWSMessage) => void;
+  waitUntilConnected: () => Promise<void>;
+  sendMessage: (message: ClientMessage) => Promise<void>;
+  sendMessageAndWaitForResponse: (
+    messageToSend: ClientMessage,
+    responseCriteria: (response: ServerMessage) => boolean,
+    timeout?: number,
+  ) => Promise<ServerMessage>;
   initStarted: boolean;
 };
 
@@ -47,108 +48,16 @@ export const useWebSocketStore = create<WebSockeStore>((set, get) => ({
 
     const getBaseHostWithPort = useAPIStore.getState().getBaseHostWithPort;
     const ws = new ReconnectingWebSocket(`ws://${getBaseHostWithPort()}/ws`);
-    const showToast = useToastsStore.getState().showToast;
 
     ws.onopen = () => {
       set({ ws });
 
-      const chatId = useChatStore.getState().chat?.id || '';
-
-      get().sendMessage({
-        type: 'SetChatIdWSMessage',
-        chat_id: chatId,
-      });
+      console.log('WebSocket connection established');
     };
 
     ws.onmessage = async (e: MessageEvent) => {
-      const data: IncomingWSMessage = JSON.parse(e.data);
-
-      switch (data.type) {
-        case 'ErrorWSMessage':
-          console.error(data.error);
-          showToast({
-            title: 'Error',
-            message: data.error,
-            variant: 'error',
-          });
-          break;
-        case 'NotificationWSMessage':
-          showToast({
-            title: data.title,
-            message: data.message,
-          });
-          break;
-        case 'DebugJSONWSMessage':
-          console.log(data.message, data.object);
-          break;
-        case 'InitialProjectStatusWSMessage':
-          if (data.project_path && data.project_name) {
-            useProjectStore.getState().onProjectOpened({
-              name: data.project_name,
-              path: data.project_path,
-              initial: true,
-            });
-          } else {
-            useProjectStore.getState().onProjectClosed();
-          }
-          break;
-        case 'ProjectOpenedWSMessage':
-          useProjectStore.getState().onProjectOpened({
-            name: data.name,
-            path: data.path,
-            initial: false,
-          });
-          break;
-        case 'ProjectClosedWSMessage':
-          useProjectStore.getState().onProjectClosed();
-          break;
-        case 'ProjectLoadingWSMessage':
-          useProjectStore.getState().onProjectLoading();
-          break;
-        case 'AssetsUpdatedWSMessage':
-          if (data.asset_type === 'agent') {
-            useEditablesStore.getState().initAgents();
-            if (!data.initial) {
-              showToast({
-                title: 'Agents updated',
-                message: `Loaded ${data.count} agents.`,
-              });
-            }
-          }
-
-          if (data.asset_type === 'material') {
-            useEditablesStore.getState().initMaterials();
-            if (!data.initial) {
-              showToast({
-                title: 'Materials updated',
-                message: `Loaded ${data.count} materials.`,
-              });
-            }
-          }
-          break;
-
-        case 'SettingsWSMessage':
-          useSettingsStore.getState().initSettings();
-          useEditablesStore.getState().initMaterials();
-          useEditablesStore.getState().initAgents();
-          if (!data.initial) {
-            showToast({
-              title: 'Settings updated',
-              message: `Loaded new settings.`,
-            });
-          }
-          break;
-        case 'ResetMessageWSMessage':
-        case 'UpdateAnalysisWSMessage':
-        case 'UpdateMessageWSMessage':
-        case 'UpdateToolCallWSMessage':
-        case 'UpdateToolCallOutputWSMessage':
-        case 'RequestProcessingFinishedWSMessage':
-          await handleChatMessage(data);
-          break;
-        default:
-          console.error('Unknown message type: ', data);
-      }
+      const data: ServerMessage = JSON.parse(e.data);
+      handleServerMessage(data);
     };
 
     ws.onerror = (e: ErrorEvent) => {
@@ -166,7 +75,65 @@ export const useWebSocketStore = create<WebSockeStore>((set, get) => ({
     set({ ws: null });
   },
 
-  sendMessage: (message: OutgoingWSMessage) => {
+  waitUntilConnected: async () => {
+    while (!get().ws) {
+      console.log('Waiting for WebSocket to be initialized');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  },
+
+  sendMessage: async (message: ClientMessage) => {
+    console.log('Sending ClientMessage', message);
+
+    await get().waitUntilConnected();
     get().ws?.send(JSON.stringify(message));
+  },
+
+  sendMessageAndWaitForResponse: async (
+    messageToSend: ClientMessage,
+    responseCriteria: (response: ServerMessage) => boolean,
+    timeout: number = 30000, // default timeout of 10 seconds
+  ): Promise<ServerMessage> => {
+    await get().waitUntilConnected();
+
+    return new Promise<ServerMessage>((resolve, reject) => {
+      // Handler for incoming messages
+      const messageHandler = (e: MessageEvent) => {
+        try {
+          const incomingMessage: ServerMessage = JSON.parse(e.data); //TOOD: Zod parsing
+
+          // Check if the incoming message meets the criteria
+          if (responseCriteria(incomingMessage)) {
+            cleanup();
+            resolve(incomingMessage);
+          }
+        } catch (error) {
+          cleanup();
+          reject(error);
+        }
+      };
+
+      // Add the message handler to the WebSocket
+      get().ws?.addEventListener('message', messageHandler);
+
+      // Send the message
+      get().sendMessage(messageToSend);
+
+      // Timeout mechanism
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(
+          new Error(`Timeout of ${timeout}ms exceeded while waiting for response for message ${messageToSend.type}`),
+        );
+      }, timeout);
+
+      // Cleanup logic
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        get().ws?.removeEventListener('message', messageHandler);
+      };
+
+      // Optional: add more logic as needed
+    });
   },
 }));

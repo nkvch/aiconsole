@@ -18,8 +18,8 @@ from curses.ascii import SP
 from enum import Enum
 from typing import Any
 
+from pydantic import GetCoreSchemaHandler
 from pydantic_core import CoreSchema, core_schema
-from pydantic import BaseModel, GetCoreSchemaHandler
 
 
 class GPTMode(str):

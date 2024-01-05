@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import json
 import re
 from pathlib import Path
@@ -23,6 +24,12 @@ def get_version_from_package_json():
     with package_json_path.open() as f:
         data = json.load(f)
     return data['version']
+
+def update_version_in_package_json(version):
+    package_json_path = Path('..') / 'electron' / 'package.json'
+    package_content = package_json_path.read_text()
+    package_content = re.sub(r'"version": "\S+"', f'"version": "{version}"', package_content)
+    package_json_path.write_text(package_content)
 
 def update_version_in_pyproject_toml(version):
     pyproject_toml_path = Path('..') / 'backend' / 'pyproject.toml'
@@ -36,8 +43,18 @@ def update_version_in_frontend_package_json(version):
     frontend_package_content = re.sub(r'"version": "\S+"', f'"version": "{version}"', frontend_package_content)
     frontend_package_json_path.write_text(frontend_package_content)
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version', help='Version to set')
+    return parser.parse_args()
+
 def main():
-    version = get_version_from_package_json()
+    args = parse_args()
+    if args.version:
+        version = args.version
+        update_version_in_package_json(version)
+    else:
+        version = get_version_from_package_json()
     print(f"Current version: {version}")
     update_version_in_pyproject_toml(version)
     update_version_in_frontend_package_json(version)

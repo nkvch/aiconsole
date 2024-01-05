@@ -81,7 +81,7 @@ export function Router() {
     });
 
     return () => {
-      window.electron.disposeBackendExitListener();
+      window.electron?.disposeBackendExitListener();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

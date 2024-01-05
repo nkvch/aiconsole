@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
 
-from aiconsole.api.websockets.outgoing_messages import ErrorWSMessage
+from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.assets.asset import Asset, AssetLocation, AssetType
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
-from aiconsole.core.project.paths import get_core_assets_directory, get_project_assets_directory
+from aiconsole.core.project.paths import (
+    get_core_assets_directory,
+    get_project_assets_directory,
+)
 from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
 
 
@@ -32,7 +35,7 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
                     _assets[id] = []
                 _assets[id].append(asset)
             except Exception as e:
-                await ErrorWSMessage(
+                await ErrorServerMessage(
                     error=f"Invalid {asset_type} {id} {e}",
                 ).send_to_all()
                 continue

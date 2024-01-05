@@ -18,19 +18,21 @@ import { EditableObject } from '@/types/editables/assetTypes';
 import { cn } from '@/utils/common/cn';
 import { useEffect, useRef, useState } from 'react';
 
+interface InlineEditableObjectNameProps {
+  editableObject: EditableObject;
+  isEditing: boolean;
+  setIsEditing: (isEditing: boolean) => void;
+  className?: string;
+  onRename?: (newName: string) => void;
+}
+
 const InlineEditableObjectName = ({
   editableObject, // The editable object with 'id' and 'name'
   isEditing,
   setIsEditing,
   className,
   onRename,
-}: {
-  editableObject: EditableObject;
-  isEditing: boolean;
-  setIsEditing: (isEditing: boolean) => void;
-  className?: string;
-  onRename?: (newName: string) => void;
-}) => {
+}: InlineEditableObjectNameProps) => {
   const [inputText, setInputText] = useState(editableObject.name);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -69,7 +71,7 @@ const InlineEditableObjectName = ({
           onChange={(e) => setInputText(e.target.value)} // Update input text as the user types
         />
       ) : (
-        <p className="leading-[18.2px] text-white truncate">{editableObject.name}</p>
+        <p className="leading-[18.2px] text-[14px] text-white truncate">{editableObject.name}</p>
       )}
     </div>
   );

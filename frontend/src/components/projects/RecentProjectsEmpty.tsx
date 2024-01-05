@@ -29,9 +29,10 @@ export function RecentProjectsEmpty({ openAiApiKey, isApiKeyValid }: RecentProje
     <div className="flex justify-center items-center flex-col min-h-[100vh] px-[60px] relative">
       <div className="my-[180px]">
         <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto " alt="Logo" />
-        <h1 className="text-[56px] text-center font-black text-white ">
+        <h1 className="text-[32px] md:text-[38px] xl:text-[42px] 2xl:text-[56px] text-center font-black text-white ">
           Welcome to <span className=" text-primary">AIConsole</span>
         </h1>
+
         {isApiKeySet ? (
           <ProjectButtons className="relative flex justify-center gap-[20px] mt-5 py-[10px] z-10" />
         ) : (

@@ -15,32 +15,39 @@
 # limitations under the License.
 
 from datetime import datetime
-from aiconsole.core.assets.asset import AssetLocation
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+
 from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.asset import AssetLocation
+from aiconsole.core.assets.materials.content_evaluation_context import (
+    ContentEvaluationContext,
+)
+from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.chat.types import Chat
 from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, SPEED_GPT_MODE, GPTMode
-from aiconsole.core.assets.materials.content_evaluation_context import ContentEvaluationContext
-from aiconsole.core.assets.materials.material import Material
 
 router = APIRouter()
+
+
+def create_user_agent():
+    return Agent(
+        id="user",
+        name="You",
+        usage="",
+        usage_examples=[],
+        system="",
+        defined_in=AssetLocation.AICONSOLE_CORE,
+        override=False,
+    )
 
 
 @router.post("/preview")
 async def materials_preview(material: Material):
     content_context = ContentEvaluationContext(
         chat=Chat(id="chat", name="", last_modified=datetime.now(), title_edited=False, message_groups=[]),
-        agent=Agent(
-            id="user",
-            name="You",
-            usage="",
-            usage_examples=[],
-            system="",
-            defined_in=AssetLocation.AICONSOLE_CORE,
-            gpt_mode=QUALITY_GPT_MODE,
-            override=False,
-        ),
+        agent=create_user_agent(),
         gpt_mode=SPEED_GPT_MODE,
         relevant_materials=[],
     )

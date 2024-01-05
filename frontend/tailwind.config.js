@@ -14,6 +14,11 @@ export default {
     },
   },
   theme: {
+    screens: {
+      md: '800px',
+      xl: '1200px',
+      '2xl': '1440px'
+    },
     extend: {
        keyframes: {
         fadeInUp: {
@@ -65,7 +70,9 @@ export default {
       backgroundImage: {
         'recent-bg': "url('/bg1.png')",
         'top-elipse': "url('/elipse-top.png')",
-        'primary-gradient': 'radial-gradient(circle at 50% -40%, rgba(173,122,255,1) -150%, rgba(26,26,26,1) 60%)'
+        'primary-gradient': 'radial-gradient(circle at 50% -40%, rgba(173,122,255,1) -150%, rgba(26,26,26,1) 60%)',
+        'project-item-gradient': 'linear-gradient(180deg, #161616 29.17%, #2D253E 100%)',
+        'project-item-gradient-2': 'linear-gradient(180deg, rgba(17, 17, 17, 0.00) 65.1%, #111 100%)'
       },
       boxShadow: {
         dark: '0px 20px 40px 0px rgba(0, 0, 0, 0.25)',

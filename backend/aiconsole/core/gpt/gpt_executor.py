@@ -16,20 +16,25 @@
 
 import asyncio
 import logging
+from typing import AsyncGenerator
+
 import litellm
+from litellm.caching import Cache
+from openai import AuthenticationError
+
+from aiconsole.api.websockets.server_messages import DebugJSONServerMessage
 from aiconsole.core.gpt.partial import GPTPartialResponse
 from aiconsole.core.gpt.request import GPTRequest
-from aiconsole.api.websockets.outgoing_messages import DebugJSONWSMessage
+
 from .exceptions import NoOpenAPIKeyException
-from .types import CLEAR_STR, GPTChoice, GPTResponse, GPTResponseMessage
-from openai.error import AuthenticationError
-from litellm.caching import Cache
+from .types import CLEAR_STR, CLEAR_STR_TYPE, GPTChoice, GPTResponse, GPTResponseMessage
 
 _log = logging.getLogger(__name__)
 
 
 litellm.cache = Cache()
 litellm.cache.cache
+litellm.set_verbose = False
 
 
 class GPTExecutor:
@@ -46,7 +51,7 @@ class GPTExecutor:
         )
         self.partial_response = GPTPartialResponse()
 
-    async def execute(self, request: GPTRequest):
+    async def execute(self, request: GPTRequest) -> AsyncGenerator[litellm.ModelResponse | CLEAR_STR_TYPE, None]:
         request.validate_request()
 
         request_dict = {
@@ -76,7 +81,7 @@ class GPTExecutor:
 
                 self.partial_response = GPTPartialResponse()
 
-                async for chunk in response:  # type: ignore - for some reason response is not recognized as an async generator
+                async for chunk in response:
                     self.partial_response.apply_chunk(chunk)
                     yield chunk
                     await asyncio.sleep(0)
@@ -84,7 +89,7 @@ class GPTExecutor:
                 self.response = self.partial_response.to_final_response()
 
                 if _log.isEnabledFor(logging.DEBUG):
-                    await DebugJSONWSMessage(
+                    await DebugJSONServerMessage(
                         message="GPT", object={"request": self.request, "response": self.response.model_dump()}
                     ).send_to_all()
 

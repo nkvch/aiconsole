@@ -17,6 +17,18 @@ import datetime
 import logging
 from pathlib import Path
 from typing import Any
+
+import litellm
+import tomlkit
+import tomlkit.container
+import tomlkit.exceptions
+from appdirs import user_config_dir
+from pydantic import BaseModel
+from tomlkit import TOMLDocument
+from watchdog.observers import Observer
+
+from aiconsole.api.websockets.server_messages import SettingsServerMessage
+from aiconsole.core.assets.asset import AssetStatus, AssetType
 from aiconsole.core.gpt.consts import (
     GPT_MODE_COST_MAX_TOKENS,
     GPT_MODE_COST_MODEL,
@@ -27,22 +39,11 @@ from aiconsole.core.gpt.consts import (
     GPTEncoding,
     GPTMode,
 )
-
-import litellm
-import tomlkit
-import tomlkit.container
-import tomlkit.exceptions
-from aiconsole.api.websockets.outgoing_messages import SettingsWSMessage
-from aiconsole.core.assets.asset import AssetStatus, AssetType
 from aiconsole.core.project import project
 from aiconsole.core.project.paths import get_project_directory
 from aiconsole.core.project.project import is_project_initialized
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole.utils.recursive_merge import recursive_merge
-from appdirs import user_config_dir
-from pydantic import BaseModel
-from tomlkit import TOMLDocument
-from watchdog.observers import Observer
 
 _log = logging.getLogger(__name__)
 
@@ -59,6 +60,9 @@ class GPTModeConfig(BaseModel):
 
 class PartialSettingsData(BaseModel):
     code_autorun: bool | None = None
+    openai_api_key: str | None = None
+    username: str | None = None
+    email: str | None = None
     materials: dict[str, AssetStatus] = {}
     materials_to_reset: list[str] = []
     agents: dict[str, AssetStatus] = {}
@@ -74,6 +78,9 @@ class PartialSettingsAndToGlobal(PartialSettingsData):
 
 class SettingsData(BaseModel):
     code_autorun: bool = False
+    openai_api_key: str | None = None
+    username: str | None = None
+    email: str | None = None
     materials: dict[str, AssetStatus] = {}
     agents: dict[str, AssetStatus] = {}
     gpt_modes: dict[str, GPTModeConfig] = {}
@@ -105,7 +112,7 @@ class Settings:
         self._observer.schedule(
             BatchingWatchDogHandler(self.reload, self._global_settings_file_path.name),
             str(self._global_settings_file_path.parent),
-            recursive=True,
+            recursive=False,
         )
 
         if self._project_settings_file_path:
@@ -113,7 +120,7 @@ class Settings:
             self._observer.schedule(
                 BatchingWatchDogHandler(self.reload, self._project_settings_file_path.name),
                 str(self._project_settings_file_path.parent),
-                recursive=True,
+                recursive=False,
             )
 
         self._observer.start()
@@ -126,7 +133,7 @@ class Settings:
 
     async def reload(self, initial: bool = False):
         self._settings = await self.__load()
-        await SettingsWSMessage(
+        await SettingsServerMessage(
             initial=initial
             or not (
                 not self._suppress_notification_until or self._suppress_notification_until < datetime.datetime.now()
@@ -188,6 +195,15 @@ class Settings:
 
     def get_code_autorun(self) -> bool:
         return self._settings.code_autorun
+
+    def get_openai_api_key(self) -> str | None:
+        return self._settings.openai_api_key
+
+    def get_username(self) -> str | None:
+        return self._settings.username
+
+    def get_email(self) -> str | None:
+        return self._settings.email
 
     def set_code_autorun(self, code_autorun: bool, to_global: bool = False) -> None:
         self._settings.code_autorun = code_autorun
@@ -254,6 +270,9 @@ class Settings:
 
         settings_data = SettingsData(
             code_autorun=settings.get("settings", {}).get("code_autorun", False),
+            openai_api_key=settings.get("settings", {}).get("openai_api_key", None),
+            username=settings.get("settings", {}).get("username", None),  # Load username
+            email=settings.get("settings", {}).get("email", None),  # Load email
             materials=materials,
             agents=agents,
             gpt_modes=gpt_modes,
@@ -292,6 +311,9 @@ class Settings:
             global_file_path = self._global_settings_file_path
             file_path = self._global_settings_file_path
         else:
+            if settings_data.username is not None and settings_data.email is not None:
+                raise ValueError("Username and Email can only be saved in global settings")
+
             if not self._project_settings_file_path:
                 raise ValueError("Cannnot save to project settings file, because project is not initialized")
 
@@ -312,6 +334,12 @@ class Settings:
         # write extra
         for key, value in settings_data.extra.items():
             doc_settings[key] = value
+
+        if settings_data.username is not None:
+            doc_settings["username"] = settings_data.username
+
+        if settings_data.email is not None:
+            doc_settings["email"] = settings_data.email
 
         for material in settings_data.materials_to_reset:
             if material in doc_materials:

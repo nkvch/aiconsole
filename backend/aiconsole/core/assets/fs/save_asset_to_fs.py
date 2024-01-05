@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aiconsole.core.assets.asset import Asset
 import tomlkit
+
 from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.asset import Asset
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.project.paths import get_project_assets_directory
@@ -72,21 +73,21 @@ async def save_asset_to_fs(asset: Asset):
                 MaterialContentType.STATIC_TEXT: lambda: doc.append(
                     "content_static_text",
                     tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(asset.content_static_text),
+                        make_sure_starts_and_ends_with_newline(asset.content),
                         multiline=True,
                     ),
                 ),
                 MaterialContentType.DYNAMIC_TEXT: lambda: doc.append(
                     "content_dynamic_text",
                     tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(asset.content_dynamic_text),
+                        make_sure_starts_and_ends_with_newline(asset.content),
                         multiline=True,
                     ),
                 ),
                 MaterialContentType.API: lambda: doc.append(
                     "content_api",
                     tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(asset.content_api),
+                        make_sure_starts_and_ends_with_newline(asset.content),
                         multiline=True,
                     ),
                 ),

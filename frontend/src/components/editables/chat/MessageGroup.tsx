@@ -16,19 +16,34 @@
 
 import { AICMessageGroup } from '../../../types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
+import { AgentInfo } from '@/components/editables/chat/AgentInfo';
 import { UserInfo } from '@/components/editables/chat/UserInfo';
 import { MessageComponent } from './messages/MessageComponent';
 
 export function MessageGroup({ group }: { group: AICMessageGroup }) {
   return (
     <div
-      className={cn('group flex flex-row shadow-md border-b border-gray-600 py-[30px] bg-gray-900 ', {
+      className={cn('group flex flex-row shadow-md border-b border-gray-600 py-[30px] px-[10px] bg-gray-900 ', {
         'message-gradient': group.role === 'assistant',
       })}
     >
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
-        <UserInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
-        <div className="flex-grow flex flex-col gap-5  overflow-auto ">
+        {group.role === 'assistant' ? (
+          <AgentInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
+        ) : (
+          <UserInfo username={group.username} email={group.email} />
+        )}
+        <div className="flex-grow flex flex-col gap-5 overflow-auto">
+          {group.messages.length == 0 && (
+            <div>
+              {group.analysis}{' '}
+              {group.task && (
+                <span className="text-white">
+                  <br /> Next step: <span className="text-purple-400 leading-[24px]">{group.task}</span>
+                </span>
+              )}
+            </div>
+          )}
           {group.messages.map((message) => (
             <MessageComponent key={message.id} message={message} group={group} />
           ))}

@@ -13,17 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-    
-import watchdog.events
-
 
 import asyncio
 import threading
 
+import watchdog.events
+
 
 class BatchingWatchDogHandler(watchdog.events.FileSystemEventHandler):
     def __init__(self, reload, extension=".toml"):
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.timer = None
         self.reload = reload
         self.extension = extension
@@ -33,7 +32,7 @@ class BatchingWatchDogHandler(watchdog.events.FileSystemEventHandler):
 
     def on_created(self, event):
         return self.on_modified(event)
-    
+
     def on_deleted(self, event):
         return self.on_modified(event)
 
@@ -42,6 +41,7 @@ class BatchingWatchDogHandler(watchdog.events.FileSystemEventHandler):
             return
 
         with self.lock:
+
             def reload():
                 with self.lock:
                     if self.timer is not None:

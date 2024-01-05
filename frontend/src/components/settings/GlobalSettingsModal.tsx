@@ -82,7 +82,7 @@ export const GlobalSettingsModal = () => {
     <Root open={opened} onOpenChange={close}>
       <Portal>
         <Content asChild className="fixed">
-          <div className="w-full h-[100vh] left-0 right-0 bg-gray-900">
+          <div className="w-full h-[100vh] z-[99] top-0 left-0 right-0 bg-gray-900">
             <div className="flex justify-between items-center px-[30px] py-[26px]">
               <img src={`favicon.svg`} className="h-[48px] w-[48px] cursor-pointer filter" />
               <Button variant="secondary" onClick={close} small>

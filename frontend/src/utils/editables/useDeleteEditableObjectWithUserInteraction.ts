@@ -14,10 +14,6 @@ export function useDeleteEditableObjectWithUserInteraction(editableObjectType: E
   const [editable] = useSelectedEditableObject();
 
   async function handleDelete(id: string) {
-    if (!window.confirm(`Are you sure you want to delete this ${editableObjectType}?`)) {
-      return;
-    }
-
     await deleteEditableObject(editableObjectType, id);
 
     if (editable?.id === id) {

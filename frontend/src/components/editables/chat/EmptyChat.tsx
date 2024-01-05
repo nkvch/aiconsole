@@ -52,7 +52,7 @@ function EmptyChatAgentAvatar({ agent }: { agent: Agent }) {
           },
         )}
       >
-        <AgentAvatar agentId={agent.id} type="small" />
+        <AgentAvatar agentId={agent.id} type="small" className="mb-[10px] mt-[5px]" />
         <p className="text-[15px] text-center">{agent.name}</p>
       </div>
     </ContextMenu>
@@ -109,7 +109,7 @@ export const EmptyChat = () => {
     );
 
   return (
-    <section className="flex flex-col items-center justify-center container mx-auto px-6 py-[80px] select-none">
+    <section className="flex flex-col items-center justify-center container mx-auto px-6 py-[80px] pb-[40px] select-none">
       <img src="chat-page-glow.png" alt="glow" className="absolute top-[40px] -z-[1]" />
       <p className="text-[16px] text-gray-300 text-center mb-[15px]">Welcome to the project</p>
       <ContextMenu options={projectMenuItems} ref={triggerRef}>
@@ -122,7 +122,7 @@ export const EmptyChat = () => {
       </ContextMenu>
       {activeSystemAgents.length > 0 ? (
         <>
-          <p className="mb-4 text-center text-[14px] text-gray-400">Agents in the project:</p>
+          <p className="mb-[11px] text-center text-[14px] text-gray-400">Agents in the project:</p>
           <div className="flex items-center justify-center mb-8 w-full max-w-[700px] mx-auto">
             <SliderArrowLeft className="swiper-left text-gray-400 cursor-pointer" />
             <Swiper

@@ -17,15 +17,19 @@
 import json
 import logging
 from typing import Any, Literal
-from aiconsole.core.settings.project_settings import get_aiconsole_settings
-from aiconsole.dev.settings import get_settings
-from pydantic import BaseModel
 
 import tiktoken
+from pydantic import BaseModel
 
 from aiconsole.core.gpt.consts import SPEED_GPT_MODE, GPTMode
-from aiconsole.core.gpt.types import EnforcedFunctionCall, GPTRequestMessage, GPTRequestTextMessage
 from aiconsole.core.gpt.token_error import TokenError
+from aiconsole.core.gpt.types import (
+    EnforcedFunctionCall,
+    GPTRequestMessage,
+    GPTRequestTextMessage,
+)
+from aiconsole.core.settings.project_settings import get_aiconsole_settings
+from aiconsole_toolkit.settings import get_settings
 
 _log = logging.getLogger(__name__)
 

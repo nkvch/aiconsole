@@ -63,40 +63,41 @@ export function EditableContentMessage({
     setIsEditing(false);
   }, [content, handleAcceptedContent]);
 
-  const handleBlur = useCallback(() => {
-    // setTimeout with 0ms to delay the handleSaveClick call, this will ensure the
-    // onClick event has priority over the onBlur event.
-    setTimeout(handleSaveClick, 0);
-  }, [handleSaveClick]);
-
   return (
     <div className={cn('flex flex-row items-start overflow-auto', className)}>
       {isEditing ? (
-        <div className="bg-gray-700 rounded-md flex-grow ">
+        <div className="rounded-md flex-grow ">
           <CodeInput
             className="resize-none border-0 bg-transparent w-full outline-none"
             value={content}
             onChange={handleOnChange}
             codeLanguage={language ? language : 'text'}
             transparent
+            focused={isEditing}
             maxHeight="400px"
-            onBlur={handleBlur} // added onBlur event here
+            onBlur={handleSaveClick}
           />
         </div>
       ) : (
         <div className="flex-grow overflow-auto ">{children}</div>
       )}
 
-      {!isStreaming && (
-        <MessageControls
-          isEditing={isEditing}
-          hideControls={hideControls}
-          onCancelClick={handleCancelEditClick}
-          onEditClick={handleEditClick}
-          onSaveClick={handleSaveClick}
-          onRemoveClick={handleRemoveClick}
-        />
-      )}
+      <div
+        className={cn('flex flex-none gap-4 px-4 self-start', {
+          'min-w-[100px] ml-[92px]': hideControls,
+        })}
+      >
+        {!isStreaming && (
+          <MessageControls
+            isEditing={isEditing}
+            hideControls={hideControls}
+            onCancelClick={handleCancelEditClick}
+            onEditClick={handleEditClick}
+            onSaveClick={handleSaveClick}
+            onRemoveClick={handleRemoveClick}
+          />
+        )}
+      </div>
     </div>
   );
 }

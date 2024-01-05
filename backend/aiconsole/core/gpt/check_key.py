@@ -14,8 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aiconsole.core.gpt.consts import GPT_MODE_COST_MODEL, GPT_MODE_QUALITY_MODEL, GPT_MODE_SPEED_MODEL
 import openai
+from openai import OpenAI
+
+from aiconsole.core.gpt.consts import (
+    GPT_MODE_COST_MODEL,
+    GPT_MODE_QUALITY_MODEL,
+    GPT_MODE_SPEED_MODEL,
+)
 
 cached_good_keys = set()
 
@@ -25,6 +31,7 @@ async def check_key(key: str) -> bool:
     if key in cached_good_keys:
         return True
 
+    client = OpenAI(api_key=key)
     try:
         # set key
         openai.api_key = key

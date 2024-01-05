@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { MouseEvent as ReactMouseEvent, ReactNode, forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import { Icon } from '@/components/common/icons/Icon';
 import { ContextMenuItem, ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
@@ -27,7 +28,6 @@ import {
   Root,
   ContextMenuProps as RadixContextMenuProps,
 } from '@radix-ui/react-context-menu';
-import { MouseEvent as ReactMouseEvent, ReactNode, forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 export type ContextMenuRef = {
   handleTriggerClick: (event: ReactMouseEvent) => void;
@@ -117,7 +117,7 @@ export const ContextMenu = forwardRef<ContextMenuRef | undefined, ContextMenuPro
         </Trigger>
 
         <Portal>
-          <Content className="w-full z-5 !bg-gray-700 border border-gray-800 px-0 py-[6px] rounded-[4px] text-gray-400 min-w-[137px] max-w-[300px]">
+          <Content className="w-full z-5 !bg-gray-700 border border-gray-800 px-0 py-[6px] rounded-[4px] text-gray-400 min-w-[137px] max-w-[300px] z-[98]">
             <div>
               {options.map(
                 ({ key, hidden, ...props }) =>

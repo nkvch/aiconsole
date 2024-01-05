@@ -14,10 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useRef, MouseEvent } from 'react';
+import { useRef } from 'react';
 import { useUserContextMenu } from '../../utils/common/useUserContextMenu';
-import { getBaseURL } from '../../store/useAPIStore';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
+import { useOpenSettings } from '@/utils/settings/useOpenSettings';
+import { Icon } from './icons/Icon';
+import { Settings } from 'lucide-react';
+import { Button } from './Button';
 
 interface TopBarProps {
   variant?: 'recentProjects' | 'chat';
@@ -26,23 +29,16 @@ interface TopBarProps {
 export function TopBar({ children }: React.PropsWithChildren<TopBarProps>) {
   const menuItems = useUserContextMenu();
   const triggerRef = useRef<ContextMenuRef>(null);
-
-  const openContextMenu = (event: MouseEvent) => {
-    if (triggerRef.current) {
-      triggerRef?.current.handleTriggerClick(event);
-    }
-  };
+  const openSettings = useOpenSettings();
 
   return (
-    <div className="flex w-full px-[30px] py-[7px] border-b bg-transparent shadow-md border-gray-600 relative z-40 h-[101px]">
+    <div className="flex w-full px-[20px] py-[7px] border-b bg-transparent shadow-md border-gray-600 relative z-40 h-[80px] min-h-[80px]">
       <div className="flex gap-2 w-full items-center">
         {children}
         <ContextMenu options={menuItems} ref={triggerRef} triggerClassName="ml-auto">
-          <img
-            src={`${getBaseURL()}/profile/user.jpg` || ''}
-            className="h-11 w-11  rounded-full border cursor-pointer shadow-md border-primary"
-            onClick={openContextMenu}
-          />
+          <Button variant="secondary" small iconOnly onClick={openSettings}>
+            <Icon icon={Settings} width={24} height={24} />
+          </Button>
         </ContextMenu>
       </div>
     </div>
