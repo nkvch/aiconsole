@@ -61,8 +61,6 @@ class GPTExecutor:
             **request.llm_settings,
         }
 
-        _log.info("Executing GPT request:", request_dict)
-
         if request.tool_choice:
             request_dict["tool_choice"] = request.tool_choice
 
