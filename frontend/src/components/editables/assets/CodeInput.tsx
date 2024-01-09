@@ -24,6 +24,7 @@ import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Icon } from '@/components/common/icons/Icon';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
+import { MarkdownSupported } from '../MarkdownSupported';
 
 const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
 
@@ -41,6 +42,8 @@ interface CodeInputProps {
   maxHeight?: string;
   focused?: boolean;
   withFullscreen?: boolean;
+  fullHeight?: boolean;
+  withMarkdown?: boolean;
 }
 
 export function CodeInput({
@@ -57,6 +60,8 @@ export function CodeInput({
   labelContent,
   focused,
   withFullscreen,
+  fullHeight = false,
+  withMarkdown = false,
 }: CodeInputProps) {
   const [focus, setFocus] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
@@ -151,7 +156,7 @@ export function CodeInput({
   };
 
   const codeInputCore = (fullScreen: boolean) => (
-    <div className="relative">
+    <div className={cn('relative group', { 'h-full': fullHeight })}>
       {label && (fullScreen || !withFullscreen) && (
         <div className="font-semibold text-white mb-[10px] flex ">
           <label htmlFor={label} className="py-[12px]">
@@ -199,7 +204,7 @@ export function CodeInput({
           })}
         />
 
-        {withFullscreen ? (
+        {withFullscreen && (
           <Icon
             icon={isFullscreenOpen ? Minimize2 : Maximize2}
             width={24}
@@ -209,8 +214,9 @@ export function CodeInput({
             })}
             onClick={toggleFullscreen}
           />
-        ) : null}
+        )}
       </div>
+      {withMarkdown && <MarkdownSupported />}
     </div>
   );
 
