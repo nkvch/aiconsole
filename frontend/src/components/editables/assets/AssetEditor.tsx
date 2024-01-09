@@ -82,7 +82,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   const wasAssetChangedInitially = !isPrevAssetChanged && isAssetChanged;
   const wasAssetUpdate = isPrevAssetChanged && !isAssetChanged;
 
-  const { reset, proceed, state: blockerState } = blocker || {};
+  const { proceed, state: blockerState } = blocker || {};
 
   useEffect(() => {
     if (wasAssetUpdate && newPath) {
@@ -303,7 +303,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
             <AlertDialog
               title="Are you sure you want to close this window?"
               isOpen={blockerState === 'blocked'}
-              onClose={reset}
+              onClose={proceed}
               onConfirm={confirmPageEscape}
             >
               {`This ${assetType} is unsaved.\nYou may lose your changes.`}
