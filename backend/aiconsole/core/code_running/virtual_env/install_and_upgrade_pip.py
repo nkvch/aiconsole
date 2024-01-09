@@ -6,7 +6,7 @@ from pathlib import Path
 _log = logging.getLogger(__name__)
 
 
-def install_and_update_pip(venv_path):
+def install_and_update_pip(venv_path: str | Path) -> bool:
     venv_path = Path(venv_path)
 
     if platform.system() == "Windows":
@@ -14,7 +14,7 @@ def install_and_update_pip(venv_path):
     else:
         pip_path = venv_path / "bin" / "pip"
 
-    def run_subprocess(*args):
+    def run_subprocess(*args) -> None:  # type: ignore
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
 
@@ -22,7 +22,7 @@ def install_and_update_pip(venv_path):
             _log.error(f"Command {' '.join(args)} failed with error: {stderr.decode().strip()}")
             raise RuntimeError(stderr.decode().strip())
 
-        return stdout.decode().strip()
+        stdout.decode().strip()
 
     if not pip_path.exists():
         _log.info("Installing pip in the virtual environment.")

@@ -15,7 +15,10 @@
 # limitations under the License.
 
 
-def get_agent_system_message(agent):
+from aiconsole.core.assets.agents.agent import Agent
+
+
+def get_agent_system_message(agent: Agent) -> str:
     """
     Add common system message to all agent messages
     """

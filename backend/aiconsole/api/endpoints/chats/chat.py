@@ -15,19 +15,15 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Response, status
-from fastapi.responses import JSONResponse
 from send2trash import send2trash
 
-from aiconsole.core.chat.load_chat_history import load_chat_history
-from aiconsole.core.chat.save_chat_history import save_chat_history
-from aiconsole.core.chat.types import Chat
 from aiconsole.core.project.paths import get_history_directory
 
 router = APIRouter()
 
 
 @router.delete("/{chat_id}")
-async def delete_history(chat_id: str):
+async def delete_history(chat_id: str) -> Response:
     file_path = get_history_directory() / f"{chat_id}.json"
     if file_path.exists():
         send2trash(file_path)
@@ -43,5 +39,5 @@ async def delete_history(chat_id: str):
 
 
 @router.get("/{chat_id}/path")
-async def get_history_path(chat_id: str):
+async def get_history_path(chat_id: str) -> Response:
     return {"path": str(get_history_directory() / f"{chat_id}.json")}

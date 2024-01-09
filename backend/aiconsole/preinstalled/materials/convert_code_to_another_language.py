@@ -19,7 +19,7 @@ import litellm
 _log = logging.getLogger(__name__)
 
 
-def convert_language(file_name, desired_language):
+def convert_language(file_name: str, desired_language: str) -> None:
     file_contents = open(file_name).read()
 
     completion: litellm.ModelResponse = cast(

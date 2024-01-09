@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 
 router = APIRouter()
 
 
 @router.get("/api/ping")
-async def ping():
+async def ping() -> Response:
     pass

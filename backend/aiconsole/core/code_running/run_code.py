@@ -18,16 +18,14 @@
 from aiconsole.core.code_running.code_interpreters.base_code_interpreter import (
     BaseCodeInterpreter,
 )
+from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.code_running.code_interpreters.language_map import language_map
 
 code_interpreters = {}
 
 
-def get_code_interpreter(language) -> BaseCodeInterpreter:
+def get_code_interpreter(language: LanguageStr) -> BaseCodeInterpreter:
     if language not in code_interpreters:
-        # Case in-sensitive
-        language = language.lower()
-
         try:
             code_interpreters[language] = language_map[language]()
         except KeyError:
@@ -36,7 +34,7 @@ def get_code_interpreter(language) -> BaseCodeInterpreter:
     return code_interpreters[language]
 
 
-def reset_code_interpreters():
+def reset_code_interpreters() -> None:
     global code_interpreters
 
     for code_interpreter in code_interpreters.values():

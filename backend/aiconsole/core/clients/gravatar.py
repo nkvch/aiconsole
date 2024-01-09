@@ -2,7 +2,7 @@ import hashlib
 import logging
 from functools import lru_cache
 
-import requests
+import requests  # type: ignore
 
 from aiconsole.core.clients.models.gravatar import GravatarUserProfile
 
@@ -10,7 +10,7 @@ _log = logging.getLogger(__name__)
 
 
 class GravatarClient:
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://www.gravatar.com"
 
     def get_profile(self, email: str) -> GravatarUserProfile | None:

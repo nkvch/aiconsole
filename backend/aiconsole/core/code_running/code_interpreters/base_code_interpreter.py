@@ -46,5 +46,5 @@ class BaseCodeInterpreter:
     async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
         yield "Not implemented"
 
-    def terminate(self):
+    def terminate(self) -> None:
         pass

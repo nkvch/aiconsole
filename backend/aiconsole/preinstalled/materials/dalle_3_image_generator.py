@@ -4,7 +4,7 @@ from typing import Literal
 from urllib.parse import unquote, urlparse
 
 import openai
-import requests
+import requests  # type: ignore
 from pydantic import BaseModel
 
 from aiconsole.core.settings.project_settings import Settings
@@ -15,7 +15,7 @@ class Image(BaseModel):
     revised_prompt: str
 
 
-def _extract_filename_from_url(url):
+def _extract_filename_from_url(url: str) -> str:
     """
     Extracts the filename from a URL, handling cases where query parameters contain '/'.
 

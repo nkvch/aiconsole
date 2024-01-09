@@ -12,14 +12,14 @@ from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
 
 
 async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
-    _assets = {}
+    _assets: dict = {}
 
     locations = [
-        [AssetLocation.PROJECT_DIR, get_project_assets_directory(asset_type)],
-        [AssetLocation.AICONSOLE_CORE, get_core_assets_directory(asset_type)],
+        (AssetLocation.PROJECT_DIR, get_project_assets_directory(asset_type)),
+        (AssetLocation.AICONSOLE_CORE, get_core_assets_directory(asset_type)),
     ]
 
-    for [location, dir] in locations:
+    for location, dir in locations:
         ids = set(
             [
                 os.path.splitext(os.path.basename(path))[0]

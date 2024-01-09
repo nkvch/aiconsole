@@ -101,31 +101,31 @@ def _handle_CreateMessageGroupMutation(chat: Chat, mutation: CreateMessageGroupM
     return message_group
 
 
-def _handle_DeleteMessageGroupMutation(chat, mutation: DeleteMessageGroupMutation) -> None:
+def _handle_DeleteMessageGroupMutation(chat: Chat, mutation: DeleteMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     chat.message_groups = [group for group in chat.message_groups if group.id != message_group.id]
 
 
-def _handle_SetIsAnalysisInProgressMutation(chat, mutation: SetIsAnalysisInProgressMutation) -> None:
+def _handle_SetIsAnalysisInProgressMutation(chat: Chat, mutation: SetIsAnalysisInProgressMutation) -> None:
     chat.is_analysis_in_progress = mutation.is_analysis_in_progress
 
 
-def _handle_SetMessageGroupTaskMutation(chat, mutation: SetTaskMessageGroupMutation) -> None:
+def _handle_SetMessageGroupTaskMutation(chat: Chat, mutation: SetTaskMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.task = mutation.task
 
 
-def _handle_AppendToMessageGroupTaskMutation(chat, mutation: AppendToTaskMessageGroupMutation) -> None:
+def _handle_AppendToMessageGroupTaskMutation(chat: Chat, mutation: AppendToTaskMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.task += mutation.task_delta
 
 
-def _handle_SetMessageGroupRoleMutation(chat, mutation: SetRoleMessageGroupMutation) -> None:
+def _handle_SetMessageGroupRoleMutation(chat: Chat, mutation: SetRoleMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.role = mutation.role
 
 
-def _handle_SetMessageGroupAgentIdMutation(chat, mutation: SetAgentIdMessageGroupMutation) -> None:
+def _handle_SetMessageGroupAgentIdMutation(chat: Chat, mutation: SetAgentIdMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.agent_id = mutation.agent_id
 
@@ -135,27 +135,29 @@ def _handle_SetMessageGroupAgentIdMutation(chat, mutation: SetAgentIdMessageGrou
         message_group.role = "assistant"
 
 
-def _handle_SetMessageGroupMaterialsIdsMutation(chat, mutation: SetMaterialsIdsMessageGroupMutation) -> None:
+def _handle_SetMessageGroupMaterialsIdsMutation(chat: Chat, mutation: SetMaterialsIdsMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.materials_ids = mutation.materials_ids
 
 
-def _handle_AppendToMessageGroupMaterialsIdsMutation(chat, mutation: AppendToMaterialsIdsMessageGroupMutation) -> None:
+def _handle_AppendToMessageGroupMaterialsIdsMutation(
+    chat: Chat, mutation: AppendToMaterialsIdsMessageGroupMutation
+) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.materials_ids.append(mutation.material_id)
 
 
-def _handle_SetMessageGroupAnalysisMutation(chat, mutation: SetAnalysisMessageGroupMutation) -> None:
+def _handle_SetMessageGroupAnalysisMutation(chat: Chat, mutation: SetAnalysisMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.analysis = mutation.analysis
 
 
-def _handle_AppendToMessageGroupAnalysisMutation(chat, mutation: AppendToAnalysisMessageGroupMutation) -> None:
+def _handle_AppendToMessageGroupAnalysisMutation(chat: Chat, mutation: AppendToAnalysisMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message_group.analysis += mutation.analysis_delta
 
 
-def _handle_CreateMessageMutation(chat, mutation: CreateMessageMutation) -> AICMessage:
+def _handle_CreateMessageMutation(chat: Chat, mutation: CreateMessageMutation) -> AICMessage:
     message_group = _get_message_group(chat, mutation.message_group_id)
     message = AICMessage(
         id=mutation.message_id, content=mutation.content, timestamp=datetime.now().isoformat(), tool_calls=[]
@@ -164,7 +166,7 @@ def _handle_CreateMessageMutation(chat, mutation: CreateMessageMutation) -> AICM
     return message
 
 
-def _handle_DeleteMessageMutation(chat, mutation: DeleteMessageMutation) -> None:
+def _handle_DeleteMessageMutation(chat: Chat, mutation: DeleteMessageMutation) -> None:
     message_location = _get_message_location(chat, mutation.message_id)
     message_location.message_group.messages = [
         m for m in message_location.message_group.messages if m.id != mutation.message_id
@@ -175,19 +177,19 @@ def _handle_DeleteMessageMutation(chat, mutation: DeleteMessageMutation) -> None
         chat.message_groups = [group for group in chat.message_groups if group.id != message_location.message_group.id]
 
 
-def _handle_SetContentMessageMutation(chat, mutation: SetContentMessageMutation) -> None:
+def _handle_SetContentMessageMutation(chat: Chat, mutation: SetContentMessageMutation) -> None:
     _get_message_location(chat, mutation.message_id).message.content = mutation.content
 
 
-def _handle_AppendToContentMessageMutation(chat, mutation: AppendToContentMessageMutation) -> None:
+def _handle_AppendToContentMessageMutation(chat: Chat, mutation: AppendToContentMessageMutation) -> None:
     _get_message_location(chat, mutation.message_id).message.content += mutation.content_delta
 
 
-def _handle_SetMessageIsStreamingMutation(chat, mutation: SetIsStreamingMessageMutation) -> None:
+def _handle_SetMessageIsStreamingMutation(chat: Chat, mutation: SetIsStreamingMessageMutation) -> None:
     _get_message_location(chat, mutation.message_id).message.is_streaming = mutation.is_streaming
 
 
-def _handle_CreateToolCallMutation(chat, mutation: CreateToolCallMutation) -> AICToolCall:
+def _handle_CreateToolCallMutation(chat: Chat, mutation: CreateToolCallMutation) -> AICToolCall:
     message = _get_message_location(chat, mutation.message_id).message
     tool_call = AICToolCall(
         id=mutation.tool_call_id,
@@ -200,7 +202,7 @@ def _handle_CreateToolCallMutation(chat, mutation: CreateToolCallMutation) -> AI
     return tool_call
 
 
-def _handle_DeleteToolCallMutation(chat, mutation: DeleteToolCallMutation) -> None:
+def _handle_DeleteToolCallMutation(chat: Chat, mutation: DeleteToolCallMutation) -> None:
     tool_call = _get_tool_call_location(chat, mutation.tool_call_id)
     tool_call.message.tool_calls = [tc for tc in tool_call.message.tool_calls if tc.id != mutation.tool_call_id]
 
@@ -215,42 +217,42 @@ def _handle_DeleteToolCallMutation(chat, mutation: DeleteToolCallMutation) -> No
         chat.message_groups = [group for group in chat.message_groups if group.id != tool_call.message_group.id]
 
 
-def _handle_SetToolCallHeadlineMutation(chat, mutation: SetHeadlineToolCallMutation) -> None:
+def _handle_SetToolCallHeadlineMutation(chat: Chat, mutation: SetHeadlineToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.headline = mutation.headline
 
 
-def _handle_AppendToToolCallHeadlineMutation(chat, mutation: AppendToHeadlineToolCallMutation) -> None:
+def _handle_AppendToToolCallHeadlineMutation(chat: Chat, mutation: AppendToHeadlineToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.headline += mutation.headline_delta
 
 
-def _handle_SetToolCallCodeMutation(chat, mutation: SetCodeToolCallMutation) -> None:
+def _handle_SetToolCallCodeMutation(chat: Chat, mutation: SetCodeToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.code = mutation.code
 
 
-def _handle_AppendToToolCallCodeMutation(chat, mutation: AppendToCodeToolCallMutation) -> None:
+def _handle_AppendToToolCallCodeMutation(chat: Chat, mutation: AppendToCodeToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.code += mutation.code_delta
 
 
-def _handle_SetToolCallLanguageMutation(chat, mutation: SetLanguageToolCallMutation) -> None:
+def _handle_SetToolCallLanguageMutation(chat: Chat, mutation: SetLanguageToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.language = mutation.language
 
 
-def _handle_SetToolCallOutputMutation(chat, mutation: SetOutputToolCallMutation) -> None:
+def _handle_SetToolCallOutputMutation(chat: Chat, mutation: SetOutputToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.output = mutation.output
 
 
-def _handle_AppendToToolCallOutputMutation(chat, mutation: AppendToOutputToolCallMutation) -> None:
+def _handle_AppendToToolCallOutputMutation(chat: Chat, mutation: AppendToOutputToolCallMutation) -> None:
     tool_call = _get_tool_call_location(chat, mutation.tool_call_id).tool_call
     if tool_call.output is None:
         tool_call.output = ""
     tool_call.output += mutation.output_delta
 
 
-def _handle_SetToolCallIsStreamingMutation(chat, mutation: SetIsStreamingToolCallMutation) -> None:
+def _handle_SetToolCallIsStreamingMutation(chat: Chat, mutation: SetIsStreamingToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.is_streaming = mutation.is_streaming
 
 
-def _handle_SetIsExecutingToolCallMutation(chat, mutation: SetIsExecutingToolCallMutation) -> None:
+def _handle_SetIsExecutingToolCallMutation(chat: Chat, mutation: SetIsExecutingToolCallMutation) -> None:
     _get_tool_call_location(chat, mutation.tool_call_id).tool_call.is_executing = mutation.is_executing
 
 

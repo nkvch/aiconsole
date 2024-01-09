@@ -1,6 +1,6 @@
 from typing import Callable
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 from aiconsole.core.assets.asset import Asset, AssetLocation, AssetType
@@ -9,7 +9,9 @@ from aiconsole.core.settings.project_settings import get_aiconsole_settings
 from aiconsole.utils.capitalize_first import capitalize_first
 
 
-async def asset_get(request, asset_type: AssetType, asset_id: str, new_asset: Callable[[], Asset]):
+async def asset_get(
+    request: Request, asset_type: AssetType, asset_id: str, new_asset: Callable[[], Asset]
+) -> Response:
     location_param = request.query_params.get("location", None)
     location = AssetLocation(location_param) if location_param else None
 

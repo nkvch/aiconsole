@@ -21,7 +21,7 @@ from typing import Any, Literal
 import tiktoken
 from pydantic import BaseModel
 
-from aiconsole.core.gpt.consts import MODEL_DATA, GPTMode, GPTModel
+from aiconsole.core.gpt.consts import MODEL_DATA, GPTMode, GPTModel, GPTModelData
 from aiconsole.core.gpt.token_error import TokenError
 from aiconsole.core.gpt.types import (
     EnforcedFunctionCall,
@@ -91,32 +91,32 @@ class GPTRequest:
 
         self.max_tokens = min(available_tokens, preferred_tokens)
 
-    def get_messages_dump(self):
+    def get_messages_dump(self) -> list[dict]:
         return [message.model_dump() for message in self.all_messages]
 
     @property
-    def all_messages(self):
+    def all_messages(self) -> list[GPTRequestMessage]:
         if self.system_message:
             return [GPTRequestTextMessage(role="system", content=self.system_message), *self.messages]
         else:
             return self.messages
 
     @property
-    def model(self):
+    def model(self) -> str:
         return self.get_model(self.gpt_mode)
 
     @property
-    def model_data(self):
+    def model_data(self) -> GPTModelData:
         return MODEL_DATA[self.model]
 
     @property
-    def model_max_tokens(self):
+    def model_max_tokens(self) -> int:
         if self.gpt_mode == GPTMode.SPEED:
             return MODEL_DATA[GPTModel.GPT_35_TURBO_16k_0613].max_tokens
 
         return self.model_data.max_tokens
 
-    def count_tokens(self):
+    def count_tokens(self) -> int:
         encoding = tiktoken.encoding_for_model(self.model_data.encoding)
 
         if self.tools:
@@ -125,24 +125,24 @@ class GPTRequest:
             functions_tokens = 0
         return self.count_messages_tokens(encoding) + functions_tokens
 
-    def count_tokens_for_model(self, model):
+    def count_tokens_for_model(self, model: str) -> int:
         encoding = tiktoken.encoding_for_model(MODEL_DATA[model].encoding)
         return self.count_messages_tokens(encoding)
 
-    def count_messages_tokens(self, encoding):
+    def count_messages_tokens(self, encoding: str) -> int:
         messages_str = json.dumps(self.get_messages_dump())
         messages_tokens = len(encoding.encode(messages_str))
 
         return messages_tokens
 
-    def count_tokens_output(self, message_content: str, message_function_call: dict | None):
+    def count_tokens_output(self, message_content: str, message_function_call: dict | None) -> int:
         encoding = tiktoken.encoding_for_model(self.model_data.encoding)
 
         return len(encoding.encode(message_content)) + (
             len(encoding.encode(json.dumps(message_function_call))) if message_function_call else 0
         )
 
-    def validate_request(self):
+    def validate_request(self) -> None:
         """
         Checks if the prompt can be handled by the model
         """

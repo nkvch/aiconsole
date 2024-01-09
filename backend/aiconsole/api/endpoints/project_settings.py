@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from starlette.responses import JSONResponse
 
 from aiconsole.core.settings.project_settings import (
@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 @router.patch("")
-async def patch(patch_data: PartialSettingsAndToGlobal):
+async def patch(patch_data: PartialSettingsAndToGlobal) -> Response:
     try:
         get_aiconsole_settings().save(settings_data=patch_data, to_global=patch_data.to_global)
         return JSONResponse({"status": "ok"})
@@ -35,5 +35,5 @@ async def patch(patch_data: PartialSettingsAndToGlobal):
 
 
 @router.get("")
-async def get():
+async def get() -> Response:
     return JSONResponse(get_aiconsole_settings().model_dump())

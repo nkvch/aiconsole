@@ -42,6 +42,7 @@ from aiconsole.core.chat.execution_modes.analysis.create_plan_class import (
 )
 from aiconsole.core.chat.types import Chat
 from aiconsole.core.gpt.consts import GPTMode
+from aiconsole.core.gpt.function_calls import OpenAISchema
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
 from aiconsole.core.gpt.request import (
     GPTRequest,
@@ -58,7 +59,7 @@ from aiconsole.core.project import project
 _log = logging.getLogger(__name__)
 
 
-def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
+def pick_agent(arguments: OpenAISchema, chat: Chat, available_agents: list[Agent]) -> Agent:
     # Try support first
     default_agent = next((agent for agent in available_agents if agent.id == "assistant"), None)
 
@@ -69,7 +70,7 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
     is_users_turn = arguments.is_users_turn
 
     if is_users_turn:
-        picked_agent = Agent(
+        picked_agent: Agent | None = Agent(
             id="user",
             name="User",
             usage="When a human user needs to respond",
@@ -169,7 +170,7 @@ async def gpt_analysis_function_step(
             *convert_messages(chat_mutator.chat),
             GPTRequestTextMessage(role="system", content=last_system_prompt),
         ],
-        tools=[ToolDefinition(type="function", function=ToolFunctionDefinition(**plan_class.openai_schema))],
+        tools=[ToolDefinition(type="function", function=ToolFunctionDefinition(**plan_class.openai_schema()))],
         presence_penalty=2,
         min_tokens=DIRECTOR_MIN_TOKENS,
         preferred_tokens=DIRECTOR_PREFERRED_TOKENS,

@@ -48,7 +48,7 @@ class Material(Asset):
     content: str = ""
 
     @property
-    def inlined_content(self):
+    def inlined_content(self) -> str:
         # if starts with file:// then load the file, take into account file://./relative paths
         if self.content.startswith("file://"):
             content_file = self.content[len("file://") :]
@@ -69,7 +69,7 @@ class Material(Asset):
 
         return self.content
 
-    async def render(self, context: "ContentEvaluationContext"):
+    async def render(self, context: "ContentEvaluationContext") -> RenderedMaterial:
         header = f"# {self.name}\n\n"
 
         inline_content = self.inlined_content
@@ -78,7 +78,7 @@ class Material(Asset):
             if self.content_type == MaterialContentType.DYNAMIC_TEXT:
                 # Try compiling the python code and run it
                 source_code = compile(inline_content, "<string>", "exec")
-                local_vars = {}
+                local_vars: dict = {}
                 exec(source_code, local_vars)
                 # currently, getting the python object from another interpreter is quite limited, and
                 # using the dedicated local_vars is the easiest way (otherwise we would need to pickle

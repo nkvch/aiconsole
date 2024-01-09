@@ -15,15 +15,17 @@
 # limitations under the License.
 
 import random
+from typing import Type
 
 from pydantic import Field
 
+from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.asset import AssetStatus
 from aiconsole.core.gpt.function_calls import OpenAISchema
 from aiconsole.core.project import project
 
 
-def create_plan_class(available_agents):
+def create_plan_class(available_agents: list[Agent]) -> Type[OpenAISchema]:
     enabled_materials = project.get_project_materials().assets_with_status(AssetStatus.ENABLED)
 
     class Plan(OpenAISchema):

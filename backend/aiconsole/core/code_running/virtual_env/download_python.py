@@ -3,7 +3,7 @@ import os
 import platform
 import tarfile
 
-import requests
+import requests  # type: ignore
 
 _log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 PYTHON_VERSION = "3.10.13+20231002"
 
 
-def download_python():
+def download_python() -> bool:
     _log.info("Detecting machine architecture...")
     arch_name = platform.machine()
     system_name = platform.system()

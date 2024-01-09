@@ -14,35 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import asyncio
 import threading
+from typing import Any, Callable
 
 import watchdog.events
 
 
 class BatchingWatchDogHandler(watchdog.events.FileSystemEventHandler):
-    def __init__(self, reload, extension=".toml"):
+    def __init__(self, reload: Callable, extension: str = ".toml") -> None:
         self.lock = threading.RLock()
-        self.timer = None
+        self.timer: threading.Timer | None = None
         self.reload = reload
         self.extension = extension
 
-    def on_moved(self, event):
+    def on_moved(self, event: Any) -> None:
         return self.on_modified(event)
 
-    def on_created(self, event):
+    def on_created(self, event: Any) -> None:
         return self.on_modified(event)
 
-    def on_deleted(self, event):
+    def on_deleted(self, event: Any) -> None:
         return self.on_modified(event)
 
-    def on_modified(self, event):
+    def on_modified(self, event: Any) -> None:
         if event.is_directory or not event.src_path.endswith(self.extension):
             return
 
         with self.lock:
 
-            def reload():
+            def reload() -> None:
                 with self.lock:
                     if self.timer is not None:
                         self.timer.cancel()

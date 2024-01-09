@@ -17,8 +17,9 @@
 import json
 import logging
 import os
+from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
 from aiconsole.consts import COMMANDS_HISTORY_JSON, HISTORY_LIMIT
 from aiconsole.core.chat.types import Command
@@ -30,7 +31,7 @@ _log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def read_command_history() -> list[str]:
+def read_command_history() -> Any:
     file_path = os.path.join(get_aic_directory(), COMMANDS_HISTORY_JSON)
     try:
         if os.path.exists(file_path):
@@ -42,7 +43,7 @@ def read_command_history() -> list[str]:
         raise HTTPException(status_code=500, detail=str(error))
 
 
-def write_command_history(commands: list[str]):
+def write_command_history(commands: list[str]) -> None:
     file_path = os.path.join(get_aic_directory(), COMMANDS_HISTORY_JSON)
     try:
         with open(file_path, "w") as f:
@@ -53,13 +54,13 @@ def write_command_history(commands: list[str]):
 
 
 @router.get("/commands/history")
-def get_history() -> list[str]:
+def get_history() -> Response:
     """Fetches the history of sent commands."""
     return read_command_history()
 
 
 @router.post("/commands/history")
-def save_history(command: Command) -> list[str]:
+def save_history(command: Command) -> Response:
     """
     Saves the history of sent commands to <commands_history_dir>/<commands_history_json>
     """

@@ -5,7 +5,9 @@ from aiconsole.core.chat.types import Chat
 
 
 class ChatMutator(Protocol):
-    chat: Chat
+    @property
+    def chat(self) -> Chat:
+        pass
 
     async def mutate(self, mutation: ChatMutation) -> None:
-        ...
+        pass

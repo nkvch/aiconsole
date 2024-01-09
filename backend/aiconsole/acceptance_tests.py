@@ -23,9 +23,9 @@ def project_directory() -> ProjectDirectory:
 @pytest.mark.asyncio
 async def test_should_be_able_to_add_new_project(
     background_tasks: BackgroundTasks, project_directory: ProjectDirectory
-):
+) -> None:
     await _initialize_app()
-    _login("test_key")
+    await _login("test_key")
 
     project_path = Path("./")
 
@@ -37,10 +37,10 @@ async def test_should_be_able_to_add_new_project(
     assert project_path.absolute() in {project.path.absolute() for project in await get_recent_project()}
 
 
-async def _initialize_app():
+async def _initialize_app() -> None:
     await project_settings.init()
 
 
-def _login(openai_api_key: str):
+async def _login(openai_api_key: str) -> None:
     cached_good_keys.add(openai_api_key)
-    check_key(openai_api_key)
+    await check_key(openai_api_key)

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 
 from aiconsole.core.project import project
 
@@ -22,5 +22,5 @@ router = APIRouter()
 
 
 @router.post("/close")
-async def close():
+async def close() -> Response:
     await project.close_project()

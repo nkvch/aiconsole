@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse
 
 from aiconsole.api.endpoints.registry import agents
@@ -37,7 +37,7 @@ router = APIRouter()
 
 
 @router.get("/{agent_id}")
-async def get_agent(request: Request, agent_id: str):
+async def get_agent(request: Request, agent_id: str) -> Response:
     return await asset_get(
         request,
         AssetType.AGENT,
@@ -57,7 +57,7 @@ async def get_agent(request: Request, agent_id: str):
 
 
 @router.patch("/{agent_id}")
-async def partially_update_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)):
+async def partially_update_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)) -> Response:
     try:
         await agents_service.partially_update_agent(agent_id=agent_id, agent=agent)
     except AssetWithGivenNameAlreadyExistError:
@@ -65,7 +65,7 @@ async def partially_update_agent(agent_id: str, agent: Agent, agents_service: Ag
 
 
 @router.post("/{agent_id}")
-async def create_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)):
+async def create_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)) -> Response:
     try:
         await agents_service.create_agent(agent_id=agent_id, agent=agent)
     except AssetWithGivenNameAlreadyExistError:
@@ -73,12 +73,12 @@ async def create_agent(agent_id: str, agent: Agent, agents_service: Agents = Dep
 
 
 @router.post("/{agent_id}/status-change")
-async def agent_status_change(agent_id: str, body: StatusChangePostBody):
+async def agent_status_change(agent_id: str, body: StatusChangePostBody) -> Response:
     await asset_status_change(AssetType.AGENT, agent_id, body)
 
 
 @router.delete("/{agent_id}")
-async def delete_agent(agent_id: str):
+async def delete_agent(agent_id: str) -> Response:
     try:
         await project.get_project_agents().delete_asset(agent_id)
         return JSONResponse({"status": "ok"})
@@ -87,17 +87,17 @@ async def delete_agent(agent_id: str):
 
 
 @router.get("/{asset_id}/exists")
-async def agent_exists(request: Request, asset_id: str):
+async def agent_exists(request: Request, asset_id: str) -> Response:
     return await asset_exists(AssetType.AGENT, request, asset_id)
 
 
 @router.get("/{asset_id}/path")
-async def agent_path(request: Request, asset_id: str):
+async def agent_path(request: Request, asset_id: str) -> Response:
     return asset_path(AssetType.AGENT, request, asset_id)
 
 
 @router.get("/{asset_id}/image")
-async def profile_image(asset_id: str):
+async def profile_image(asset_id: str) -> Response:
     if is_project_initialized():
         image_path = get_project_assets_directory(AssetType.AGENT) / f"{asset_id}.jpg"
 

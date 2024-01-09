@@ -25,7 +25,7 @@ class MissingCredentialException(Exception):
     pass
 
 
-def save_credential(module: str, credential: str, value: str):
+def save_credential(module: str, credential: str, value: str) -> None:
     # Specify the path for the credential file
     file_path = get_credentials_directory() / (module + ".json")
 

@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install poetry black isort
+        pip install poetry black isort mypy types-requests
         cd backend && poetry install
     - name: Run tests
       run: |
@@ -28,3 +28,6 @@ jobs:
     - name: Run isort check
       run: |
         cd backend && isort --check-only --atomic .
+    - name: Run type checker
+      run: |
+        cd backend && mypy .

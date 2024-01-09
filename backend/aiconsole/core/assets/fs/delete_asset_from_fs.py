@@ -20,7 +20,7 @@ from aiconsole.core.assets.asset import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
 
 
-def delete_asset_from_fs(asset_type: AssetType, id):
+def delete_asset_from_fs(asset_type: AssetType, id: str) -> None:
     """
     Delete a specific agent.
     """

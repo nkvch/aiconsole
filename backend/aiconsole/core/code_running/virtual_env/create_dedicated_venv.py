@@ -13,7 +13,7 @@ from aiconsole_toolkit.env import get_current_project_venv_path
 _log = logging.getLogger(__name__)
 
 
-async def create_dedicated_venv():
+async def create_dedicated_venv() -> None:
     venv_path = get_current_project_venv_path()  # Ensure this function returns a Path object
     if not venv_path.exists():
         _log.info(f"Creating venv in {venv_path}")

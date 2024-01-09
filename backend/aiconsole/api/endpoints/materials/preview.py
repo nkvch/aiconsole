@@ -16,7 +16,7 @@
 
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from fastapi.responses import JSONResponse
 
 from aiconsole.core.assets.agents.agent import Agent
@@ -31,24 +31,20 @@ from aiconsole.core.gpt.consts import GPTMode
 router = APIRouter()
 
 
-def create_user_agent():
-    return Agent(
-        id="user",
-        name="You",
-        usage="",
-        usage_examples=[],
-        system="",
-        defined_in=AssetLocation.AICONSOLE_CORE,
-        gpt_mode=GPTMode.QUALITY,
-        override=False,
-    )
-
-
 @router.post("/preview")
-async def materials_preview(material: Material):
+async def materials_preview(material: Material) -> Response:
     content_context = ContentEvaluationContext(
         chat=Chat(id="chat", name="", last_modified=datetime.now(), title_edited=False, message_groups=[]),
-        agent=create_user_agent(),
+        agent=Agent(
+            id="user",
+            name="You",
+            usage="",
+            usage_examples=[],
+            system="",
+            defined_in=AssetLocation.AICONSOLE_CORE,
+            gpt_mode=GPTMode.QUALITY,
+            override=False,
+        ),
         gpt_mode=GPTMode.SPEED,
         relevant_materials=[],
     )

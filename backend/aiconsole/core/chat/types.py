@@ -52,13 +52,11 @@ class AICMessageGroup(BaseModel):
     role: GPTRole
     analysis: str
     task: str
-    agent_id: str
     materials_ids: list[str]
-    role: GPTRole
     messages: list[AICMessage]
 
     @model_validator(mode="after")
-    def set_default_username(self):
+    def set_default_username(self) -> "AICMessageGroup":
         from aiconsole.core.settings.project_settings import get_aiconsole_settings
 
         role = self.role
@@ -67,7 +65,7 @@ class AICMessageGroup(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def set_default_email(self):
+    def set_default_email(self) -> "AICMessageGroup":
         from aiconsole.core.settings.project_settings import get_aiconsole_settings
 
         role = self.role

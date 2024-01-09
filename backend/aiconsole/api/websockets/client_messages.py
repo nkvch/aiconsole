@@ -21,10 +21,10 @@ from aiconsole.core.chat.chat_mutations import ChatMutation
 
 
 class BaseClientMessage(BaseModel):
-    def get_type(self):
+    def get_type(self) -> str:
         return self.__class__.__name__
 
-    async def send(self, websocket: WebSocketTestSession):
+    async def send(self, websocket: WebSocketTestSession) -> None:
         # client messages are sent via Test session which is synchronous
         websocket.send_json({"type": self.get_type(), **self.model_dump()})
 

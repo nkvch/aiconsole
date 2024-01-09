@@ -22,30 +22,30 @@ from aiconsole.core.project.project import is_project_initialized
 from aiconsole.utils.resource_to_path import resource_to_path
 
 
-def get_project_assets_directory(asset_type: AssetType, project_path: Path | None = None):
+def get_project_assets_directory(asset_type: AssetType, project_path: Path | None = None) -> Path:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
 
     return get_project_directory(project_path) / f"{asset_type.value}s"
 
 
-def get_core_assets_directory(asset_type: AssetType):
+def get_core_assets_directory(asset_type: AssetType) -> Path:
     return resource_to_path(f"aiconsole.preinstalled.{asset_type.value}s")
 
 
-def get_history_directory(project_path: Path | None = None):
+def get_history_directory(project_path: Path | None = None) -> Path:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
     return get_project_directory(project_path) / "chats"
 
 
-def get_aic_directory(project_path: Path | None = None):
+def get_aic_directory(project_path: Path | None = None) -> Path:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
     return get_project_directory(project_path) / ".aic"
 
 
-def get_project_directory(project_path: Path | None = None):
+def get_project_directory(project_path: Path | None = None) -> Path:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
 
@@ -55,13 +55,13 @@ def get_project_directory(project_path: Path | None = None):
     return Path(os.getcwd())
 
 
-def get_credentials_directory(project_path: Path | None = None):
+def get_credentials_directory(project_path: Path | None = None) -> Path:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
     return get_aic_directory(project_path) / "credentials"
 
 
-def get_project_name(project_path: Path | None = None):
+def get_project_name(project_path: Path | None = None) -> str:
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")
     return get_project_directory(project_path).name

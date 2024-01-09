@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from fastapi.responses import JSONResponse
 
 from aiconsole.core.assets.asset import AssetType
@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 @router.get("/")
-async def fetch_materials():
+async def fetch_materials() -> Response:
     settings = get_aiconsole_settings()
     return JSONResponse(
         [

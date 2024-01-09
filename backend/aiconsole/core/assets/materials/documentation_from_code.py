@@ -17,7 +17,7 @@
 import importlib.util
 import inspect
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
     from aiconsole.core.assets.materials.material import Material
@@ -25,12 +25,12 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 
-def documentation_from_code(material: "Material", source: str):
+def documentation_from_code(material: "Material", source: str) -> Callable:
     """
     Creates content of a material from a python material file.
     """
 
-    def create_content(context):
+    def create_content(context: str) -> str:
         # Create a new module
         spec = importlib.util.spec_from_loader("temp_module", loader=None)
 

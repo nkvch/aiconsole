@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Callable
+
 import tomlkit
 
 from aiconsole.core.assets.agents.agent import Agent
@@ -23,7 +25,7 @@ from aiconsole.core.assets.materials.material import Material, MaterialContentTy
 from aiconsole.core.project.paths import get_project_assets_directory
 
 
-async def save_asset_to_fs(asset: Asset):
+async def save_asset_to_fs(asset: Asset) -> Asset:
     path = get_project_assets_directory(asset.type)
 
     try:
@@ -32,10 +34,10 @@ async def save_asset_to_fs(asset: Asset):
         current_version = "0.0.1"
 
     # Parse version number
-    current_version = current_version.split(".")
+    current_version = current_version.split(".")  # type: ignore
 
     # Increment version number
-    current_version[-1] = str(int(current_version[-1]) + 1)
+    current_version[-1] = str(int(current_version[-1]) + 1)  # type: ignore
 
     # Join version number
     asset.version = ".".join(current_version)
@@ -50,7 +52,7 @@ async def save_asset_to_fs(asset: Asset):
             if model_dump[key] is None:
                 del model_dump[key]
 
-        def make_sure_starts_and_ends_with_newline(s: str):
+        def make_sure_starts_and_ends_with_newline(s: str) -> str:
             if not s.startswith("\n"):
                 s = "\n" + s
 
@@ -69,7 +71,7 @@ async def save_asset_to_fs(asset: Asset):
         if isinstance(asset, Material):
             doc.append("content_type", tomlkit.string(asset.content_type))
 
-            {
+            handlers: dict[MaterialContentType, Callable] = {
                 MaterialContentType.STATIC_TEXT: lambda: doc.append(
                     "content_static_text",
                     tomlkit.string(
@@ -91,7 +93,8 @@ async def save_asset_to_fs(asset: Asset):
                         multiline=True,
                     ),
                 ),
-            }[asset.content_type]()
+            }
+            handlers[asset.content_type]()
 
         if isinstance(asset, Agent):
             if asset.id == "user":

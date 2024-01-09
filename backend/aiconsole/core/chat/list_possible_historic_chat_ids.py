@@ -20,7 +20,7 @@ from pathlib import Path
 from aiconsole.core.project.paths import get_history_directory
 
 
-def list_possible_historic_chat_ids(project_path: Path | None = None):
+def list_possible_historic_chat_ids(project_path: Path | None = None) -> list[str]:
     history_directory = get_history_directory(project_path)
     if history_directory.exists() and history_directory.is_dir():
         entries = os.scandir(history_directory)

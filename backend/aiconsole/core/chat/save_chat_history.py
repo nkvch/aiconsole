@@ -21,7 +21,7 @@ from aiconsole.core.chat.types import Chat
 from aiconsole.core.project.paths import get_history_directory
 
 
-def save_chat_history(chat: Chat):
+def save_chat_history(chat: Chat) -> None:
     history_directory = get_history_directory()
     file_path = history_directory / f"{chat.id}.json"
 

@@ -22,12 +22,13 @@ from aiconsole.core.chat.execution_modes.analysis.create_materials_str import (
     create_materials_str,
 )
 from aiconsole.core.chat.execution_modes.analysis.gpt_analysis_function_step import (
+    AnalysisResult,
     gpt_analysis_function_step,
 )
 from aiconsole.core.gpt.consts import GPTMode
 
 
-async def director_analyse(chat_mutator: ChatMutator):
+async def director_analyse(chat_mutator: ChatMutator) -> AnalysisResult:
     return await gpt_analysis_function_step(
         chat_mutator=chat_mutator,
         gpt_mode=GPTMode.QUALITY,

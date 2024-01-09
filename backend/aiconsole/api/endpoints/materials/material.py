@@ -16,7 +16,7 @@
 
 from typing import cast
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 from aiconsole.api.endpoints.registry import materials
@@ -40,7 +40,7 @@ from aiconsole.core.project import project
 router = APIRouter()
 
 
-def get_default_content_for_type(type: MaterialContentType):
+def get_default_content_for_type(type: MaterialContentType) -> str:
     if type == MaterialContentType.STATIC_TEXT:
         return """
 
@@ -117,7 +117,7 @@ def fibonacci(n):
 
 
 @router.get("/{material_id}")
-async def get_material(request: Request, material_id: str):
+async def get_material(request: Request, material_id: str) -> Response:
     type = cast(MaterialContentType, request.query_params.get("type", ""))
 
     return await asset_get(
@@ -141,7 +141,7 @@ async def get_material(request: Request, material_id: str):
 @router.patch("/{asset_id}")
 async def partially_update_material(
     asset_id: str, material: Material, materials_service: Materials = Depends(materials)
-):
+) -> Response:
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
     except AssetWithGivenNameAlreadyExistError:
@@ -149,7 +149,9 @@ async def partially_update_material(
 
 
 @router.post("/{asset_id}")
-async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
+async def create_material(
+    asset_id: str, material: Material, materials_service: Materials = Depends(materials)
+) -> Response:
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
     except AssetWithGivenNameAlreadyExistError:
@@ -157,12 +159,12 @@ async def create_material(asset_id: str, material: Material, materials_service: 
 
 
 @router.post("/{material_id}/status-change")
-async def material_status_change(material_id: str, body: StatusChangePostBody):
+async def material_status_change(material_id: str, body: StatusChangePostBody) -> Response:
     return await asset_status_change(AssetType.MATERIAL, material_id, body)
 
 
 @router.delete("/{material_id}")
-async def delete_material(material_id: str):
+async def delete_material(material_id: str) -> Response:
     try:
         await project.get_project_materials().delete_asset(material_id)
         return JSONResponse({"status": "ok"})
@@ -171,10 +173,10 @@ async def delete_material(material_id: str):
 
 
 @router.get("/{asset_id}/exists")
-async def material_exists(request: Request, asset_id: str):
+async def material_exists(request: Request, asset_id: str) -> Response:
     return await asset_exists(AssetType.MATERIAL, request, asset_id)
 
 
 @router.get("/{asset_id}/path")
-async def material_path(request: Request, asset_id: str):
+async def material_path(request: Request, asset_id: str) -> Response:
     return asset_path(AssetType.MATERIAL, request, asset_id)

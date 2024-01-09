@@ -15,7 +15,7 @@ from aiconsole.app import app
 #
 
 
-async def main():
+async def main() -> None:
     # Create the argument parser
     parser = argparse.ArgumentParser(description="AI Console")
 

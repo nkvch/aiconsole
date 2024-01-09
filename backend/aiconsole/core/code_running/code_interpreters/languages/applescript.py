@@ -45,11 +45,12 @@ class AppleScript(SubprocessCodeInterpreter):
     file_extension = "applescript"
     proper_name = "AppleScript"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.start_cmd = os.environ.get("SHELL", "/bin/zsh")
 
-    def preprocess_code(self, code, materials: list["Assets"]):
+    # TODO - check if we need materials here (not used right now)
+    def preprocess_code(self, code: str, materials: list["Assets"]) -> str:  # type: ignore
         """
         Inserts an end_of_execution marker and adds active line indicators.
         """
@@ -68,7 +69,7 @@ class AppleScript(SubprocessCodeInterpreter):
 
         return code
 
-    def detect_end_of_execution(self, line):
+    def detect_end_of_execution(self, line: str) -> bool:
         """
         Detects end of execution marker in the output.
         """

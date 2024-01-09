@@ -38,6 +38,7 @@ import subprocess
 import threading
 import time
 import traceback
+from io import TextIOWrapper
 from typing import AsyncGenerator
 
 from aiconsole.core.assets.materials.material import Material
@@ -52,19 +53,19 @@ _log = logging.getLogger(__name__)
 
 
 class SubprocessCodeInterpreter(BaseCodeInterpreter):
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_cmd = ""
-        self.process = None
+        self.process: subprocess.Popen | None = None
         self.output_queue: "queue.Queue[str]" = queue.Queue()
         self.done = threading.Event()
 
-    def detect_end_of_execution(self, line):
-        return None
+    def detect_end_of_execution(self, line: str) -> bool:
+        return False
 
-    def line_postprocessor(self, line):
+    def line_postprocessor(self, line: str) -> str | None:
         return line
 
-    def preprocess_code(self, code, materials: list[Material]):
+    def preprocess_code(self, code: str, materials: list[Material]) -> str:
         """
         This needs to insert an end_of_execution marker of some kind,
         which can be detected by detect_end_of_execution.
@@ -73,13 +74,13 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
         """
         return code
 
-    def terminate(self):
+    def terminate(self) -> None:
         if self.process:
             self.process.terminate()
         else:
             raise Exception("Process not started")
 
-    def start_process(self):
+    def start_process(self) -> None:
         if self.process:
             self.terminate()
 
@@ -157,25 +158,25 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
                         time.sleep(0.2)
                     break
 
-    def handle_stream_output(self, stream, is_error_stream):
+    def handle_stream_output(self, stream: TextIOWrapper, is_error_stream: bool) -> None:
         for line in iter(stream.readline, ""):
             _log.debug(f"Received output line:\n{line}\n---")
 
-            line = self.line_postprocessor(line)
+            processed_line = self.line_postprocessor(line)
 
-            if line is None:
-                continue  # `line = None` is the postprocessor's signal to discard completely
+            if processed_line is None:
+                continue  # `processed_line = None` is the postprocessor's signal to discard completely
 
-            if self.detect_end_of_execution(line):
+            if self.detect_end_of_execution(processed_line):
                 self.done.set()
-            elif is_error_stream and "KeyboardInterrupt" in line:
+            elif is_error_stream and "KeyboardInterrupt" in processed_line:
                 self.output_queue.put("KeyboardInterrupt")
                 time.sleep(0.1)
                 self.done.set()
             else:
-                self.output_queue.put(line)
+                self.output_queue.put(processed_line)
 
-    def _patched_env(self):
+    def _patched_env(self) -> dict:
         path = os.environ.get("PATH") or ""
 
         # replace the first element in the PATH with the venv bin path

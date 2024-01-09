@@ -27,11 +27,11 @@ from aiconsole.core.chat.load_chat_history import load_chat_history
 from aiconsole.core.recent_projects.recent_project import RecentProject
 
 
-def _get_user_recent_projects_file():
+def _get_user_recent_projects_file() -> Path:
     return Path(user_config_dir("aiconsole")) / "recent"
 
 
-def _read_recent_projects():
+def _read_recent_projects() -> list[Path]:
     recent_projects_file = _get_user_recent_projects_file()
     if recent_projects_file.exists():
         recent_projects = [Path(path_str) for path_str in recent_projects_file.read_text().splitlines()]
@@ -41,13 +41,13 @@ def _read_recent_projects():
     return recent_projects
 
 
-def _save_recent_projects(recent_projects: list[Path]):
+def _save_recent_projects(recent_projects: list[Path]) -> None:
     recent_projects_file = _get_user_recent_projects_file()
     recent_projects_file.parent.mkdir(parents=True, exist_ok=True)
     recent_projects_file.write_text("\n".join(str(p) for p in recent_projects))
 
 
-async def add_to_recent_projects(project_path: Path):
+async def add_to_recent_projects(project_path: Path) -> None:
     recent_projects = _read_recent_projects()
     recent_projects.insert(0, project_path)
 
@@ -61,7 +61,7 @@ async def add_to_recent_projects(project_path: Path):
     _save_recent_projects(recent_projects)
 
 
-async def remove_from_recent_projects(project_path: Path):
+async def remove_from_recent_projects(project_path: Path) -> None:
     recent_projects = _read_recent_projects()
     recent_projects.remove(project_path)
     _save_recent_projects(recent_projects)

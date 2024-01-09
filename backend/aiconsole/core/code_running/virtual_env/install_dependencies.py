@@ -1,13 +1,14 @@
 import logging
 import platform
 import subprocess
+from pathlib import Path
 
 from aiconsole.consts import DIR_WITH_AICONSOLE_PACKAGE
 
 _log = logging.getLogger(__name__)
 
 
-def install_dependencies(venv_or_python_path):
+def install_dependencies(venv_or_python_path: Path) -> None:
     pyproject_path = DIR_WITH_AICONSOLE_PACKAGE / "pyproject.toml"
 
     if not pyproject_path.exists():

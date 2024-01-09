@@ -19,7 +19,7 @@ from pathlib import Path
 from aiconsole.consts import AICONSOLE_PATH
 
 
-def resource_to_path(resource) -> Path:
+def resource_to_path(resource: str) -> Path:
     abs_path = AICONSOLE_PATH.parent
 
     for path_segment in resource.split("."):

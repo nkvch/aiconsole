@@ -28,23 +28,23 @@ from aiconsole.core.assets.asset import AssetType
 
 
 class BaseServerMessage(BaseModel):
-    def get_type(self):
+    def get_type(self) -> str:
         return self.__class__.__name__
 
-    def send_to_connection(self, connection: "AICConnection"):
-        return connection.send(self)
+    async def send_to_connection(self, connection: "AICConnection") -> None:
+        await connection.send(self)
 
-    def send_to_chat(self, chat_id: str, source_connection_to_ommit: "AICConnection | None" = None):
+    async def send_to_chat(self, chat_id: str, source_connection_to_ommit: "AICConnection | None" = None) -> None:
         from aiconsole.api.websockets.connection_manager import send_message_to_chat
 
-        return send_message_to_chat(chat_id, self, source_connection_to_ommit)
+        await send_message_to_chat(chat_id, self, source_connection_to_ommit)
 
-    def send_to_all(self, source_connection_to_ommit: "AICConnection | None" = None):
+    async def send_to_all(self, source_connection_to_ommit: "AICConnection | None" = None) -> None:
         from aiconsole.api.websockets.connection_manager import send_message_to_all
 
-        return send_message_to_all(self, source_connection_to_ommit)
+        await send_message_to_all(self, source_connection_to_ommit)
 
-    def model_dump(self, **kwargs):
+    def model_dump(self, **kwargs) -> dict:  # type: ignore
         # Don't include None values, call to super to avoid recursion
         return {k: v for k, v in super().model_dump(**kwargs).items() if v is not None}
 
@@ -96,7 +96,7 @@ class NotifyAboutChatMutationServerMessage(BaseServerMessage):
     chat_id: str
     mutation: ChatMutation
 
-    def model_dump(self, **kwargs):
+    def model_dump(self, **kwargs) -> dict:  # type: ignore
         # include type of mutation in the dump of "mutation"
         return {
             **super().model_dump(**kwargs),

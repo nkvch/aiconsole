@@ -17,7 +17,7 @@
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import cast
+from typing import Callable, cast
 from uuid import uuid4
 
 from aiconsole.api.websockets.client_messages import (
@@ -67,41 +67,7 @@ director_agent = Agent(
 )
 
 
-async def handle_incoming_message(connection: AICConnection, json: dict):
-    message_type = json["type"]
-    handler = {
-        AcquireLockClientMessage.__name__: lambda connection, json: _handle_acquire_lock_ws_message(
-            connection, AcquireLockClientMessage(**json)
-        ),
-        ReleaseLockClientMessage.__name__: lambda connection, json: _handle_release_lock_ws_message(
-            connection, ReleaseLockClientMessage(**json)
-        ),
-        OpenChatClientMessage.__name__: lambda connection, json: _handle_open_chat_ws_message(
-            connection, OpenChatClientMessage(**json)
-        ),
-        CloseChatClientMessage.__name__: lambda connection, json: _handle_close_chat_ws_message(
-            connection, CloseChatClientMessage(**json)
-        ),
-        InitChatMutationClientMessage.__name__: lambda connection, json: _handle_init_chat_mutation_ws_message(
-            connection, InitChatMutationClientMessage(**json)
-        ),
-        AcceptCodeClientMessage.__name__: lambda connection, json: _handle_accept_code_ws_message(
-            connection, AcceptCodeClientMessage(**json)
-        ),
-        ProcessChatClientMessage.__name__: lambda connection, json: _handle_process_chat_ws_message(
-            connection, ProcessChatClientMessage(**json)
-        ),
-    }[message_type]
-
-    if not handler:
-        raise Exception(f"Unknown message type: {message_type}")
-
-    _log.info(f"Handling message {message_type}")
-
-    return await handler(connection, json)
-
-
-async def _handle_acquire_lock_ws_message(connection: AICConnection, message: AcquireLockClientMessage):
+async def _handle_acquire_lock_ws_message(connection: AICConnection, message: AcquireLockClientMessage) -> None:
     await acquire_lock(chat_id=message.chat_id, request_id=message.request_id)
 
     connection.acquired_locks.append(
@@ -114,7 +80,7 @@ async def _handle_acquire_lock_ws_message(connection: AICConnection, message: Ac
     _log.info(f"Acquired lock {message.request_id} {connection.acquired_locks}")
 
 
-async def _handle_release_lock_ws_message(connection: AICConnection, message: ReleaseLockClientMessage):
+async def _handle_release_lock_ws_message(connection: AICConnection, message: ReleaseLockClientMessage) -> None:
     await release_lock(chat_id=message.chat_id, request_id=message.request_id)
 
     lock_data = AcquiredLock(chat_id=message.chat_id, request_id=message.request_id)
@@ -125,7 +91,7 @@ async def _handle_release_lock_ws_message(connection: AICConnection, message: Re
         _log.error(f"Lock {lock_data} not found in {connection.acquired_locks}")
 
 
-async def _handle_open_chat_ws_message(connection: AICConnection, message: OpenChatClientMessage):
+async def _handle_open_chat_ws_message(connection: AICConnection, message: OpenChatClientMessage) -> None:
     temporary_request_id = str(uuid4())
 
     try:
@@ -144,19 +110,19 @@ async def _handle_open_chat_ws_message(connection: AICConnection, message: OpenC
         await release_lock(chat_id=message.chat_id, request_id=temporary_request_id)
 
 
-async def _handle_close_chat_ws_message(connection: AICConnection, message: CloseChatClientMessage):
+async def _handle_close_chat_ws_message(connection: AICConnection, message: CloseChatClientMessage) -> None:
     connection.open_chats_ids.remove(message.chat_id)
 
 
 async def _handle_init_chat_mutation_ws_message(
     connection: AICConnection | None, message: InitChatMutationClientMessage
-):
+) -> None:
     mutator = DefaultChatMutator(chat_id=message.chat_id, request_id=message.request_id, connection=connection)
 
     await mutator.mutate(message.mutation)
 
 
-async def _handle_accept_code_ws_message(connection: AICConnection, message: AcceptCodeClientMessage):
+async def _handle_accept_code_ws_message(connection: AICConnection, message: AcceptCodeClientMessage) -> None:
     try:
         chat = await acquire_lock(chat_id=message.chat_id, request_id=message.request_id)
 
@@ -224,7 +190,7 @@ async def _render_materials_from_message_group(
     return MaterialsAndRenderedMaterials(materials=relevant_materials, rendered_materials=rendered_materials)
 
 
-async def _handle_process_chat_ws_message(connection: AICConnection, message: ProcessChatClientMessage):
+async def _handle_process_chat_ws_message(connection: AICConnection, message: ProcessChatClientMessage) -> None:
     try:
         chat = await acquire_lock(chat_id=message.chat_id, request_id=message.request_id)
 
@@ -248,3 +214,28 @@ async def _handle_process_chat_ws_message(connection: AICConnection, message: Pr
         )
     finally:
         await release_lock(chat_id=message.chat_id, request_id=message.request_id)
+
+
+class IncomingMessagesHandler:
+    _HANDLERS = {
+        AcquireLockClientMessage.__name__: (_handle_acquire_lock_ws_message, AcquireLockClientMessage),
+        ReleaseLockClientMessage.__name__: (_handle_release_lock_ws_message, ReleaseLockClientMessage),
+        OpenChatClientMessage.__name__: (_handle_open_chat_ws_message, OpenChatClientMessage),
+        CloseChatClientMessage.__name__: (_handle_close_chat_ws_message, CloseChatClientMessage),
+        InitChatMutationClientMessage.__name__: (_handle_init_chat_mutation_ws_message, InitChatMutationClientMessage),
+        AcceptCodeClientMessage.__name__: (_handle_accept_code_ws_message, AcceptCodeClientMessage),
+        ProcessChatClientMessage.__name__: (_handle_process_chat_ws_message, ProcessChatClientMessage),
+    }
+
+    async def handle(self, connection: AICConnection, json: dict) -> None:
+        message_type = json["type"]
+        handler_data = self._HANDLERS.get(message_type)
+        if handler_data is None:
+            raise Exception(f"Unknown message type: {message_type}")
+
+        handler, message_type_cls = handler_data
+        _log.info(f"Handling message {message_type}")
+        await handler(connection, message_type_cls(**json))
+
+
+incoming_message_handler = IncomingMessagesHandler()

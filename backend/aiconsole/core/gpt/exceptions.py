@@ -16,7 +16,7 @@
 
 
 class NoOpenAPIKeyException(Exception):
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             "No API key provided or is invalid. "
             "You must set the environment variable OPENAI_API_KEY=<API-KEY>. "

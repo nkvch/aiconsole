@@ -15,9 +15,10 @@
 # limitations under the License.
 
 from pathlib import Path
+from typing import Generator
 
 
-def list_files_in_file_system(path: Path):
+def list_files_in_file_system(path: Path) -> Generator:
     """
     Recursivelly list all paths to files in path
     """

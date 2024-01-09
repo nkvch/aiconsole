@@ -42,7 +42,7 @@ class GPTFunctionCall(BaseModel):
     arguments: str
 
     @property
-    def arguments_dict(self):
+    def arguments_dict(self) -> dict | None:
         return parse_partial_json(self.arguments)
 
 
@@ -58,7 +58,7 @@ class GPTResponseMessage(BaseModel):
     tool_calls: list[GPTToolCall] = []
     name: str | None = None
 
-    def model_dump(self):
+    def model_dump(self) -> dict:
         # Don't include None values, call to super to avoid recursion
         return {k: v for k, v in super().model_dump().items() if v is not None}
 
@@ -75,7 +75,7 @@ class GPTRequestTextMessage(BaseModel):
     name: str | None = None
     tool_calls: list[GPTToolCall] | None = None
 
-    def model_dump(self):
+    def model_dump(self) -> dict:
         # Don't include None values, call to super to avoid recursion
         return {k: v for k, v in super().model_dump().items() if v is not None}
 

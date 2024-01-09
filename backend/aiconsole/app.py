@@ -17,6 +17,7 @@
 import os
 from contextlib import asynccontextmanager
 from logging import config
+from typing import AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -35,7 +36,7 @@ if "BE_SENTRY_DSN" in os.environ:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await project_settings.init()
     if project.is_project_initialized():
         await project.reinitialize_project()
@@ -45,7 +46,7 @@ async def lifespan(app: FastAPI):
 config.dictConfig(log_config)
 
 
-def app():
+def app() -> FastAPI:
     origin = os.getenv("CORS_ORIGIN", None)
 
     if origin is None:

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, Response
 from pydantic import BaseModel
 
 from aiconsole.api.endpoints.projects.registry import project_directory
@@ -28,13 +28,15 @@ class ProjectDirectoryParams(BaseModel):
 
 
 @router.post("/choose_directory")
-async def choose_directory(project_directory: ProjectDirectory = Depends(project_directory)):
+async def choose_directory(project_directory: ProjectDirectory = Depends(project_directory)) -> Response:
     initial_directory = await project_directory.choose_directory()
     return {"directory": None if initial_directory is None else str(initial_directory)}
 
 
 @router.get("/is_in_directory")
-async def is_project_in_directory(directory: str, project_directory: ProjectDirectory = Depends(project_directory)):
+async def is_project_in_directory(
+    directory: str, project_directory: ProjectDirectory = Depends(project_directory)
+) -> Response:
     return {"is_project": project_directory.is_project_in_directory(directory)}
 
 
@@ -43,5 +45,5 @@ async def switch_project_endpoint(
     params: ProjectDirectoryParams,
     background_tasks: BackgroundTasks,
     project_directory: ProjectDirectory = Depends(project_directory),
-):
+) -> Response:
     await project_directory.switch_or_save_project(params.directory, background_tasks)

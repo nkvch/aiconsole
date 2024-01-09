@@ -6,7 +6,7 @@ from datetime import datetime
 from aiconsole_toolkit.env import get_current_project_venv_available_packages
 
 
-async def content(context):
+async def content(context: str) -> str:
     return f"""
 ## Execution environment
 

@@ -19,6 +19,7 @@ import os
 import uuid
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from aiconsole.core.chat.types import Chat
 from aiconsole.core.project.paths import get_history_directory
@@ -95,11 +96,12 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
                     data["name"] = data["title"]
                 else:
 
-                    def extract_default_headline():
+                    def extract_default_headline() -> Any | None:
                         for group in data["message_groups"]:
                             if "messages" in group and group["messages"]:
                                 for msg in group["messages"]:
                                     return msg.get("content")
+                        return None
 
                     data["name"] = extract_default_headline() or "New Chat"
 

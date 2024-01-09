@@ -1,13 +1,14 @@
 import json
+from typing import Any
 
 
-def parse_partial_json(s: str) -> dict | None:
+def parse_partial_json(s: str) -> Any | None:
     try:
         return json.loads(s)
     except json.JSONDecodeError:
         pass
 
-    closing_chars_stack = []
+    closing_chars_stack: list = []
     escaped = False
     completed_string = []
 

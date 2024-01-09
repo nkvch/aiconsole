@@ -58,7 +58,7 @@ class GPTPartialMessage(BaseModel):
     name: str | None = None
 
     @property
-    def content(self):
+    def content(self) -> str | None:
         if not self.content_builder:
             return None
 
@@ -80,7 +80,7 @@ class GPTPartialResponse(BaseModel):
     model: str = ""
     choices: list[GPTPartialChoice] = []
 
-    def to_final_response(self):
+    def to_final_response(self) -> GPTResponse:
         return GPTResponse(
             id=self.id,
             object=self.object,
@@ -111,7 +111,7 @@ class GPTPartialResponse(BaseModel):
             ],
         )
 
-    def apply_chunk(self, chunk: ModelResponse):
+    def apply_chunk(self, chunk: ModelResponse) -> None:
         self.id = chunk.id
         self.object = chunk.object
         self.created = chunk.created

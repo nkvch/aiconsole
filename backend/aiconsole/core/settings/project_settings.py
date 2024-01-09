@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import datetime
 import logging
 from pathlib import Path
@@ -25,6 +26,7 @@ import tomlkit.exceptions
 from appdirs import user_config_dir
 from pydantic import BaseModel
 from tomlkit import TOMLDocument
+from tomlkit.items import Table
 from watchdog.observers import Observer
 
 from aiconsole.api.websockets.server_messages import SettingsServerMessage
@@ -79,13 +81,13 @@ def _set_openai_api_key_environment(settings: SettingsData) -> None:
 
 class Settings:
     def __init__(self, project_path: Path | None = None):
-        self._suppress_notification_until = None
+        self._suppress_notification_until: datetime.datetime | None = None
         self._settings = SettingsData()
 
         self._global_settings_file_path = Path(user_config_dir("aiconsole")) / "settings.toml"
 
         if project_path:
-            self._project_settings_file_path = project_path / "settings.toml"
+            self._project_settings_file_path: Path | None = project_path / "settings.toml"
         else:
             self._project_settings_file_path = None
 
@@ -111,10 +113,10 @@ class Settings:
     def model_dump(self) -> dict[str, Any]:
         return self._settings.model_dump()
 
-    def stop(self):
+    def stop(self) -> None:
         self._observer.stop()
 
-    async def reload(self, initial: bool = False):
+    async def reload(self, initial: bool = False) -> None:
         self._settings = await self.__load()
         await SettingsServerMessage(
             initial=initial
@@ -143,7 +145,7 @@ class Settings:
         else:
             raise ValueError(f"Unknown asset type {asset_type}")
 
-    def rename_asset(self, asset_type: AssetType, old_id: str, new_id: str):
+    def rename_asset(self, asset_type: AssetType, old_id: str, new_id: str) -> None:
         if asset_type == AssetType.MATERIAL:
             partial_settings = PartialSettingsData(
                 materials_to_reset=[old_id], materials={new_id: self.get_asset_status(asset_type, old_id)}
@@ -182,7 +184,7 @@ class Settings:
         self.save(PartialSettingsData(code_autorun=self._settings.code_autorun), to_global=to_global)
 
     async def __load(self) -> SettingsData:
-        settings = {}
+        settings: dict[str, Any] = {}
         paths = [self._global_settings_file_path, self._project_settings_file_path]
 
         for file_path in paths:
@@ -241,7 +243,7 @@ class Settings:
     def save(self, settings_data: PartialSettingsData, to_global: bool = False) -> None:
         if to_global:
             global_file_path = self._global_settings_file_path
-            file_path = self._global_settings_file_path
+            file_path: Path = self._global_settings_file_path
         else:
             if settings_data.username is not None and settings_data.email is not None:
                 raise ValueError("Username and Email can only be saved in global settings")
@@ -254,10 +256,10 @@ class Settings:
 
         global_document = self.__get_tolmdocument_to_save(global_file_path)
         document = self.__get_tolmdocument_to_save(file_path)
-        doc_settings: tomlkit.table.Table = document["settings"]
-        doc_materials: tomlkit.table.Table = document["materials"]
-        doc_agents: tomlkit.table.Table = document["agents"]
-        global_doc_agents: tomlkit.table.Table = global_document["agents"]
+        doc_settings: Table = document["settings"]  # type: ignore
+        doc_materials: Table = document["materials"]  # type: ignore
+        doc_agents: Table = document["agents"]  # type: ignore
+        global_doc_agents: Table = global_document["agents"]  # type: ignore
 
         if settings_data.code_autorun is not None:
             doc_settings["code_autorun"] = settings_data.code_autorun
@@ -282,7 +284,7 @@ class Settings:
         for material in settings_data.materials:
             doc_materials[material] = settings_data.materials[material].value
 
-        was_forced = False
+        was_forced = None
         for agent in settings_data.agents:
             doc_agents[agent] = settings_data.agents[agent].value
             if settings_data.agents[agent] == AssetStatus.FORCED:
@@ -302,18 +304,18 @@ class Settings:
             file.write(document.as_string())
 
 
-async def init():
+async def init() -> None:
     global _settings
-    _settings = Settings(get_project_directory() if is_project_initialized() else None)
-    await _settings.reload()
+    _settings = Settings(get_project_directory() if is_project_initialized() else None)  # type: ignore
+    await _settings.reload()  # type: ignore
 
 
 def get_aiconsole_settings() -> Settings:
-    return _settings
+    return _settings  # type: ignore
 
 
-async def reload_settings(initial: bool = False):
+async def reload_settings(initial: bool = False) -> None:
     global _settings
-    _settings.stop()
-    _settings = Settings(get_project_directory() if is_project_initialized() else None)
-    await _settings.reload(initial)
+    _settings.stop()  # type: ignore
+    _settings = Settings(get_project_directory() if is_project_initialized() else None)  # type: ignore
+    await _settings.reload(initial)  # type: ignore

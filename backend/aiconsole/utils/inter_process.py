@@ -20,7 +20,7 @@ manager = Manager()
 shared_dict = manager.dict()
 
 
-def display_shared_objects(dictionary):
+def display_shared_objects(dictionary: str) -> None:
     # Keep in mind that the dictionary is shared between processes, the subprocess does not have logging set up
     for material in dictionary:
         print("Material:", material)

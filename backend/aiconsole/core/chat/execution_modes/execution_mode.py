@@ -32,5 +32,5 @@ class ExecutionMode(BaseModel):
     accept_code: Callable[[AcceptCodeContext], Awaitable[None]]
 
 
-def accept_code_not_supported(context: AcceptCodeContext):
+def accept_code_not_supported(context: AcceptCodeContext) -> None:
     raise NotImplementedError(f"running code is not supported by {context.agent.name} ({context.agent.id}) agent")

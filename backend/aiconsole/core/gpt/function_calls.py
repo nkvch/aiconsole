@@ -24,10 +24,11 @@ import json
 from functools import wraps
 from typing import Any, Callable
 
+from openai import ChatCompletion
 from pydantic import BaseModel, validate_arguments
 
 
-def _remove_a_key(d, remove_key) -> None:
+def _remove_a_key(d: Any, remove_key: str) -> None:
     """Remove a key from a dictionary recursively"""
     if isinstance(d, dict):
         for key in list(d.keys()):
@@ -82,12 +83,12 @@ class openai_function:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         @wraps(self.func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):  # type: ignore
             return self.validate_func(*args, **kwargs)
 
-        return wrapper(*args, **kwargs)
+        return wrapper(*args, **kwargs)  # type: ignore
 
-    def from_response(self, completion, throw_error=True):
+    def from_response(self, completion: ChatCompletion, throw_error: bool = True) -> Any:
         """
         Parse the response from OpenAI's API and return the function call
 
@@ -111,8 +112,7 @@ class openai_function:
 
 class OpenAISchema(BaseModel):
     @classmethod
-    @property
-    def openai_schema(cls):
+    def openai_schema(cls) -> dict:
         """
         Return the schema in the format of OpenAI's schema as jsonschema
 
@@ -140,7 +140,7 @@ class OpenAISchema(BaseModel):
         }
 
     @classmethod
-    def from_response(cls, completion, throw_error=True):
+    def from_response(cls, completion: Any, throw_error: bool = True) -> "OpenAISchema":
         """Execute the function from the response of an openai chat completion
 
         Parameters:
@@ -161,14 +161,3 @@ class OpenAISchema(BaseModel):
         function_call = message["function_call"]
         arguments = json.loads(function_call["arguments"], strict=False)
         return cls(**arguments)
-
-
-def openai_schema(cls):
-    if not issubclass(cls, BaseModel):
-        raise TypeError("Class must be a subclass of pydantic.BaseModel")
-
-    @wraps(cls, updated=())
-    class Wrapper(cls, OpenAISchema):  # type: ignore
-        pass
-
-    return Wrapper

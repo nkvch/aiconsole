@@ -47,23 +47,23 @@ class Python(SubprocessCodeInterpreter):
     file_extension = "py"
     proper_name = "Python"
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.start_cmd = "python -i -q -u"
 
-    def preprocess_code(self, code: str, materials: list[Material]):
+    def preprocess_code(self, code: str, materials: list[Material]) -> str:
         return preprocess_python(code, materials)
 
-    def line_postprocessor(self, line):
+    def line_postprocessor(self, line: str) -> str | None:
         if re.match(r"^(\s*>>>\s*|\s*\.\.\.\s*)", line):
             return None
         return line
 
-    def detect_end_of_execution(self, line):
+    def detect_end_of_execution(self, line: str) -> bool:
         return "## end_of_execution ##" in line
 
 
-def preprocess_python(code: str, materials: list[Material]):
+def preprocess_python(code: str, materials: list[Material]) -> str:
     """
     Add active line markers
     Wrap in a try except
@@ -98,10 +98,9 @@ def preprocess_python(code: str, materials: list[Material]):
 
     parsed_code = ast.parse("\n\n\n".join(apis))
     parsed_code.body = [b for b in parsed_code.body if not isinstance(b, ast.Expr) or not isinstance(b.value, ast.Str)]
-    apis = ast.unparse(parsed_code)
 
     newline = "\n"
-    api_lines = [line for line in apis.split(newline) if line.strip()]
+    api_lines = [line for line in ast.unparse(parsed_code).split(newline) if line.strip()]
     code_lines = [line for line in code.split(newline) if line.strip()]
 
     code = f"""

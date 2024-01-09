@@ -72,7 +72,7 @@ async def render_materials_from_message_group(
         chat=context.chat_mutator.chat, agent=agent, gpt_mode=agent.gpt_mode, relevant_materials=relevant_materials
     )
 
-    rendered_materials = await asyncio.gather(
+    rendered_materials: list[RenderedMaterial] = await asyncio.gather(
         *[material.render(content_context) for material in relevant_materials if material.type == "rendered_material"]
     )
 
@@ -81,7 +81,7 @@ async def render_materials_from_message_group(
 
 async def execution_mode_process(
     context: ProcessChatContext,
-):
+) -> None:
     _log.debug("execution_mode_director")
 
     analysis = await director_analyse(context.chat_mutator)
@@ -112,7 +112,7 @@ async def execution_mode_process(
 
 async def execution_mode_accept_code(
     context: AcceptCodeContext,
-):
+) -> None:
     raise Exception("Director does not support running code")
 
 

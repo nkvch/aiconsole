@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# type: ignore
 
 import asyncio
-import logging
 import threading
 import time
 from functools import wraps
@@ -24,8 +24,6 @@ from functools import wraps
 from fastapi import Request
 from fastapi.concurrency import run_until_first_complete
 from fastapi.responses import StreamingResponse
-
-_log = logging.getLogger(__name__)
 
 
 def disconnect_aware_generator(original_gen, request):
@@ -45,7 +43,7 @@ def disconnect_aware_generator(original_gen, request):
         finally:
             loop.close()
 
-    async def async_gen():
+    async def async_gen() -> None:
         if hasattr(original_gen, "__aiter__"):
             # Asynchronous generator
             async for chunk in original_gen:

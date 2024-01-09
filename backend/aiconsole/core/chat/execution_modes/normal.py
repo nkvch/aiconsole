@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO
+# type: ignore
+
 import asyncio
 import logging
 from datetime import datetime
@@ -84,7 +87,7 @@ async def render_materials_from_message_group(
 
 async def execution_mode_process(
     context: ProcessChatContext,
-):
+) -> None:
     _log.debug("execution_mode_normal")
 
     gpt_executor = GPTExecutor()
@@ -125,7 +128,7 @@ async def execution_mode_process(
 
 async def execution_mode_accept_code(
     context: AcceptCodeContext,
-):
+) -> None:
     raise Exception("This agent does not support running code")
 
 

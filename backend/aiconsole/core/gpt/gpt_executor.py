@@ -38,8 +38,8 @@ litellm.set_verbose = False
 
 
 class GPTExecutor:
-    def __init__(self):
-        self.request = {}
+    def __init__(self) -> None:
+        self.request: dict = {}
         self.response = GPTResponse(
             choices=[
                 GPTChoice(

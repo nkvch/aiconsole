@@ -16,7 +16,7 @@
 
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from fastapi.responses import FileResponse
 
 from aiconsole.consts import AICONSOLE_PATH
@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 @router.get("/image")
-async def image(path: str):
+async def image(path: str) -> Response:
     abs_path = Path.cwd() / path
 
     if abs_path.exists():

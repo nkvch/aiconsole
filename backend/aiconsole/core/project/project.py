@@ -43,7 +43,7 @@ _agents: "assets.Assets | None" = None
 _project_initialized = False
 
 
-async def _clear_project():
+async def _clear_project() -> None:
     global _materials
     global _agents
     global _project_initialized
@@ -61,7 +61,7 @@ async def _clear_project():
     _project_initialized = False
 
 
-async def send_project_init(connection: AICConnection):
+async def send_project_init(connection: AICConnection) -> None:
     from aiconsole.core.project.paths import get_project_directory, get_project_name
 
     await InitialProjectStatusServerMessage(
@@ -86,7 +86,7 @@ def is_project_initialized() -> bool:
     return _project_initialized
 
 
-async def close_project():
+async def close_project() -> None:
     from aiconsole.core.settings.project_settings import reload_settings
 
     await _clear_project()
@@ -96,7 +96,7 @@ async def close_project():
     await reload_settings(initial=True)
 
 
-async def reinitialize_project():
+async def reinitialize_project() -> None:
     from aiconsole.core.assets import assets
     from aiconsole.core.project.paths import get_project_directory, get_project_name
     from aiconsole.core.recent_projects.recent_projects import add_to_recent_projects
@@ -126,7 +126,7 @@ async def reinitialize_project():
     await reload_settings(initial=True)
 
 
-async def choose_project(path: Path, background_tasks: BackgroundTasks):
+async def choose_project(path: Path, background_tasks: BackgroundTasks) -> None:
     if not path.exists():
         raise ValueError(f"Path {path} does not exist")
 

@@ -38,8 +38,8 @@ class Assets:
     # _assets have lists, where the first element is the one overriding the others (currently there can be only one overriden element)
     _assets: dict[str, list[Asset]]
 
-    def __init__(self, asset_type: AssetType):
-        self._suppress_notification_until = None
+    def __init__(self, asset_type: AssetType) -> None:
+        self._suppress_notification_until: datetime.datetime | None = None
         self.asset_type = asset_type
         self._assets = {}
 
@@ -51,7 +51,7 @@ class Assets:
         )
         self.observer.start()
 
-    def stop(self):
+    def stop(self) -> None:
         self.observer.stop()
 
     def all_assets(self) -> list[Asset]:
@@ -71,7 +71,7 @@ class Assets:
             if settings.get_asset_status(self.asset_type, assets[0].id) in [status]
         ]
 
-    async def save_asset(self, asset: Asset, old_asset_id: str, create: bool):
+    async def save_asset(self, asset: Asset, old_asset_id: str, create: bool) -> bool:
         if asset.defined_in != AssetLocation.PROJECT_DIR:
             raise Exception("Cannot save asset not defined in project.")
 
@@ -110,7 +110,7 @@ class Assets:
 
         return rename
 
-    async def delete_asset(self, asset_id):
+    async def delete_asset(self, asset_id: str) -> None:
         self._assets[asset_id].pop(0)
 
         if len(self._assets[asset_id]) == 0:
@@ -120,10 +120,10 @@ class Assets:
 
         self._suppress_notification()
 
-    def _suppress_notification(self):
+    def _suppress_notification(self) -> None:
         self._suppress_notification_until = datetime.datetime.now() + datetime.timedelta(seconds=10)
 
-    def get_asset(self, id, location: AssetLocation | None = None):
+    def get_asset(self, id: str, location: AssetLocation | None = None) -> Asset | None:
         """
         Get a specific asset.
         """
@@ -136,7 +136,7 @@ class Assets:
 
         return None
 
-    async def reload(self, initial: bool = False):
+    async def reload(self, initial: bool = False) -> None:
         _log.info(f"Reloading {self.asset_type}s ...")
 
         self._assets = await load_all_assets(self.asset_type)

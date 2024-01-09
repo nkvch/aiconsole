@@ -14,11 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# TODO
+# type: ignore
+
 import json
 import logging
 import traceback
 from datetime import datetime
-from typing import cast
+from typing import Any, cast
 from uuid import uuid4
 
 from pydantic import Field
@@ -61,7 +65,6 @@ from aiconsole.core.gpt.request import (
     ToolFunctionDefinition,
 )
 from aiconsole.core.gpt.types import CLEAR_STR
-from aiconsole.core.project import project
 from aiconsole.core.settings.project_settings import get_aiconsole_settings
 
 _log = logging.getLogger(__name__)
@@ -98,7 +101,7 @@ class applescript(CodeTask):
 
 async def _execution_mode_process(
     context: ProcessChatContext,
-):
+) -> None:
     # Assumes an existing message group that was created for us
     message_group = context.chat_mutator.chat.message_groups[-1]
 
@@ -127,7 +130,7 @@ async def _execution_mode_process(
                 await _execution_mode_accept_code(accept_context)
 
 
-async def _run_code(context: ProcessChatContext, tool_call_id):
+async def _run_code(context: ProcessChatContext, tool_call_id) -> None:
     tool_call_location = context.chat_mutator.chat.get_tool_call_location(tool_call_id)
 
     if not tool_call_location:
@@ -179,7 +182,7 @@ async def _run_code(context: ProcessChatContext, tool_call_id):
 
 async def _generate_response(
     message_group: AICMessageGroup, context: ProcessChatContext, system_message: str, executor: GPTExecutor
-):
+) -> None:
     tools_requiring_closing_parenthesis: list[str] = []
 
     message_id = str(uuid4())
@@ -200,8 +203,8 @@ async def _generate_response(
                 gpt_mode=context.agent.gpt_mode,
                 messages=[message for message in convert_messages(context.chat_mutator.chat)],
                 tools=[
-                    ToolDefinition(type="function", function=ToolFunctionDefinition(**python.openai_schema)),
-                    ToolDefinition(type="function", function=ToolFunctionDefinition(**applescript.openai_schema)),
+                    ToolDefinition(type="function", function=ToolFunctionDefinition(**python.openai_schema())),
+                    ToolDefinition(type="function", function=ToolFunctionDefinition(**applescript.openai_schema())),
                 ],
                 min_tokens=250,
                 preferred_tokens=2000,
@@ -266,7 +269,7 @@ async def _generate_response(
                 if tool_call.type == "function":
                     function_call = tool_call.function
 
-                    async def send_language_if_needed(lang: LanguageStr):
+                    async def send_language_if_needed(lang: LanguageStr) -> None:
                         if tool_call_data.language is None:
                             await context.chat_mutator.mutate(
                                 SetLanguageToolCallMutation(
@@ -275,7 +278,7 @@ async def _generate_response(
                                 )
                             )
 
-                    async def send_code_delta(code_delta: str = "", headline_delta: str = ""):
+                    async def send_code_delta(code_delta: str = "", headline_delta: str = "") -> None:
                         if code_delta:
                             await context.chat_mutator.mutate(
                                 AppendToCodeToolCallMutation(
@@ -308,7 +311,7 @@ async def _generate_response(
                                 tool_call_data.code = function_call.arguments
                                 await send_code_delta(code_delta)
                         else:
-                            arguments = function_call.arguments
+                            arguments: str = function_call.arguments
                             languages = language_map.keys()
 
                             if tool_call_data.language is None and function_call.name in languages:
@@ -317,20 +320,20 @@ async def _generate_response(
 
                             # This can now be both a string and a json object
                             try:
-                                arguments = json.loads(arguments)
+                                arguments_json: dict[str, Any] = json.loads(arguments)
 
                                 code_delta = ""
                                 headline_delta = ""
 
-                                if arguments and "code" in arguments:
+                                if arguments_json and "code" in arguments_json:
                                     await send_language_if_needed("python")
 
-                                    code_delta = arguments["code"][len(tool_call_data.code) :]
-                                    tool_call_data.code = arguments["code"]
+                                    code_delta = arguments_json["code"][len(tool_call_data.code) :]
+                                    tool_call_data.code = arguments_json["code"]
 
-                                if arguments and "headline" in arguments:
-                                    headline_delta = arguments["headline"][len(tool_call_data.headline) :]
-                                    tool_call_data.headline = arguments["headline"]
+                                if arguments_json and "headline" in arguments_json:
+                                    headline_delta = arguments_json["headline"][len(tool_call_data.headline) :]
+                                    tool_call_data.headline = arguments_json["headline"]
 
                                 if code_delta or headline_delta:
                                     await send_code_delta(code_delta, headline_delta)
@@ -356,7 +359,7 @@ async def _generate_response(
 
 async def _execution_mode_accept_code(
     context: AcceptCodeContext,
-):
+) -> None:
     tool_call_location = context.chat_mutator.chat.get_tool_call_location(context.tool_call_id)
 
     if not tool_call_location:

@@ -36,7 +36,7 @@ from aiconsole.core.code_running.run_code import get_code_interpreter
 
 async def execution_mode_process(
     context: ProcessChatContext,
-):
+) -> None:
     message_id = str(uuid4())
 
     # Assumes that a group already exists
@@ -112,7 +112,7 @@ async def execution_mode_process(
 
 async def execution_mode_accept_code(
     context: AcceptCodeContext,
-):
+) -> None:
     pass
 
 

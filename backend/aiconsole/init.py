@@ -29,7 +29,7 @@ config.dictConfig(log_config)
 _log = logging.getLogger(__name__)
 
 
-def run_aiconsole(dev: bool):
+def run_aiconsole(dev: bool) -> None:
     parser = argparse.ArgumentParser(description="Start the backend server.")
     parser.add_argument("--port", type=int, help="Port to listen on.", default=8000)
     parser.add_argument("--origin", type=str, help="Origin for the frontend.", default="http://localhost:3000")
@@ -50,11 +50,11 @@ def run_aiconsole(dev: bool):
         _log.info("Exiting ...")
 
 
-def aiconsole_dev():
+def aiconsole_dev() -> None:
     run_aiconsole(dev=True)
 
 
-def aiconsole():
+def aiconsole() -> None:
     run_aiconsole(dev=False)
 
 

@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 from fastapi.responses import JSONResponse
 
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
@@ -6,7 +6,7 @@ from aiconsole.core.assets.asset import AssetType
 from aiconsole.core.settings.project_settings import get_aiconsole_settings
 
 
-async def asset_status_change(asset_type: AssetType, asset_id: str, body: StatusChangePostBody):
+async def asset_status_change(asset_type: AssetType, asset_id: str, body: StatusChangePostBody) -> Response:
     """
     Change the status of a agent.
 

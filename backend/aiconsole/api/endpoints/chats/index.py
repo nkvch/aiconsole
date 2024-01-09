@@ -16,6 +16,8 @@
 
 import logging
 
+from fastapi import Response
+
 from aiconsole.api.endpoints.chats.chat import router
 from aiconsole.core.chat.list_possible_historic_chat_ids import (
     list_possible_historic_chat_ids,
@@ -27,7 +29,7 @@ _log = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def get_history_headlines():
+async def get_history_headlines() -> Response:
     headlines = []
 
     for chat_id in list_possible_historic_chat_ids():
