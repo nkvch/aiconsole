@@ -3,7 +3,7 @@ import { FormGroup } from '@/components/common/FormGroup';
 import { Select } from '@/components/common/Select';
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { Agent, Asset } from '@/types/editables/assetTypes';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CodeInput } from './CodeInput';
 import { HelperLabel } from './HelperLabel';
 import { ErrorObject, TextInput } from './TextInput';
@@ -36,7 +36,8 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
   const handleUsageChange = (value: string) => setSelectedAsset({ ...agent, usage: value });
   const setExecutionModeState = (value: string) => setSelectedAsset({ ...agent, execution_mode: value } as Asset);
-  const isCustomMode = executionMode !== 'custom';
+
+  const isCustomMode = useMemo(() => executionMode === 'custom', [executionMode]);
 
   const handleSetExecutionMode = (value: string) => {
     setExecutionMode(value);
@@ -90,7 +91,7 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
               onChange={handleCustomExecutionModeChange}
               className="mb-[20px]"
               helperText="a Python module governing how the agent behaves."
-              hidden={isCustomMode}
+              hidden={!isCustomMode}
               labelChildren={
                 <Select
                   options={executionModes}

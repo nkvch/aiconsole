@@ -151,7 +151,7 @@ export function CodeInput({
   };
 
   const codeInputCore = (fullScreen: boolean) => (
-    <div className="h-full relative">
+    <div className="relative">
       {label && (fullScreen || !withFullscreen) && (
         <div className="font-semibold text-white mb-[10px] flex ">
           <label htmlFor={label} className="py-[12px]">
@@ -205,7 +205,7 @@ export function CodeInput({
             width={24}
             height={24}
             className={cn(`absolute right-[25px] bottom-[80px] cursor-pointer text-gray-300 hover:text-white`, {
-              'right-[25px] bottom-[75px]': fullScreen,
+              'right-[25px] bottom-[25px]': fullScreen,
             })}
             onClick={toggleFullscreen}
           />
