@@ -338,12 +338,13 @@ async def _generate_response(
                                 if not arguments:
                                     continue
 
-                                # We need to handle incorrect OpenAI responses, sometimes arguments is a string containing the code
+                                # incorrect OpenAI response, where code is passed like a string, not JSON
                                 if not arguments.startswith("{"):
                                     await send_language_if_needed("python")
 
                                     code_delta = arguments[len(tool_call_data.code) :]
                                     await send_code_delta(code_delta)
+                                # incorrect OpenAI response, where code is passed JSON like string, so each chunk is a part of JSON
                                 elif '"code": ' in arguments:
                                     await send_language_if_needed("python")
 
