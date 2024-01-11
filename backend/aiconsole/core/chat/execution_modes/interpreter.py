@@ -335,13 +335,20 @@ async def _generate_response(
                                 if code_delta or headline_delta:
                                     await send_code_delta(code_delta, headline_delta)
                             except json.JSONDecodeError:
-                                # We need to handle incorrect OpenAI responses, sometmes arguments is a string containing the code
-                                if arguments and not arguments.startswith("{"):
+                                if not arguments:
+                                    continue
+
+                                # We need to handle incorrect OpenAI responses, sometimes arguments is a string containing the code
+                                if not arguments.startswith("{"):
                                     await send_language_if_needed("python")
 
                                     code_delta = arguments[len(tool_call_data.code) :]
-                                    tool_call_data.code = arguments
+                                    await send_code_delta(code_delta)
+                                elif '"code": ' in arguments:
+                                    await send_language_if_needed("python")
 
+                                    code = arguments.partition('"code": ')[2].replace('"""', "").replace("}", "")
+                                    code_delta = code[len(tool_call_data.code) - 1 :]
                                     await send_code_delta(code_delta)
 
     finally:
