@@ -89,7 +89,7 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
               errors={errors}
               value={customExecutionMode}
               onChange={handleCustomExecutionModeChange}
-              className="mb-[20px]"
+              className="mb-[20px] leading-relaxed"
               helperText="a Python module governing how the agent behaves."
               hidden={!isCustomMode}
               labelChildren={

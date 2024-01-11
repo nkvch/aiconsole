@@ -173,7 +173,7 @@ export function CodeInput({
         }}
         className={cn(
           className,
-          'border-gray-500 w-full font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px] transition duration-100',
+          'border-gray-500 w-full !leading-relaxed font-mono text-sm overflow-y-auto bg-gray-800 border rounded-[8px] transition duration-100',
           {
             'bg-gray-600 border-gray-400': focus,
             'hover:bg-gray-600 hover:placeholder:text-gray-300': !disabled && !readOnly,
@@ -191,7 +191,7 @@ export function CodeInput({
           highlight={(code) => onHighlight(code)}
           padding={10}
           className={cn(
-            'resize-none appearance-none border border-transparent w-full leading-tight placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400  text-[15px] text-white  rounded-[8px]',
+            'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400  text-[15px] text-white  rounded-[8px]',
             {
               'opacity-[0.7] ': disabled,
               'bg-transparent': transparent,

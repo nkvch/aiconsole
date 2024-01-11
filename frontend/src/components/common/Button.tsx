@@ -81,7 +81,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         case 'primary':
           return 'bg-secondary text-gray-900';
         case 'secondary':
-          return 'bg-gray-800 border-gray-400 text-gray-300 hover:border-secondary hover:text-secondary font-normal text-[15px] focus:border-secondary';
+          return 'bg-gray-800 border-gray-500 text-gray-300 hover:border-secondary hover:text-secondary font-normal text-[15px] focus:border-secondary';
         case 'tertiary':
           return 'bg-transparent border-transparent text-gray-300 hover:border-transparent hover:text-secondary hover:bg-transparent font-normal text-[15px] focus:bg-transparent px-0';
         case 'status':
