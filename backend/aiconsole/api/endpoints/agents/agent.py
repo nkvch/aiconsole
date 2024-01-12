@@ -25,7 +25,7 @@ from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
 from aiconsole.core.assets.agents.agent import Agent, AgentWithStatus
 from aiconsole.core.assets.asset import AssetLocation, AssetStatus, AssetType
-from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE
 from aiconsole.core.project import project
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
