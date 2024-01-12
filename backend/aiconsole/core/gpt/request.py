@@ -29,7 +29,6 @@ from aiconsole.core.gpt.types import (
     GPTRequestTextMessage,
 )
 from aiconsole.core.settings.project_settings import get_aiconsole_settings
-from aiconsole_toolkit.settings import get_settings
 
 _log = logging.getLogger(__name__)
 

@@ -18,7 +18,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import litellm
 import tomlkit
 import tomlkit.container
 import tomlkit.exceptions
@@ -234,32 +233,30 @@ class Settings:
         for agent, status in settings.get("agents", {}).items():
             agents[agent] = AssetStatus(status)
 
-        gpt_modes = {}
-
-        # default gpt modes
-        gpt_modes["speed"] = GPTModeConfig(
-            name="speed",
-            max_tokens=GPT_MODE_SPEED_MAX_TOKENS,
-            encoding=GPTEncoding.GPT_4,
-            model=GPT_MODE_SPEED_MODEL,
-            api_key="openai_api_key",
-        )
-
-        gpt_modes["quality"] = GPTModeConfig(
-            name="quality",
-            max_tokens=GPT_MODE_QUALITY_MAX_TOKENS,
-            encoding=GPTEncoding.GPT_4,
-            model=GPT_MODE_QUALITY_MODEL,
-            api_key="openai_api_key",
-        )
-
-        gpt_modes["cost"] = GPTModeConfig(
-            name="cost",
-            max_tokens=GPT_MODE_COST_MAX_TOKENS,
-            encoding=GPTEncoding.GPT_4,
-            model=GPT_MODE_COST_MODEL,
-            api_key="openai_api_key",
-        )
+        # setup default gpt modes
+        gpt_modes = {
+            "speed": GPTModeConfig(
+                name="speed",
+                max_tokens=GPT_MODE_SPEED_MAX_TOKENS,
+                encoding=GPTEncoding.GPT_4,
+                model=GPT_MODE_SPEED_MODEL,
+                api_key="openai_api_key",
+            ),
+            "quality": GPTModeConfig(
+                name="quality",
+                max_tokens=GPT_MODE_QUALITY_MAX_TOKENS,
+                encoding=GPTEncoding.GPT_4,
+                model=GPT_MODE_QUALITY_MODEL,
+                api_key="openai_api_key",
+            ),
+            "cost": GPTModeConfig(
+                name="cost",
+                max_tokens=GPT_MODE_COST_MAX_TOKENS,
+                encoding=GPTEncoding.GPT_4,
+                model=GPT_MODE_COST_MODEL,
+                api_key="openai_api_key",
+            ),
+        }
 
         for model_config in settings.get("gpt_modes", []):
             _log.debug(f"Loading gpt mode: {model_config}")

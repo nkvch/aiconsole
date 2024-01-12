@@ -27,6 +27,12 @@ from aiconsole.core.gpt.consts import (
     GPT_MODE_SPEED_MODEL,
 )
 
+MODELS_TO_CHECK_WHILE_VERIFYING_KEY = [
+    GPT_MODE_COST_MODEL,
+    GPT_MODE_QUALITY_MODEL,
+    GPT_MODE_SPEED_MODEL,
+]
+
 cached_good_keys = set()
 
 
@@ -36,17 +42,12 @@ async def check_key(key: str) -> bool:
         return True
 
     client = OpenAI(api_key=key)
-    # set key
-    openai.api_key = key
-    models = client.models.list()  # type: ignore
-    available_models = [model.id for model in models]
-    needed_models = [
-        GPT_MODE_COST_MODEL,
-        GPT_MODE_QUALITY_MODEL,
-        GPT_MODE_SPEED_MODEL,
-    ]
 
-    good = set(needed_models).issubset(set(available_models))
+    openai.api_key = key
+    models = client.models.list()
+    available_models = [model.id for model in models]
+
+    good = set(MODELS_TO_CHECK_WHILE_VERIFYING_KEY).issubset(set(available_models))
 
     if good:
         cached_good_keys.add(key)

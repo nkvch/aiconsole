@@ -28,8 +28,8 @@ class ProjectDirectory:
             return Path(directory)
 
     def is_project_in_directory(self, directory: str) -> bool:
-        directory = Path(directory)
-        return directory.joinpath("materials").is_dir() or directory.joinpath("agents").is_dir()
+        d = Path(directory)
+        return d.joinpath("materials").is_dir() or d.joinpath("agents").is_dir()
 
-    async def switch_or_save_project(self, directory: str, background_tasks: BackgroundTasks) -> bool:
+    async def switch_or_save_project(self, directory: str, background_tasks: BackgroundTasks):
         await choose_project(path=Path(directory), background_tasks=background_tasks)
