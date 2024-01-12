@@ -16,7 +16,13 @@
 
 export type Settings = {
   code_autorun?: boolean;
-  extra: {
-    openai_api_key?: string | null;
-  };
+  openai_api_key?: string | null;
+  username?: string | null;
+  email?: string;
+};
+
+export type Avatar = {
+  avatar_url: string;
+  username: string;
+  gravatar: boolean;
 };

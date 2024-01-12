@@ -83,7 +83,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
   }, [tool_call.id, userMutateChat]);
 
   //Either executing or streaming while there are still no output messages
-  const shouldDisplaySpinner = tool_call.is_executing || (tool_call.is_streaming && tool_call.output === undefined);
+  const shouldDisplaySpinner = tool_call.is_executing || tool_call.is_streaming;
 
   const isError =
     tool_call.output?.toLowerCase().includes('traceback') ||
@@ -118,21 +118,21 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
         <div className="flex flex-row gap-2 items-center ">
           <div className="flex-grow flex flex-row gap-3 items-center">
             {shouldDisplaySpinner && <Icon icon={Loader} width={20} height={20} className="animate-spin" />}
-            {!shouldDisplaySpinner && !isError && tool_call.output === undefined && (
-              <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success" />
+            {!shouldDisplaySpinner && !isError && tool_call.output == undefined && (
+              <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success flex-shrink-0" />
             )}
-            {!shouldDisplaySpinner && !isError && tool_call.output !== undefined && (
-              <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success" />
+            {!shouldDisplaySpinner && !isError && tool_call.output != undefined && (
+              <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success flex-shrink-0" />
             )}
             {!shouldDisplaySpinner && isError && (
-              <Icon icon={AlertCircleIcon} width={20} height={20} className="text-danger" />
+              <Icon icon={AlertCircleIcon} width={20} height={20} className="text-danger flex-shrink-0" />
             )}
 
             <span className="font-semibold"> {tool_call.headline ? tool_call.headline : 'Task'}</span>
           </div>
 
-          {!folded && <Icon icon={ChevronUp} width={20} height={20} />}
-          {folded && <Icon icon={ChevronDown} width={20} height={20} />}
+          {!folded && <Icon icon={ChevronUp} width={20} height={20} className="flex-shrink-0" />}
+          {folded && <Icon icon={ChevronDown} width={20} height={20} className="flex-shrink-0" />}
         </div>
       </div>
 
@@ -143,7 +143,6 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
               <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
               <EditableContentMessage
                 initialContent={tool_call.code}
-                isStreaming={tool_call.is_streaming}
                 language={tool_call.language}
                 handleAcceptedContent={handleAcceptedContent}
                 handleRemoveClick={handleRemoveClick}

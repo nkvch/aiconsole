@@ -23,6 +23,7 @@ export function MessageComponent({ message, group }: MessageProps) {
   const userMutateChat = useChatStore((state) => state.userMutateChat);
   const saveCommandAndMessagesToHistory = useChatStore((state) => state.saveCommandAndMessagesToHistory);
   const getBaseURL = useAPIStore((state) => state.getBaseURL);
+  const isStreaming = useChatStore((state) => state.chat?.lock_id);
 
   const handleRemoveClick = useCallback(() => {
     userMutateChat({
@@ -50,7 +51,6 @@ export function MessageComponent({ message, group }: MessageProps) {
     <div>
       <EditableContentMessage
         initialContent={message.content}
-        isStreaming={message.is_streaming}
         handleAcceptedContent={handleSaveClick}
         handleRemoveClick={handleRemoveClick}
         hideControls
@@ -62,6 +62,7 @@ export function MessageComponent({ message, group }: MessageProps) {
                 <div className="flex-grow">
                   <div className="prose prose-stone dark:prose-invert sidebar-typography w-full max-w-full">
                     <ReactMarkdown
+                      urlTransform={null}
                       rehypePlugins={[rehypeRaw] as PluggableList}
                       components={{
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
