@@ -39,7 +39,8 @@ const ChatOptions = () => {
   const [materialsOptions, setMaterialsOptions] = useState<Material[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('aiChoice');
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
-  const [allowExtraMaterials, setAllowExtraMaterials] = useState<boolean>(false);
+  const [allowExtraMaterials, setAllowExtraMaterials] = useState(false);
+  const [allowShowAnalysis, setAllowShowAnalysis] = useState(false);
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
@@ -105,6 +106,12 @@ const ChatOptions = () => {
 
             <div className="flex flex-col gap-2.5">
               <label className="text-xs">Selected materials</label>
+              <div className="flex items-center gap-2.5 mt-auto">
+                <Checkbox id="extraMaterials" checked={allowExtraMaterials} onChange={setAllowExtraMaterials} />
+                <label htmlFor="extraMaterials" className="text-sm">
+                  Let AI add extra materials
+                </label>
+              </div>
               <div className="h-[190px] overflow-y-auto ">
                 <div className="flex flex-col gap-2.5 w-full">
                   {chosenMaterials.map((option) => (
@@ -116,9 +123,9 @@ const ChatOptions = () => {
             </div>
 
             <div className="flex items-center gap-2.5 mt-auto">
-              <Checkbox id="extraMaterials" checked={allowExtraMaterials} onChange={setAllowExtraMaterials} />
-              <label htmlFor="extraMaterials" className="text-sm">
-                Let AI add extra materials
+              <Checkbox id="showAnalysis" checked={allowShowAnalysis} onChange={setAllowShowAnalysis} />
+              <label htmlFor="showAnalysis" className="text-sm">
+                Let AI show the analysis process
               </label>
             </div>
           </div>
