@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { AICMessageGroup } from '@/types/editables/chatTypes';
 
 export const Analysis = ({ group }: { group: AICMessageGroup }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const open = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
@@ -17,7 +17,7 @@ export const Analysis = ({ group }: { group: AICMessageGroup }) => {
     setIsOpen(false);
   };
 
-  return (
+  return group.analysis || group.task ? (
     <div
       onClick={open}
       className={cn(
@@ -45,5 +45,7 @@ export const Analysis = ({ group }: { group: AICMessageGroup }) => {
         </div>
       ) : null}
     </div>
+  ) : (
+    <></>
   );
 };
