@@ -20,9 +20,9 @@ import os
 import rtoml
 
 from aiconsole.core.assets.agents.agent import Agent
-from aiconsole.core.assets.asset import Asset, AssetLocation, AssetStatus, AssetType
-from aiconsole.core.assets.fs.exceptions import CannotSaveAgentWithIdUserError
+from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
+from aiconsole.core.assets.models import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
@@ -38,7 +38,7 @@ _USER_AGENT_ID = "user"
 async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: AssetLocation | None = None) -> Asset:
     if asset_type == AssetType.AGENT:
         if asset_id == _USER_AGENT_ID:
-            raise CannotSaveAgentWithIdUserError()
+            raise UserIsAnInvalidAgentIdError()
 
     project_dir_path = get_project_assets_directory(asset_type)
     core_resource_path = get_core_assets_directory(asset_type)

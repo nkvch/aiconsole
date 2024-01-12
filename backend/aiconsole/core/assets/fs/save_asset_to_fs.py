@@ -17,10 +17,10 @@
 import tomlkit
 
 from aiconsole.core.assets.agents.agent import Agent
-from aiconsole.core.assets.asset import Asset
-from aiconsole.core.assets.fs.exceptions import CannotSaveAgentWithIdUserError
+from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
+from aiconsole.core.assets.models import Asset
 from aiconsole.core.project.paths import get_project_assets_directory
 
 _USER_AGENT_ID = "user"
@@ -29,7 +29,7 @@ _USER_AGENT_ID = "user"
 async def save_asset_to_fs(asset: Asset):
     if isinstance(asset, Agent):
         if asset.id == _USER_AGENT_ID:
-            raise CannotSaveAgentWithIdUserError()
+            raise UserIsAnInvalidAgentIdError()
 
     path = get_project_assets_directory(asset.type)
 

@@ -1,2 +1,2 @@
-class CannotSaveAgentWithIdUserError(Exception):
+class UserIsAnInvalidAgentIdError(Exception):
     pass
