@@ -1,0 +1,27 @@
+{
+    "name": "New Chat",
+    "lock_id": null,
+    "title_edited": false,
+    "message_groups": [
+        {
+            "id": "3112a857-489a-44df-abaa-5db2f5d5a2ec",
+            "agent_id": "user",
+            "username": null,
+            "email": null,
+            "role": "user",
+            "analysis": "",
+            "task": "",
+            "materials_ids": [],
+            "messages": [
+                {
+                    "id": "de4afab0-57b8-4ac7-bf00-5240430e95bc",
+                    "timestamp": "2024-01-14T21:51:18.027466",
+                    "content": "Run factorial of 5",
+                    "tool_calls": [],
+                    "is_streaming": false
+                }
+            ]
+        }
+    ],
+    "is_analysis_in_progress": false
+}
