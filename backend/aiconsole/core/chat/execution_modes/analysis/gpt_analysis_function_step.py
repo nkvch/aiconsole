@@ -24,7 +24,7 @@ from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.models import AssetLocation, AssetStatus
 from aiconsole.core.chat.chat_mutations import (
     CreateMessageGroupMutation,
-    SetAgentIdMessageGroupMutation,
+    SetActorIdMessageGroupMutation,
     SetAnalysisMessageGroupMutation,
     SetIsAnalysisInProgressMutation,
     SetMaterialsIdsMessageGroupMutation,
@@ -79,7 +79,7 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
         )
     else:
         picked_agent = next(
-            (agent for agent in available_agents if agent.id == arguments.agent_id),
+            (agent for agent in available_agents if agent.id == arguments.actor_id),
             None,
         )
 
@@ -132,7 +132,7 @@ async def gpt_analysis_function_step(
     await chat_mutator.mutate(
         CreateMessageGroupMutation(
             message_group_id=message_group_id,
-            agent_id="director",
+            actor_id="director",
             username="",
             email="",
             role="system",
@@ -209,11 +209,11 @@ async def gpt_analysis_function_step(
                     arguments_dict = function_call.arguments_dict
 
                     if arguments_dict:
-                        if "agent_id" in arguments_dict:
+                        if "actor_id" in arguments_dict:
                             await chat_mutator.mutate(
-                                SetAgentIdMessageGroupMutation(
+                                SetActorIdMessageGroupMutation(
                                     message_group_id=message_group_id,
-                                    agent_id=arguments_dict["agent_id"],
+                                    actor_id=arguments_dict["actor_id"],
                                 )
                             )
 
@@ -275,9 +275,9 @@ async def gpt_analysis_function_step(
 
         picked_agent = pick_agent(plan, chat_mutator.chat, possible_agent_choices)
         await chat_mutator.mutate(
-            SetAgentIdMessageGroupMutation(
+            SetActorIdMessageGroupMutation(
                 message_group_id=message_group_id,
-                agent_id=picked_agent.id,
+                actor_id=picked_agent.id,
             )
         )
 

@@ -25,6 +25,7 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
+from aiconsole.core.assets.users.users import User
 from aiconsole.core.chat.chat_mutations import CreateMessageGroupMutation
 from aiconsole.core.chat.convert_messages import convert_messages
 from aiconsole.core.chat.execution_modes.analysis.director import director_analyse
@@ -51,11 +52,19 @@ from aiconsole.core.project import project
 _log = logging.getLogger(__name__)
 
 
-def agent_from_message_group(message_group: AICMessageGroup) -> Agent:
+def agent_from_message_group(message_group: AICMessageGroup) -> Agent | User:
     # Find the message group with id context.message_group_id
-    agent_id = message_group.agent_id
-    agent = cast(Agent, project.get_project_agents().get_asset(agent_id))
-    return agent
+    actor_id = message_group.actor_id
+
+    if actor_id.startswith("agent/"):
+        agent = cast(Agent, project.get_project_agents().get_asset(actor_id))
+        return agent
+
+    if actor_id.startswith("user/"):
+        user = cast(User, project.get_project_users().get_asset(actor_id))
+        return user
+
+    raise Exception(f"Unknown actor_id: {actor_id}")
 
 
 async def render_materials_from_message_group(

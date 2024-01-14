@@ -16,7 +16,9 @@
 
 import logging
 from functools import lru_cache
+from uuid import uuid4
 
+from aiconsole.core import project
 from aiconsole.core.settings.fs.settings_file_storage import SettingsUpdatedEvent
 from aiconsole.core.settings.settings_notifications import SettingsNotifications
 from aiconsole.core.settings.settings_storage import SettingsStorage
@@ -42,6 +44,10 @@ class Settings:
             SettingsUpdatedEvent,
             self._when_reloaded,
         )
+
+        # Assign system user installation / user_id
+        if self.unified_settings.user_id is None:
+            self.save(PartialSettingsData(user_id=str(uuid4())), to_global=True)
 
         _log.info("Settings configured")
 

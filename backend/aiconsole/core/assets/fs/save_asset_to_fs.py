@@ -21,6 +21,7 @@ from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.models import Asset
+from aiconsole.core.assets.users.users import User
 from aiconsole.core.project.paths import get_project_assets_directory
 
 _USER_AGENT_ID = "user"
@@ -39,13 +40,13 @@ async def save_asset_to_fs(asset: Asset):
         current_version = "0.0.1"
 
     # Parse version number
-    current_version = current_version.split(".")
+    current_version_bits = current_version.split(".")
 
     # Increment version number
-    current_version[-1] = str(int(current_version[-1]) + 1)
+    current_version_bits[-1] = str(int(current_version_bits[-1]) + 1)
 
     # Join version number
-    asset.version = ".".join(current_version)
+    asset.version = ".".join(current_version_bits)
 
     # Save to .toml file
     with (path / f"{asset.id}.toml").open("w") as file:
@@ -104,6 +105,9 @@ async def save_asset_to_fs(asset: Asset):
             doc.append("system", tomlkit.string(asset.system))
             doc.append("gpt_mode", tomlkit.string(asset.gpt_mode))
             doc.append("execution_mode", tomlkit.string(asset.execution_mode))
+
+        if isinstance(asset, User):
+            doc.append("profile_picture", tomlkit.string(asset.profile_picture))
 
         file.write(doc.as_string())
 

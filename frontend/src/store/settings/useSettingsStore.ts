@@ -21,12 +21,8 @@ import { create } from 'zustand';
 import { SettingsAPI } from '../../api/api/SettingsAPI';
 
 export type SettingsStore = {
-  openAiApiKey?: string;
+  settings: Settings;
   isApiKeyValid?: boolean;
-  alwaysExecuteCode: boolean;
-  username?: string;
-  userEmail?: string;
-  userAvatarUrl?: string;
   isSettingsModalVisible: boolean;
   setSettingsModalVisibility: (isVisible: boolean) => void;
   initSettings: () => Promise<void>;
@@ -37,12 +33,14 @@ export type SettingsStore = {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
-  openAiApiKey: undefined,
+  settings: {
+    code_autorun: false,
+    openai_api_key: '',
+    user_profile: {
+      username: '',
+    },
+  },
   isApiKeyValid: false,
-  alwaysExecuteCode: false,
-  username: undefined,
-  userEmail: undefined,
-  userAvatarUrl: undefined,
   isSettingsModalVisible: false,
   setSettingsModalVisibility: (isVisible: boolean) => {
     set({ isSettingsModalVisible: isVisible });

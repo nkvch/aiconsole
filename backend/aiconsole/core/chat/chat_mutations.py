@@ -19,7 +19,7 @@ class LockReleasedMutation(BaseModel):
 class CreateMessageGroupMutation(BaseModel):
     type: Literal["CreateMessageGroupMutation"] = "CreateMessageGroupMutation"
     message_group_id: str
-    agent_id: str
+    actor_id: str
     username: str
     email: str
     role: GPTRole
@@ -56,10 +56,10 @@ class SetRoleMessageGroupMutation(BaseModel):
     role: GPTRole
 
 
-class SetAgentIdMessageGroupMutation(BaseModel):
-    type: Literal["SetAgentIdMessageGroupMutation"] = "SetAgentIdMessageGroupMutation"
+class SetActorIdMessageGroupMutation(BaseModel):
+    type: Literal["SetActorIdMessageGroupMutation"] = "SetActorIdMessageGroupMutation"
     message_group_id: str
-    agent_id: str
+    actor_id: str
 
 
 class SetMaterialsIdsMessageGroupMutation(BaseModel):
@@ -198,7 +198,7 @@ ChatMutation = (
     | SetTaskMessageGroupMutation
     | AppendToTaskMessageGroupMutation
     | SetRoleMessageGroupMutation
-    | SetAgentIdMessageGroupMutation
+    | SetActorIdMessageGroupMutation
     | SetMaterialsIdsMessageGroupMutation
     | AppendToMaterialsIdsMessageGroupMutation
     | SetAnalysisMessageGroupMutation

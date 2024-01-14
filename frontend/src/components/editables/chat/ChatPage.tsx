@@ -157,7 +157,7 @@ export function ChatPage() {
   }, [copyId, id, editableObjectType, forceRefresh, setChat]);
 
   const isLastMessageFromUser =
-    chat?.message_groups.length && chat.message_groups[chat.message_groups.length - 1].agent_id === 'user';
+    chat?.message_groups.length && chat.message_groups[chat.message_groups.length - 1].actor_id === 'user';
 
   useEffect(() => {
     //if there is exactly one text area focus on it

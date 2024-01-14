@@ -48,7 +48,7 @@ def create_plan_class(available_agents):
             json_schema_extra={"type": "boolean"},
         )
 
-        agent_id: str = Field(
+        actor_id: str = Field(
             description="Chosen agent to perform the next step.",
             json_schema_extra={"enum": [s.id for s in random.sample(available_agents, len(available_agents))]},
         )

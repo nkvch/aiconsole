@@ -28,7 +28,8 @@ from aiconsole.api.websockets.server_messages import (
     ProjectLoadingServerMessage,
     ProjectOpenedServerMessage,
 )
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.models import AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.users.users import User
 from aiconsole.core.code_running.run_code import reset_code_interpreters
 from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     create_dedicated_venv,
@@ -43,12 +44,14 @@ if TYPE_CHECKING:
 
 _materials: "assets.Assets | None" = None
 _agents: "assets.Assets | None" = None
+_users: "assets.Assets | None" = None
 _project_initialized = False
 
 
 async def _clear_project():
     global _materials
     global _agents
+    global _users
     global _project_initialized
 
     if _materials:
@@ -57,10 +60,14 @@ async def _clear_project():
     if _agents:
         _agents.stop()
 
+    if _users:
+        _users.stop()
+
     reset_code_interpreters()
 
     _materials = None
     _agents = None
+    _users = None
     _project_initialized = False
 
 
@@ -83,6 +90,12 @@ def get_project_agents() -> "assets.Assets":
     if not _agents:
         raise ValueError("Project agents are not initialized")
     return _agents
+
+
+def get_project_users() -> "assets.Assets":
+    if not _users:
+        raise ValueError("Project agents are not initialized")
+    return _users
 
 
 def is_project_initialized() -> bool:
@@ -110,6 +123,7 @@ async def reinitialize_project():
 
     global _materials
     global _agents
+    global _users
     global _project_initialized
 
     await _clear_project()
@@ -122,6 +136,7 @@ async def reinitialize_project():
 
     _agents = assets.Assets(asset_type=AssetType.AGENT)
     _materials = assets.Assets(asset_type=AssetType.MATERIAL)
+    _users = assets.Assets(asset_type=AssetType.USER)
 
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
 
@@ -129,6 +144,28 @@ async def reinitialize_project():
 
     await _materials.reload(initial=True)
     await _agents.reload(initial=True)
+    await _users.reload(initial=True)
+
+    # Save user info to users
+    users = get_project_users()
+    existing_user = users.get_asset(id=settings().unified_settings.user_id or "")
+    if existing_user:
+        await users.delete_asset(asset_id=settings().unified_settings.user_id or "")
+
+    await users.save_asset(
+        User(
+            id=settings().unified_settings.user_id or "",
+            name=settings().unified_settings.user_profile.username or "",
+            profile_picture=settings().unified_settings.user_profile.username or "",
+            usage="",
+            usage_examples=[],
+            default_status=AssetStatus.ENABLED,
+            defined_in=AssetLocation.PROJECT_DIR,
+            override=False,
+        ),
+        old_asset_id=settings().unified_settings.user_id or "",
+        create=True,
+    )
 
 
 async def choose_project(path: Path, background_tasks: BackgroundTasks):

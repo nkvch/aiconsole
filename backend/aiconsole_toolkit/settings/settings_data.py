@@ -9,6 +9,7 @@ from aiconsole.core.users.models import UserProfile
 
 
 class SettingsData(BaseModel):
+    user_id: str | None = None
     code_autorun: bool = False
     openai_api_key: str | None = None
     user_profile: UserProfile = UserProfile()

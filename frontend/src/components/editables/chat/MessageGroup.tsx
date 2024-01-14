@@ -42,7 +42,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
           {group.role === 'user' ? (
             <UserInfo username={group.username} email={group.email} />
           ) : (
-            <AgentInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
+            <AgentInfo agentId={group.actor_id} materialsIds={group.materials_ids} task={group.task} />
           )}
 
           {group.messages && !isOpen && (

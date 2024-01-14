@@ -8,6 +8,7 @@ from aiconsole.core.users.models import PartialUserProfile
 
 
 class PartialSettingsData(BaseModel):
+    user_id: Optional[str] = None
     code_autorun: Optional[bool] = None
     openai_api_key: Optional[str] = None
     user_profile: Optional[PartialUserProfile] = None

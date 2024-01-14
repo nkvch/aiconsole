@@ -31,7 +31,7 @@ last_system_message = None
 def convert_message(group: AICMessageGroup, message: AICMessage, is_last: bool) -> list[GPTRequestMessage]:
     global last_system_message
 
-    result = []
+    result: list[GPTRequestMessage] = []
 
     #
     # Augment the messages with system messages with meta data about which agent is speaking and what materials were available
@@ -39,7 +39,7 @@ def convert_message(group: AICMessageGroup, message: AICMessage, is_last: bool) 
 
     if group.task:
         system_message = f"""
-As a director I have assigned you ({group.agent_id}) and given you access to the following materials text: {", ".join(group.materials_ids) if group.materials_ids else "None"}.
+As a director I have assigned you ({group.actor_id}) and given you access to the following materials text: {", ".join(group.materials_ids) if group.materials_ids else "None"}.
 """.strip()
 
         # Only provide a task for last message
@@ -75,7 +75,7 @@ As a director I have assigned you ({group.agent_id}) and given you access to the
         GPTRequestTextMessage(
             role=group.role,
             content=message.content,
-            name=group.agent_id if group.agent_id != "user" else None,
+            name=group.actor_id if group.actor_id != "user" else None,
             tool_calls=tool_calls or None,
         ),
     )

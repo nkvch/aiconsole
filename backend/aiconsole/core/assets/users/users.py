@@ -13,27 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# TODO: Rename file to models.py
-from pydantic import BaseModel
 
-from aiconsole.utils.serializable_path import SerializablePath
-
-
-class RecentProjectStatsAgent(BaseModel):
-    count: int
-    actor_ids: list[str]
+from aiconsole.core.assets.models import Asset, AssetType
+from aiconsole.core.gpt.consts import QUALITY_GPT_MODE
 
 
-class RecentProjectStats(BaseModel):
-    materials_note_count: int
-    materials_dynamic_note_count: int
-    materials_python_api_count: int
-    chats_count: int
-    agents: RecentProjectStatsAgent
+class User(Asset):
+    type: AssetType = AssetType.USER
 
-
-class RecentProject(BaseModel):
-    name: str
-    path: SerializablePath
-    recent_chats: list[str]
-    stats: RecentProjectStats
+    # base64 encoded image
+    profile_picture: str

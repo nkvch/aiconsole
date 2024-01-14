@@ -18,7 +18,7 @@ export type LockReleasedMutation = z.infer<typeof LockReleasedMutationSchema>;
 export const CreateMessageGroupMutationSchema = z.object({
   type: z.literal('CreateMessageGroupMutation'),
   message_group_id: z.string(),
-  agent_id: z.string(),
+  actor_id: z.string(),
   username: z.string(),
   email: z.string(),
   role: GPTRoleSchema, // Replace with actual GPTRole schema
@@ -67,13 +67,13 @@ export const SetRoleMessageGroupMutationSchema = z.object({
 
 export type SetRoleMessageGroupMutation = z.infer<typeof SetRoleMessageGroupMutationSchema>;
 
-export const SetAgentIdMessageGroupMutationSchema = z.object({
-  type: z.literal('SetAgentIdMessageGroupMutation'),
+export const SetActorIdMessageGroupMutationSchema = z.object({
+  type: z.literal('SetActorIdMessageGroupMutation'),
   message_group_id: z.string(),
-  agent_id: z.string(),
+  actor_id: z.string(),
 });
 
-export type SetAgentIdMessageGroupMutation = z.infer<typeof SetAgentIdMessageGroupMutationSchema>;
+export type SetActorIdMessageGroupMutation = z.infer<typeof SetActorIdMessageGroupMutationSchema>;
 
 export const SetMaterialsIdsMessageGroupMutationSchema = z.object({
   type: z.literal('SetMaterialsIdsMessageGroupMutation'),
@@ -246,7 +246,7 @@ export const ChatMutationSchema = z.union([
   SetTaskMessageGroupMutationSchema,
   AppendToTaskMessageGroupMutationSchema,
   SetRoleMessageGroupMutationSchema,
-  SetAgentIdMessageGroupMutationSchema,
+  SetActorIdMessageGroupMutationSchema,
   SetMaterialsIdsMessageGroupMutationSchema,
   AppendToMaterialsIdsMessageGroupMutationSchema,
   SetAnalysisMessageGroupMutationSchema,

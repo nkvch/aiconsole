@@ -16,7 +16,7 @@ from aiconsole.core.chat.chat_mutations import (
     DeleteMessageGroupMutation,
     DeleteMessageMutation,
     DeleteToolCallMutation,
-    SetAgentIdMessageGroupMutation,
+    SetActorIdMessageGroupMutation,
     SetAnalysisMessageGroupMutation,
     SetCodeToolCallMutation,
     SetContentMessageMutation,
@@ -58,7 +58,7 @@ def apply_mutation(chat: Chat, mutation: ChatMutation) -> None:
         SetTaskMessageGroupMutation.__name__: _handle_SetMessageGroupTaskMutation,
         AppendToTaskMessageGroupMutation.__name__: _handle_AppendToMessageGroupTaskMutation,
         SetRoleMessageGroupMutation.__name__: _handle_SetMessageGroupRoleMutation,
-        SetAgentIdMessageGroupMutation.__name__: _handle_SetMessageGroupAgentIdMutation,
+        SetActorIdMessageGroupMutation.__name__: _handle_SetMessageGroupAgentIdMutation,
         SetMaterialsIdsMessageGroupMutation.__name__: _handle_SetMessageGroupMaterialsIdsMutation,
         AppendToMaterialsIdsMessageGroupMutation.__name__: _handle_AppendToMessageGroupMaterialsIdsMutation,
         SetAnalysisMessageGroupMutation.__name__: _handle_SetMessageGroupAnalysisMutation,
@@ -88,7 +88,7 @@ def apply_mutation(chat: Chat, mutation: ChatMutation) -> None:
 def _handle_CreateMessageGroupMutation(chat: Chat, mutation: CreateMessageGroupMutation) -> AICMessageGroup:
     message_group = AICMessageGroup(
         id=mutation.message_group_id,
-        agent_id=mutation.agent_id,
+        actor_id=mutation.actor_id,
         role=mutation.role,
         task=mutation.task,
         materials_ids=mutation.materials_ids,
@@ -125,11 +125,11 @@ def _handle_SetMessageGroupRoleMutation(chat, mutation: SetRoleMessageGroupMutat
     message_group.role = mutation.role
 
 
-def _handle_SetMessageGroupAgentIdMutation(chat, mutation: SetAgentIdMessageGroupMutation) -> None:
+def _handle_SetMessageGroupAgentIdMutation(chat, mutation: SetActorIdMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
-    message_group.agent_id = mutation.agent_id
+    message_group.actor_id = mutation.actor_id
 
-    if mutation.agent_id == "user":
+    if mutation.actor_id == "user":
         message_group.role = "user"
     else:
         message_group.role = "assistant"
