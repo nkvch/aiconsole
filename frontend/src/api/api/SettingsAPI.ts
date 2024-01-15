@@ -29,9 +29,7 @@ async function getUserAvatar(email?: string) {
   const response = await ky
     .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined })
     .json<Avatar>();
-  if (!response.gravatar) {
-    response.avatar_url = `${getBaseURL()}/${response.avatar_url}`;
-  }
+  response.avatar_url = `${getBaseURL()}/${response.avatar_url}`;
   return response;
 }
 

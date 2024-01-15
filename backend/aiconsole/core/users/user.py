@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import BinaryIO
 
 from aiconsole.consts import AICONSOLE_USER_CONFIG_DIR
-from aiconsole.core.clients.gravatar import GravatarUserProfile, gravatar_client
 from aiconsole.core.settings.settings import settings
 from aiconsole.core.users.models import (
     DEFAULT_USERNAME,
@@ -25,19 +24,8 @@ class MissingFileName(Exception):
 class UserProfileService:
     def get_profile(self, email: str | None = None) -> UserProfile:
         user_profile = settings().unified_settings.user_profile
-        if email:
-            if email == user_profile.email and user_profile.avatar_url:
-                return user_profile
-
-            gravatar_profile = gravatar_client().get_profile(email)
-            if gravatar_profile:
-                return self._create_user_profile_from_gravatar(email, gravatar_profile)
-
         return UserProfile(
-            username=email or DEFAULT_USERNAME,
-            email=email,
-            avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
-            gravatar=False,
+            display_name=user_profile.display_name or DEFAULT_USERNAME, profile_picture=user_profile.profile_picture
         )
 
     def save_avatar(
@@ -83,14 +71,6 @@ class UserProfileService:
             choices=list(resource_to_path(resource=DEFAULT_AVATARS_PATH).glob(pattern="*")),
         ).name
         return f"profile_image?img_filename={img_filename}"
-
-    def _create_user_profile_from_gravatar(self, email: str, gravatar_profile: GravatarUserProfile) -> UserProfile:
-        return UserProfile(
-            username=gravatar_profile.preferredUsername,
-            email=email,
-            avatar_url=gravatar_profile.thumbnailUrl,
-            gravatar=True,
-        )
 
     def _save_avatar_to_fs(self, file: BinaryIO, file_path: Path) -> None:
         with open(file_path, "wb+") as file_object:

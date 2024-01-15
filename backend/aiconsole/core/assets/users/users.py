@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydantic import Base64Bytes
+
 from aiconsole.core.assets.models import Asset, AssetType
 from aiconsole.core.gpt.consts import QUALITY_GPT_MODE
 
@@ -21,5 +23,4 @@ from aiconsole.core.gpt.consts import QUALITY_GPT_MODE
 class User(Asset):
     type: AssetType = AssetType.USER
 
-    # base64 encoded image
-    profile_picture: str
+    profile_picture: Base64Bytes
