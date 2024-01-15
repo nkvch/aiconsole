@@ -43,7 +43,6 @@ interface CodeInputProps {
   focused?: boolean;
   withFullscreen?: boolean;
   fullHeight?: boolean;
-  withMarkdown?: boolean;
 }
 
 export function CodeInput({
@@ -61,7 +60,6 @@ export function CodeInput({
   focused,
   withFullscreen,
   fullHeight = false,
-  withMarkdown = false,
 }: CodeInputProps) {
   const [focus, setFocus] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
@@ -216,7 +214,6 @@ export function CodeInput({
           />
         )}
       </div>
-      {withMarkdown && <MarkdownSupported />}
     </div>
   );
 

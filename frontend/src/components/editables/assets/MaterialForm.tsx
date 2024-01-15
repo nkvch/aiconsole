@@ -54,14 +54,13 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
           helperText="Usage is used to help identify when this material should be used. "
           resize
         />
-        <MarkdownSupported className="bottom-[35px] right-[40px]" />
+        <MarkdownSupported />
       </FormGroup>
-      <FormGroup className="w-full h-full flex overflow-clip">
+      <FormGroup className="w-full h-full flex overflow-clip flex-col">
         <div className="flex-1">
           {codeEditorSectionContent ? (
             <CodeInput
               fullHeight
-              withMarkdown
               label={codeEditorSectionContent.label}
               labelContent={
                 <CodeEditorLabelContent showPreview={showPreview} onClick={() => setShowPreview((prev) => !prev)} />
@@ -73,6 +72,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
             />
           ) : null}
         </div>
+        <MarkdownSupported />
       </FormGroup>
     </>
   );
