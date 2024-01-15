@@ -21,9 +21,7 @@ import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { useUserContextMenu } from '@/utils/common/useUserContextMenu';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { ActorAvatar } from './AgentAvatar';
-
-import { UserAvatar } from './UserAvatar';
+import { ActorAvatar } from './ActorAvatar';
 
 function AgentInfoMaterialLink({ materialId }: { materialId: string }) {
   const materials = useEditablesStore((state) => state.materials) || [];
@@ -84,7 +82,6 @@ export function ActorInfo({
           onClick={openContext}
           className="flex-none items-center flex flex-col"
         >
-          <UserAvatar email={email} title={`${username}`} type="small" />
           <ActorAvatar
             agentId={actorId}
             title={`${agent?.name || actorId}${task ? ` tasked with:\n${task}` : ``}`}

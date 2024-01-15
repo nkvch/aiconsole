@@ -23,7 +23,7 @@ import { ProjectCard } from './ProjectCard';
 import { RecentProjectsEmpty } from './RecentProjectsEmpty';
 
 export function Home() {
-  const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
+  const openAiApiKey = useSettingsStore((state) => state.settings.openai_api_key);
   const isApiKeyValid = useSettingsStore((state) => state.isApiKeyValid);
   const isProjectLoading = useProjectStore((state) => state.isProjectLoading);
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);

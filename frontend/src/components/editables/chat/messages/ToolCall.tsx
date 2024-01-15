@@ -47,9 +47,9 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
   const userMutateChat = useChatStore((state) => state.userMutateChat);
   const saveCommandAndMessagesToHistory = useChatStore((state) => state.saveCommandAndMessagesToHistory);
 
-  const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
+  const code_autorun = useSettingsStore((state) => state.settings.code_autorun);
 
-  const [folded, setFolded] = useState(alwaysExecuteCode);
+  const [folded, setFolded] = useState(code_autorun);
   const doAcceptCode = useChatStore((state) => state.doAcceptCode);
   const enableAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
   const isViableForRunningCode = useChatStore((state) => state.isViableForRunningCode);
@@ -162,7 +162,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
                     Run
                   </Button>
 
-                  {!alwaysExecuteCode && (
+                  {!code_autorun && (
                     <Button onClick={handleAlwaysRunClick} variant="status" statusColor="purple" small>
                       <Icon icon={Infinity} />
                       Always Run

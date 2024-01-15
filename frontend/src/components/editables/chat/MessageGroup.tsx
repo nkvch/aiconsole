@@ -15,7 +15,6 @@
 // limitations under the License.
 
 import { ActorInfo } from '@/components/editables/chat/ActorInfo';
-import { UserInfo } from '@/components/editables/chat/UserInfo';
 import { cn } from '@/utils/common/cn';
 import { useState } from 'react';
 import { AICMessageGroup } from '../../../types/editables/chatTypes';

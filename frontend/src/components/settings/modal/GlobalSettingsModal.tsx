@@ -32,28 +32,22 @@ export const GlobalSettingsModal = () => {
   const setSettingsModalVisibility = useSettingsStore((state) => state.setSettingsModalVisibility);
 
   const [usernameFormValue, setUsernameFormValue] = useState<string | undefined>(undefined);
-  const username = useSettingsStore((state) => state.username);
+  const display_name = useSettingsStore((state) => state.settings.user_profile?.display_name);
   useEffect(() => {
-    setUsernameFormValue(username);
-  }, [username]);
-
-  const [emailFormValue, setEmailFormValue] = useState<string | undefined>(undefined);
-  const email = useSettingsStore((state) => state.userEmail);
-  useEffect(() => {
-    setEmailFormValue(email);
-  }, [email]);
+    setUsernameFormValue(display_name);
+  }, [display_name]);
 
   const [apiKeyValue, setApiKeyValue] = useState<string | undefined>('');
-  const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
+  const openai_api_key = useSettingsStore((state) => state.settings.openai_api_key);
   useEffect(() => {
-    setApiKeyValue(openAiApiKey || '');
-  }, [openAiApiKey]);
+    setApiKeyValue(openai_api_key || '');
+  }, [openai_api_key]);
 
   const [isAutoRun, setIsAutoRun] = useState(false);
-  const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
+  const code_autorun = useSettingsStore((state) => !!state.settings.code_autorun);
   useEffect(() => {
-    setIsAutoRun(alwaysExecuteCode);
-  }, [alwaysExecuteCode]);
+    setIsAutoRun(code_autorun);
+  }, [code_autorun]);
 
   const [userAvatarData, setUserAvatarData] = useState<File>();
   const [isAvatarOverwritten, setIsAvatarOverwritten] = useState(false);
@@ -80,8 +74,8 @@ export const GlobalSettingsModal = () => {
                 email: emailFormValue !== email ? emailFormValue : undefined,
               }
             : undefined,
-        openai_api_key: apiKeyValue !== openAiApiKey ? apiKeyValue : undefined,
-        code_autorun: isAutoRun !== alwaysExecuteCode ? isAutoRun : undefined,
+        openai_api_key: apiKeyValue !== openai_api_key ? apiKeyValue : undefined,
+        code_autorun: isAutoRun !== code_autorun ? isAutoRun : undefined,
       },
       true,
       avatarFormData,
@@ -96,10 +90,9 @@ export const GlobalSettingsModal = () => {
 
   useEffect(() => {
     const resetState = () => {
-      setUsernameFormValue(username);
-      setEmailFormValue(email);
-      setApiKeyValue(openAiApiKey);
-      setIsAutoRun(alwaysExecuteCode);
+      setUsernameFormValue(display_name);
+      setApiKeyValue(openai_api_key);
+      setIsAutoRun(code_autorun);
       setUserAvatarData(undefined);
       setIsAvatarOverwritten(false);
     };
@@ -131,13 +124,11 @@ export const GlobalSettingsModal = () => {
 
             <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-center gap-5">
               <GlobalSettingsUserSection
-                email={emailFormValue}
-                setEmail={setEmailFormValue}
                 username={usernameFormValue}
                 setUsername={setUsernameFormValue}
                 setImage={handleSetAvatarImage}
               />
-              <GlobalSettingsApiSection apiKey={openAiApiKey} setApiKey={setApiKeyValue} />
+              <GlobalSettingsApiSection apiKey={openai_api_key} setApiKey={setApiKeyValue} />
               <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
               <div className="flex items-center justify-end gap-[10px] py-[40px]">
                 <Button variant="secondary" bold onClick={handleModalClose}>

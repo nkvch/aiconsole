@@ -22,7 +22,7 @@ import { Agent, Asset, AssetType } from '@/types/editables/assetTypes';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
 import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
-import { ActorAvatar } from './AgentAvatar';
+import { ActorAvatar } from './ActorAvatar';
 import { cn } from '@/utils/common/cn';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Swiper, SwiperSlide } from 'swiper/react';

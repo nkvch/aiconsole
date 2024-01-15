@@ -19,12 +19,7 @@ export type Settings = {
   code_autorun?: boolean;
   openai_api_key?: string;
   user_profile?: {
-    username?: string;
-    avatar_url?: string;
+    display_name?: string;
+    profile_picture?: string;
   };
-};
-
-export type Avatar = {
-  avatar_url: string;
-  username: string;
 };

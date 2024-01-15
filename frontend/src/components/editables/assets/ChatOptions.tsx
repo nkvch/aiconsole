@@ -28,7 +28,7 @@ import { Agent, Material } from '@/types/editables/assetTypes';
 import { cn } from '@/utils/common/cn';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
 
-import { ActorAvatar } from '../chat/AgentAvatar';
+import { ActorAvatar } from '../chat/ActorAvatar';
 import Autocomplete from './Autocomplete';
 
 const ChatOptions = () => {
