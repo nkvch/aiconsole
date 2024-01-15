@@ -24,9 +24,10 @@ import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Icon } from '@/components/common/icons/Icon';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
-import { MarkdownSupported } from '../MarkdownSupported';
 
 const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
+
+const DEFAULT_MIN_HEIGHT = '180px';
 
 interface CodeInputProps {
   label?: string;
@@ -40,6 +41,7 @@ interface CodeInputProps {
   readOnly?: boolean;
   transparent?: boolean;
   maxHeight?: string;
+  minHeight?: string;
   focused?: boolean;
   withFullscreen?: boolean;
   fullHeight?: boolean;
@@ -56,6 +58,7 @@ export function CodeInput({
   readOnly = false,
   transparent = false,
   maxHeight = DEFAULT_MAX_HEIGHT,
+  minHeight = DEFAULT_MIN_HEIGHT,
   labelContent,
   focused,
   withFullscreen,
@@ -167,7 +170,7 @@ export function CodeInput({
         ref={editorBoxRef}
         style={{
           maxHeight,
-          minHeight: maxHeight,
+          minHeight: isFullscreenOpen ? maxHeight : minHeight,
         }}
         className={cn(
           className,
@@ -207,7 +210,7 @@ export function CodeInput({
             icon={isFullscreenOpen ? Minimize2 : Maximize2}
             width={24}
             height={24}
-            className={cn(`absolute right-[25px] bottom-[80px] cursor-pointer text-gray-300 hover:text-white`, {
+            className={cn(`absolute right-[25px] bottom-[25px] cursor-pointer text-gray-300 hover:text-white`, {
               'right-[25px] bottom-[25px]': fullScreen,
             })}
             onClick={toggleFullscreen}
