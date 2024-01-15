@@ -10,12 +10,8 @@ from aiconsole.core.settings.fs.settings_file_format import (
     save_settings_file,
 )
 from aiconsole.core.settings.settings_storage import SettingsStorage
-from aiconsole.core.settings.utils.update_settings_data import update_settings_data
 from aiconsole.utils.events import InternalEvent, internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
-from aiconsole_toolkit.settings.settings_data import SettingsData
-
-_log = logging.getLogger(__name__)
 
 
 def _get_settings_from_path(file_path: Path | None) -> PartialSettingsData:
@@ -55,7 +51,7 @@ class SettingsFileStorage(SettingsStorage):
     def project_settings(self):
         return _get_settings_from_path(self.project_settings_file_path)
 
-    def change_project(self, project_path: Optional[Path] = None):
+    def change_project(self, project_path: Path | None = None):
         self._project_settings_file_path = project_path / "settings.toml" if project_path else None
         self._start_observer()
 
@@ -70,8 +66,6 @@ class SettingsFileStorage(SettingsStorage):
         await internal_events().emit(SettingsUpdatedEvent())
 
     def _start_observer(self):
-        from aiconsole.core.settings.settings import settings
-
         file_paths = [self.global_settings_file_path]
         if self.project_settings_file_path:
             file_paths.append(self.project_settings_file_path)

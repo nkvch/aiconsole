@@ -37,6 +37,10 @@ def get_core_assets_directory(asset_type: AssetType):
     return resource_to_path(f"aiconsole.preinstalled.{asset_type.value}s")
 
 
+def get_core_preinstalled_assets_directory():
+    return resource_to_path("aiconsole.preinstalled")
+
+
 def get_history_directory(project_path: Path | None = None):
     if not is_project_initialized() and not project_path:
         raise ValueError("Project settings are not initialized")

@@ -107,7 +107,7 @@ async def save_asset_to_fs(asset: Asset):
             doc.append("execution_mode", tomlkit.string(asset.execution_mode))
 
         if isinstance(asset, User):
-            doc.append("profile_picture", tomlkit.string(asset.profile_picture))
+            doc.append("profile_picture", tomlkit.string(asset.profile_picture.decode()))
 
         file.write(doc.as_string())
 

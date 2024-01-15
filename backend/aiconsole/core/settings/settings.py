@@ -19,10 +19,15 @@ from functools import lru_cache
 from uuid import uuid4
 
 from aiconsole.core import project
+from aiconsole.core.project.paths import (
+    get_core_assets_directory,
+    get_core_preinstalled_assets_directory,
+)
 from aiconsole.core.settings.fs.settings_file_storage import SettingsUpdatedEvent
 from aiconsole.core.settings.settings_notifications import SettingsNotifications
 from aiconsole.core.settings.settings_storage import SettingsStorage
-from aiconsole.core.settings.utils.update_settings_data import update_settings_data
+from aiconsole.core.settings.utils.merge_settings_data import merge_settings_data
+from aiconsole.core.users.types import UserProfile
 from aiconsole.utils.events import internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 from aiconsole_toolkit.settings.settings_data import SettingsData
@@ -39,6 +44,13 @@ class Settings:
 
         self._storage = storage
         self._settings_notifications = SettingsNotifications()
+
+        self._default_settings = SettingsData(
+            user_profile=UserProfile(
+                display_name="User",
+                profile_picture=open(get_core_preinstalled_assets_directory() / "avatars" / "user.jpg", "rb").read(),
+            ),
+        )
 
         internal_events().subscribe(
             SettingsUpdatedEvent,
@@ -71,7 +83,9 @@ class Settings:
         if not self._storage or not self._settings_notifications:
             raise ValueError("Settings not configured")
 
-        return update_settings_data(SettingsData(), self._storage.global_settings, self._storage.project_settings)
+        return merge_settings_data(
+            self._default_settings, self._storage.global_settings, self._storage.project_settings
+        )
 
     def save(self, settings_data: PartialSettingsData, to_global: bool):
         if not self._storage or not self._settings_notifications:

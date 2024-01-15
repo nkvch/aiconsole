@@ -16,29 +16,35 @@
 
 import { ProjectsAPI } from '@/api/api/ProjectsAPI';
 import { useProjectStore } from '@/store/projects/useProjectStore';
-import { Settings } from '@/types/settings/Settings';
 import { create } from 'zustand';
 import { SettingsAPI } from '../../api/api/SettingsAPI';
+import { PartialSettingsData, SettingsData } from '@/types/settings/settingsTypes';
 
 export type SettingsStore = {
-  settings: Settings;
+  settings: SettingsData;
   isApiKeyValid?: boolean;
   isSettingsModalVisible: boolean;
   setSettingsModalVisibility: (isVisible: boolean) => void;
   initSettings: () => Promise<void>;
   setAutoCodeExecution: (autoRun: boolean) => void;
-  saveSettings: (settings: Settings, isGlobal: boolean, avatar?: FormData | null) => Promise<void>;
+  saveSettings: (settings: PartialSettingsData, isGlobal: boolean, avatar?: FormData | null) => Promise<void>;
   validateApiKey: (key: string) => Promise<boolean>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: {
+    user_id: '',
     code_autorun: false,
     openai_api_key: '',
     user_profile: {
-      username: '',
+      display_name: '',
+      profile_picture: '',
     },
+    materials: Material[],
+    agents: Agent[],
+    gpt_modes: GPTModeConfig[],
+    extra: {},
   },
   isApiKeyValid: false,
   isSettingsModalVisible: false,

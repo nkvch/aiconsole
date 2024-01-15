@@ -18,7 +18,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 
-from aiconsole.core.users.models import UserProfile
+from aiconsole.core.users.types import UserProfile
 from aiconsole.core.users.user import (
     MissingFileName,
     UserProfileService,

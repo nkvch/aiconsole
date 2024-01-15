@@ -5,7 +5,7 @@ from pydantic import BaseModel, model_validator
 from aiconsole.core.assets.models import AssetStatus
 from aiconsole.core.gpt import consts
 from aiconsole.core.gpt.types import GPTModeConfig
-from aiconsole.core.users.models import UserProfile
+from aiconsole.core.users.types import UserProfile
 
 REFERENCE_TO_GLOBAL_OPENAI_KEY = "ref/openai_api_key"
 
@@ -14,7 +14,7 @@ class SettingsData(BaseModel):
     user_id: str | None = None
     code_autorun: bool = False
     openai_api_key: str | None = None
-    user_profile: UserProfile = UserProfile()
+    user_profile: UserProfile
     materials: dict[str, AssetStatus] = {}
     agents: dict[str, AssetStatus] = {}
     gpt_modes: dict[consts.GPTMode, GPTModeConfig] = {

@@ -6,11 +6,7 @@ from typing import BinaryIO
 
 from aiconsole.consts import AICONSOLE_USER_CONFIG_DIR
 from aiconsole.core.settings.settings import settings
-from aiconsole.core.users.models import (
-    DEFAULT_USERNAME,
-    PartialUserProfile,
-    UserProfile,
-)
+from aiconsole.core.users.types import DEFAULT_USERNAME, PartialUserProfile, UserProfile
 from aiconsole.utils.resource_to_path import resource_to_path
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 
@@ -40,13 +36,14 @@ class UserProfileService:
                 raise MissingFileName()
             file_name = f"avatar{extension}"
 
-        file_path = self.get_avatar(file_name)
-        self._save_avatar_to_fs(file, file_path)
+        binary_data = file.read()
 
-        avatar_url = f"profile_image?img_filename={file_path.name}"
         settings().save(
             PartialSettingsData(
-                user_profile=PartialUserProfile(avatar_url=avatar_url),
+                user_profile=PartialUserProfile(
+                    # encode file as base64
+                    profile_picture=binary_data
+                ),
             ),
             to_global=True,
         )

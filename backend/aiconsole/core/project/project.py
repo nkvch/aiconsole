@@ -155,8 +155,8 @@ async def reinitialize_project():
     await users.save_asset(
         User(
             id=settings().unified_settings.user_id or "",
-            name=settings().unified_settings.user_profile.username or "",
-            profile_picture=settings().unified_settings.user_profile.username or "",
+            name=settings().unified_settings.user_profile.display_name,
+            profile_picture=settings().unified_settings.user_profile.profile_picture,
             usage="",
             usage_examples=[],
             default_status=AssetStatus.ENABLED,

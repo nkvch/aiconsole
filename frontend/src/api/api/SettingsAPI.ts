@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Avatar, Settings } from '@/types/settings/Settings';
+import { PartialSettingsData, SettingsData } from '@/types/settings/settingsTypes';
 import ky from 'ky';
 import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 
@@ -38,12 +38,12 @@ async function setUserAvatar(avatar: FormData) {
   return ky.post(`${getBaseURL()}/profile_image`, { body: avatar, hooks: API_HOOKS });
 }
 
-async function saveSettings(params: { to_global: boolean } & Settings) {
+async function saveSettings(params: { to_global: boolean } & PartialSettingsData) {
   console.log(params);
   return ky.patch(`${getBaseURL()}/api/settings`, { json: params, hooks: API_HOOKS });
 }
 
-async function getSettings(): Promise<Settings> {
+async function getSettings(): Promise<SettingsData> {
   return ky.get(`${getBaseURL()}/api/settings`, { hooks: API_HOOKS, timeout: 60000 }).json();
 }
 
