@@ -18,13 +18,15 @@
 import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-import { LucideIcon, MoreVertical, Trash } from 'lucide-react';
+import { MoreVertical, Trash } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ContextMenu, ContextMenuRef } from '../common/ContextMenu';
 import { Icon } from '../common/icons/Icon';
 
 const MAX_CHATS_TO_DISPLAY = 3;
+
+/* TODO: uncomment when backend ready
 interface CounterItemProps {
   icon: LucideIcon;
   count: number;
@@ -36,6 +38,7 @@ const CounterItem = ({ icon, count }: CounterItemProps) => (
     {count}
   </div>
 );
+ */
 
 interface ProjectCardProps {
   name: string;

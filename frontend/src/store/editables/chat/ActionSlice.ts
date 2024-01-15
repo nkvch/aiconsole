@@ -36,7 +36,7 @@ export type ActionSlice = {
   doProcess: () => Promise<void>;
 };
 
-export const createActionSlice: StateCreator<ChatStore, [], [], ActionSlice> = (set, get) => ({
+export const createActionSlice: StateCreator<ChatStore, [], [], ActionSlice> = (_set, get) => ({
   isExecutionRunning: () => {
     const chat = get().chat;
     if (!chat) {

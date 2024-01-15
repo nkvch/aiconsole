@@ -19,6 +19,7 @@ import { useProjectStore } from '@/store/projects/useProjectStore';
 import { create } from 'zustand';
 import { SettingsAPI } from '../../api/api/SettingsAPI';
 import { PartialSettingsData, SettingsData } from '@/types/settings/settingsTypes';
+import { produce } from 'immer';
 
 export type SettingsStore = {
   settings: SettingsData;
@@ -53,7 +54,12 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
   setAutoCodeExecution: async (autoRun: boolean) => {
     await SettingsAPI.saveSettings({ code_autorun: autoRun, to_global: true });
-    set({ alwaysExecuteCode: autoRun });
+
+    set(
+      produce((state: SettingsStore) => {
+        state.settings.code_autorun = autoRun;
+      }),
+    );
   },
   saveSettings: async (settings: PartialSettingsData, isGlobal: boolean, avatar?: FormData | null) => {
     const { user_profile, openai_api_key, code_autorun } = settings;
@@ -62,19 +68,33 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       to_global: isGlobal,
     });
     if (openai_api_key) {
-      set({
-        openAiApiKey: openai_api_key,
-        isApiKeyValid: true, // We assume that they key was validated before saving
-      });
+      set(
+        produce((state: SettingsStore) => {
+          state.settings.openai_api_key = openai_api_key;
+          state.isApiKeyValid = true; // We assume that they key was validated before saving
+        }),
+      );
     }
-    if (user_profile && user_profile.username) {
-      set({ username: user_profile.username });
+    if (user_profile && user_profile.display_name) {
+      set(
+        produce((state: SettingsStore) => {
+          state.settings.user_profile.display_name = user_profile.display_name || '';
+        }),
+      );
     }
-    if (user_profile && user_profile.email) {
-      set({ userEmail: user_profile.email });
+    if (user_profile && user_profile.profile_picture) {
+      set(
+        produce((state: SettingsStore) => {
+          state.settings.user_profile.profile_picture = user_profile.profile_picture || '';
+        }),
+      );
     }
     if (typeof code_autorun === 'boolean') {
-      set({ alwaysExecuteCode: code_autorun });
+      set(
+        produce((state: SettingsStore) => {
+          state.settings.code_autorun = code_autorun;
+        }),
+      );
     }
 
     if (avatar) {

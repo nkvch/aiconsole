@@ -15,7 +15,7 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, _setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (currentImage) {
