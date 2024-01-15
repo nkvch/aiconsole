@@ -18,11 +18,6 @@ import logging
 from functools import lru_cache
 from uuid import uuid4
 
-from aiconsole.core import project
-from aiconsole.core.project.paths import (
-    get_core_assets_directory,
-    get_core_preinstalled_assets_directory,
-)
 from aiconsole.core.settings.fs.settings_file_storage import SettingsUpdatedEvent
 from aiconsole.core.settings.settings_notifications import SettingsNotifications
 from aiconsole.core.settings.settings_storage import SettingsStorage
@@ -40,6 +35,8 @@ class Settings:
     _settings_notifications: SettingsNotifications | None = None
 
     def configure(self, storage: SettingsStorage):
+        from aiconsole.core.project.paths import get_core_preinstalled_assets_directory
+
         self.destroy()
 
         self._storage = storage

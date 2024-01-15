@@ -22,11 +22,13 @@ Connection manager for websockets. Keeps track of all active connections
 
 import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from fastapi import WebSocket
 
-from aiconsole.api.websockets.server_messages import BaseServerMessage
+if TYPE_CHECKING:
+    from aiconsole.api.websockets.server_messages import BaseServerMessage
 
 _log = logging.getLogger(__name__)
 _active_connections: list["AICConnection"] = []
@@ -46,7 +48,7 @@ class AICConnection:
     def __init__(self, websocket: WebSocket):
         self._websocket = websocket
 
-    async def send(self, msg: BaseServerMessage):
+    async def send(self, msg: "BaseServerMessage"):
         await self._websocket.send_json({"type": msg.get_type(), **msg.model_dump(mode="json")})
 
 
@@ -65,7 +67,7 @@ def disconnect(connection: AICConnection):
 
 async def send_message_to_chat(
     chat_id: str,
-    msg: BaseServerMessage,
+    msg: "BaseServerMessage",
     source_connection_to_ommit: AICConnection | None = None,
 ):
     # _log.debug(f"Sending message to {chat_id}: {msg}")
@@ -74,7 +76,7 @@ async def send_message_to_chat(
             await connection.send(msg)
 
 
-async def send_message_to_all(msg: BaseServerMessage, source_connection_to_ommit: AICConnection | None = None):
+async def send_message_to_all(msg: "BaseServerMessage", source_connection_to_ommit: AICConnection | None = None):
     # _log.debug(f"Sending message to all: {msg}")
     for connection in _active_connections:
         if connection != source_connection_to_ommit:
