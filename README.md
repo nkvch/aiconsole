@@ -105,6 +105,9 @@ In order to run the non electron development version of AIConsole:
 1. To run the tests you have to go to the backend folder: `cd backend`
 2. Run the tests: `poetry run pytest .`
 
+There are also tests, which are currently skipped in out pytest settings. 
+To run them, please execute each test file separately, for example: `poetry run pytest aiconsole/tests/test_factorial_of_number.py`
+
 # License
 
 AI Console is open-source software licensed under the [Apache License ver. 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).

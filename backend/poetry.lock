@@ -1668,6 +1668,20 @@ docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
 testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
 
 [[package]]
+name = "pytest-repeat"
+version = "0.9.3"
+description = "pytest plugin for repeating tests"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_repeat-0.9.3-py3-none-any.whl", hash = "sha256:26ab2df18226af9d5ce441c858f273121e92ff55f5bb311d25755b8d7abdd8ed"},
+    {file = "pytest_repeat-0.9.3.tar.gz", hash = "sha256:ffd3836dfcd67bb270bec648b330e20be37d2966448c4148c4092d1e8aba8185"},
+]
+
+[package.dependencies]
+pytest = "*"
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -2673,4 +2687,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7a2e0524c674316d4f0e99d79d1b8c92e088a07761d2146691fb9933b5e145cd"
+content-hash = "2f601e9bdb04f5552a06b963ba1886aa06a0a9c8b8d08f499cbbbbf92f9bd80e"

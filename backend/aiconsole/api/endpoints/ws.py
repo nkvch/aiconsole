@@ -16,7 +16,7 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, WebSocket, WebSocketDisconnect
 
 from aiconsole.api.websockets.connection_manager import (
     ConnectionManager,

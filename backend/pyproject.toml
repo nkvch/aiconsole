@@ -34,6 +34,7 @@ rich = "^13.7.0"
 types-requests = "^2.31.0.20240106"
 types-setuptools = "^69.0.0.20240106"
 platformdirs = "^4.1.0"
+pytest-repeat = "^0.9.3"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"
@@ -63,6 +64,7 @@ dev = "aiconsole.init:aiconsole_dev"
 
 [tool.pytest.ini_options]
 python_files = "*_tests.py test_*.py"
+addopts = "-s --ignore=aiconsole/tests"
 
 [tool.isort]
 known_first_party = "aiconsole,aiconsole_toolkit"

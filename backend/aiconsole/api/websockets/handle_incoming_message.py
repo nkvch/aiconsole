@@ -24,11 +24,11 @@ from aiconsole.api.websockets.client_messages import (
     AcceptCodeClientMessage,
     AcquireLockClientMessage,
     CloseChatClientMessage,
-    StopChatClientMessage,
     InitChatMutationClientMessage,
     OpenChatClientMessage,
     ProcessChatClientMessage,
     ReleaseLockClientMessage,
+    StopChatClientMessage,
 )
 from aiconsole.api.websockets.connection_manager import (
     AcquiredLock,
@@ -53,7 +53,12 @@ from aiconsole.core.chat.execution_modes.execution_mode import (
 from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
-from aiconsole.core.chat.locking import DefaultChatMutator, acquire_lock, release_lock, wait_for_lock
+from aiconsole.core.chat.locking import (
+    DefaultChatMutator,
+    acquire_lock,
+    release_lock,
+    wait_for_lock,
+)
 from aiconsole.core.chat.types import AICMessageGroup, Chat
 from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     WaitForEnvEvent,

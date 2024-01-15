@@ -54,6 +54,7 @@ class StopChatClientMessage(BaseClientMessage):
     chat_id: str
     request_id: str
 
+
 class CloseChatClientMessage(BaseClientMessage):
     chat_id: str
 

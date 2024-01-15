@@ -6,7 +6,7 @@ _PROJECT_PATH = "./"
 _MESSAGE = "Run factorial of 5"
 
 
-@chat_test_framework.repeat(3)
+@chat_test_framework.repeat(10)
 @pytest.mark.asyncio
 async def test_should_calculate_factorial_of_given_number():
     async with chat_test_framework.initialize_project_with_chat(_PROJECT_PATH):
