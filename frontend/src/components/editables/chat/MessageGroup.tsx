@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ActorInfo } from '@/components/editables/chat/AgentInfo';
+import { ActorInfo } from '@/components/editables/chat/ActorInfo';
 import { UserInfo } from '@/components/editables/chat/UserInfo';
 import { cn } from '@/utils/common/cn';
 import { useState } from 'react';
