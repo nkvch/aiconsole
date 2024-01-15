@@ -45,7 +45,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
     <>
       <FormGroup className="relative group">
         <TextInput
-          className="min-h-[70px]"
+          className="min-h-[90px]"
           label="Usage"
           name="usage"
           placeholder="Write text here"
