@@ -28,7 +28,7 @@ import { Agent, Material } from '@/types/editables/assetTypes';
 import { cn } from '@/utils/common/cn';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
 
-import { AgentAvatar } from '../chat/AgentAvatar';
+import { ActorAvatar } from '../chat/AgentAvatar';
 import Autocomplete from './Autocomplete';
 
 const ChatOptions = () => {
@@ -164,7 +164,7 @@ const AgentsDropdown = ({ agents, selectedAgent, onSelect }: AgentsDropdownProps
         >
           {selectedAgent ? (
             <div className="flex gap-2.5 items-center">
-              <AgentAvatar agentId={selectedAgent.id} type="extraSmall" className="!m-0" />
+              <ActorAvatar agentId={selectedAgent.id} type="extraSmall" className="!m-0" />
               <p>{selectedAgent.name}</p>
             </div>
           ) : (
@@ -201,7 +201,7 @@ const AgentsDropdown = ({ agents, selectedAgent, onSelect }: AgentsDropdownProps
               className="group flex p-0 rounded-none hover:bg-gray-600 hover:outline-none w-full cursor-pointer"
             >
               <div className="flex items-center gap-[12px] px-[16px] py-[10px] text-[14px] text-gray-300 group-hover:text-white w-full">
-                <AgentAvatar agentId={id} type="extraSmall" className="!m-0" />
+                <ActorAvatar agentId={id} type="extraSmall" className="!m-0" />
                 <p>{name}</p>
               </div>
             </Item>

@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AgentInfo } from '@/components/editables/chat/AgentInfo';
+import { ActorInfo } from '@/components/editables/chat/AgentInfo';
 import { UserInfo } from '@/components/editables/chat/UserInfo';
 import { cn } from '@/utils/common/cn';
 import { useState } from 'react';
@@ -39,11 +39,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
     >
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
         <div className="flex-none items-center flex flex-col max-w-[120px] ">
-          {group.role === 'user' ? (
-            <UserInfo username={group.username} email={group.email} />
-          ) : (
-            <AgentInfo agentId={group.actor_id} materialsIds={group.materials_ids} task={group.task} />
-          )}
+          <ActorInfo actorId={group.actor_id} materialsIds={group.materials_ids} task={group.task} />
 
           {group.messages && !isOpen && (
             <AnalysisClosed group={group} onClick={() => setIsAnalysisManuallyOpen(!isOpen)} />

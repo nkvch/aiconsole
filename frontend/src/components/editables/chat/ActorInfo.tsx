@@ -14,14 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useRef, MouseEvent } from 'react';
+import { MouseEvent, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { useUserContextMenu } from '@/utils/common/useUserContextMenu';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { AgentAvatar } from './AgentAvatar';
-import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
+import { ActorAvatar } from './AgentAvatar';
+
+import { UserAvatar } from './UserAvatar';
 
 function AgentInfoMaterialLink({ materialId }: { materialId: string }) {
   const materials = useEditablesStore((state) => state.materials) || [];
@@ -42,49 +44,50 @@ function AgentInfoMaterialLink({ materialId }: { materialId: string }) {
   );
 }
 
-export function AgentInfo({
-  agentId,
+export function ActorInfo({
+  actorId,
   materialsIds,
   task,
 }: {
-  agentId: string;
+  actorId: string;
   materialsIds: string[];
   task?: string;
 }) {
   const agents = useEditablesStore((state) => state.agents) || [];
-  const agent = agents.find((m) => m.id === agentId);
+  const agent = agents.find((m) => m.id === actorId);
 
   const editableMenuItems = useEditableObjectContextMenu({
     editableObjectType: 'agent',
     editable: agent || {
-      id: agentId,
-      name: agentId,
+      id: actorId,
+      name: actorId,
     },
   });
 
   const triggerRef = useRef<ContextMenuRef>(null);
 
   const openContext = (event: MouseEvent) => {
-    if (triggerRef.current && agentId === 'user') {
+    if (triggerRef.current && actorId === 'user') {
       triggerRef?.current.handleTriggerClick(event);
     }
   };
 
   const userMenuItems = useUserContextMenu();
 
-  const menuItems = agentId !== 'user' ? editableMenuItems : userMenuItems;
+  const menuItems = actorId !== 'user' ? editableMenuItems : userMenuItems;
 
   return (
     <>
       <ContextMenu options={menuItems} ref={triggerRef}>
         <Link
-          to={agentId != 'user' ? `/agents/${agentId}` : ''}
+          to={actorId != 'user' ? `/agents/${actorId}` : ''}
           onClick={openContext}
           className="flex-none items-center flex flex-col"
         >
-          <AgentAvatar
-            agentId={agentId}
-            title={`${agent?.name || agentId}${task ? ` tasked with:\n${task}` : ``}`}
+          <UserAvatar email={email} title={`${username}`} type="small" />
+          <ActorAvatar
+            agentId={actorId}
+            title={`${agent?.name || actorId}${task ? ` tasked with:\n${task}` : ``}`}
             type="small"
           />
           <div

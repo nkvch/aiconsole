@@ -22,7 +22,7 @@ import { Agent, Asset, AssetType } from '@/types/editables/assetTypes';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
 import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
-import { AgentAvatar } from './AgentAvatar';
+import { ActorAvatar } from './AgentAvatar';
 import { cn } from '@/utils/common/cn';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -54,7 +54,7 @@ function EmptyChatAgentAvatar({ agent }: { agent: Agent }) {
           },
         )}
       >
-        <AgentAvatar agentId={agent.id} type="small" className="mb-[10px] mt-[5px]" />
+        <ActorAvatar agentId={agent.id} type="small" className="mb-[10px] mt-[5px]" />
         <p className="text-[15px] text-center">{agent.name}</p>
       </div>
     </ContextMenu>
