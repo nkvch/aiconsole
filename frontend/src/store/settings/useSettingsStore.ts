@@ -41,9 +41,9 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       display_name: '',
       profile_picture: '',
     },
-    materials: Material[],
-    agents: Agent[],
-    gpt_modes: GPTModeConfig[],
+    materials: {},
+    agents: {},
+    gpt_modes: {},
     extra: {},
   },
   isApiKeyValid: false,
@@ -55,7 +55,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     await SettingsAPI.saveSettings({ code_autorun: autoRun, to_global: true });
     set({ alwaysExecuteCode: autoRun });
   },
-  saveSettings: async (settings: Settings, isGlobal: boolean, avatar?: FormData | null) => {
+  saveSettings: async (settings: PartialSettingsData, isGlobal: boolean, avatar?: FormData | null) => {
     const { user_profile, openai_api_key, code_autorun } = settings;
     await SettingsAPI.saveSettings({
       ...settings,
@@ -82,15 +82,10 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
   },
   initSettings: async () => {
-    const { code_autorun, openai_api_key, user_profile } = await SettingsAPI.getSettings();
-    const { avatar_url } = await SettingsAPI.getUserAvatar(user_profile?.email);
+    const settings = await SettingsAPI.getSettings();
     set({
-      username: user_profile?.username,
-      userEmail: user_profile?.email,
-      alwaysExecuteCode: code_autorun,
-      openAiApiKey: openai_api_key,
-      isApiKeyValid: await get().validateApiKey(openai_api_key || ''),
-      userAvatarUrl: avatar_url,
+      settings: settings,
+      isApiKeyValid: await get().validateApiKey(settings.openai_api_key || ''),
     });
   },
   validateApiKey: async (key: string) => {

@@ -50,9 +50,9 @@ export const PartialSettingsDataSchema = z.object({
 export type PartialSettingsData = z.infer<typeof PartialSettingsDataSchema>;
 
 export const SettingsDataSchema = z.object({
-  user_id: z.string().nullable(),
+  user_id: z.string().optional(),
   code_autorun: z.boolean().default(false),
-  openai_api_key: z.string().nullable(),
+  openai_api_key: z.string().optional(),
   user_profile: UserProfileSchema,
   materials: z.record(z.string(), AssetStatusSchema).default({}),
   agents: z.record(z.string(), AssetStatusSchema).default({}),

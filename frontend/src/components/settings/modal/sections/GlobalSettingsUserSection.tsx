@@ -16,41 +16,22 @@
 
 import ImageUploader from '@/components/common/ImageUploader';
 import { Icon } from '@/components/common/icons/Icon';
-import { TextInput } from '@/components/editables/assets/TextInput';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
 import { Pencil } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface GlobalSettingsUserSectionProps {
   username?: string;
-  email?: string;
   setUsername: (value: string) => void;
-  setEmail: (value: string) => void;
   setImage: (avatar: File) => void;
 }
 
-const GlobalSettingsUserSection = ({
-  email,
-  username,
-  setEmail,
-  setUsername,
-  setImage,
-}: GlobalSettingsUserSectionProps) => {
-  const currentUsername = useSettingsStore((state) => state.username) || '';
-  const currentEmail = useSettingsStore((state) => state.userEmail) || '';
-  const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl) || undefined;
+const GlobalSettingsUserSection = ({ username, setUsername, setImage }: GlobalSettingsUserSectionProps) => {
+  const currentUsername = useSettingsStore((state) => state.settings.user_profile.display_name) || '';
+  const userAvatar = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [usernameFormValue, setUsernameFormValue] = useState(username);
-  const [emailFormValue, setEmailFormValue] = useState(email);
-
-  useEffect(() => {
-    if (typeof email === 'string') {
-      setEmailFormValue(email);
-    } else {
-      setEmailFormValue(currentEmail);
-    }
-  }, [email, currentEmail]);
 
   useEffect(() => {
     if (typeof username === 'string') {
@@ -69,7 +50,7 @@ const GlobalSettingsUserSection = ({
 
   return (
     <div className="flex items-center w-full gap-[30px]">
-      <ImageUploader currentImage={userAvatarUrl} onUpload={setImage} />
+      <ImageUploader currentImage={userAvatar} onUpload={setImage} />
       <div className="flex flex-col justify-between h-full">
         <div className="flex gap-2.5 text-[25px] font-black pt-[30px]">
           <h2 className="text-gray-400">Hello, </h2>
@@ -90,16 +71,6 @@ const GlobalSettingsUserSection = ({
               </button>
             </div>
           )}
-        </div>
-        <div className="flex flex-col gap-2.5 w-[255px]">
-          <p className="text-white text-[15px]">E-mail address</p>
-          <TextInput
-            value={emailFormValue || ''}
-            name="email"
-            onChange={setEmail}
-            type="email"
-            placeholder="Write e-mail here"
-          />
         </div>
       </div>
     </div>

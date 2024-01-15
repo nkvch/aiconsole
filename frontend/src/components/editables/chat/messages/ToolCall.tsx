@@ -51,11 +51,11 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
 
   const [folded, setFolded] = useState(code_autorun);
   const doAcceptCode = useChatStore((state) => state.doAcceptCode);
-  const enableAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
+  const setAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
   const isViableForRunningCode = useChatStore((state) => state.isViableForRunningCode);
 
   const handleAlwaysRunClick = () => {
-    enableAutoCodeExecution(true);
+    setAutoCodeExecution(true);
     doAcceptCode(tool_call.id);
   };
 

@@ -37,6 +37,12 @@ export const GlobalSettingsModal = () => {
     setUsernameFormValue(display_name);
   }, [display_name]);
 
+  const [profilePictureFormValue, setProfilePictureFormValue] = useState<string | undefined>(undefined);
+  const profile_picture = useSettingsStore((state) => state.settings.user_profile?.profile_picture);
+  useEffect(() => {
+    setProfilePictureFormValue(profile_picture);
+  }, [profile_picture]);
+
   const [apiKeyValue, setApiKeyValue] = useState<string | undefined>('');
   const openai_api_key = useSettingsStore((state) => state.settings.openai_api_key);
   useEffect(() => {
@@ -68,10 +74,10 @@ export const GlobalSettingsModal = () => {
     useSettingsStore.getState().saveSettings(
       {
         user_profile:
-          usernameFormValue !== username || emailFormValue !== email
+          usernameFormValue !== display_name || profilePictureFormValue !== profile_picture
             ? {
-                username: usernameFormValue !== username ? usernameFormValue : undefined,
-                email: emailFormValue !== email ? emailFormValue : undefined,
+                display_name: usernameFormValue !== display_name ? usernameFormValue : undefined,
+                profile_picture: profilePictureFormValue !== profile_picture ? profilePictureFormValue : undefined,
               }
             : undefined,
         openai_api_key: apiKeyValue !== openai_api_key ? apiKeyValue : undefined,

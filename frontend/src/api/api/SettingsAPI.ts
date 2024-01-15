@@ -25,14 +25,6 @@ const checkKey = (key: string) => {
   });
 };
 
-async function getUserAvatar(email?: string) {
-  const response = await ky
-    .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined })
-    .json<Avatar>();
-  response.avatar_url = `${getBaseURL()}/${response.avatar_url}`;
-  return response;
-}
-
 // TODO: this is not working now - backend is not ready
 async function setUserAvatar(avatar: FormData) {
   return ky.post(`${getBaseURL()}/profile_image`, { body: avatar, hooks: API_HOOKS });
@@ -50,7 +42,6 @@ async function getSettings(): Promise<SettingsData> {
 export const SettingsAPI = {
   saveSettings,
   getSettings,
-  getUserAvatar,
   setUserAvatar,
   checkKey,
 };
