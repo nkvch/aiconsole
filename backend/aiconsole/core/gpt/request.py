@@ -109,7 +109,11 @@ class GPTRequest:
     @property
     def llm_settings(self):
         config = self.model_config
-        api_key = config.api_key if config.api_key != REFERENCE_TO_GLOBAL_OPENAI_KEY else settings().unified_settings.openai_api_key
+        api_key = (
+            config.api_key
+            if config.api_key != REFERENCE_TO_GLOBAL_OPENAI_KEY
+            else settings().unified_settings.openai_api_key
+        )
         return {
             "model": config.model,
             **({"api_base": config.api_base} if config.api_base else {}),
@@ -123,7 +127,7 @@ class GPTRequest:
 
         if mode_config is None:
             raise ValueError(
-                f"Unknown GPT mode: '{self.gpt_mode}', available modes: {", ".join(settings().unified_settings.gpt_modes.keys())}"
+                f"Unknown GPT mode: '{self.gpt_mode}', available modes: {', '.join(settings().unified_settings.gpt_modes.keys())}"
             )
 
         # if api_key refers to any other setting, use that setting
