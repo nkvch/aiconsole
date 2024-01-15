@@ -100,7 +100,7 @@ async function error(browserWindow: BrowserWindow, message: string) {
 
 async function waitForServerToStart(window: AIConsoleWindow) {
   const RETRY_INTERVAL = 100;
-  log(window.browserWindow, `Waiting for backend to start on port ${window.port}`);
+  console.log(window.browserWindow, `Waiting for backend to start on port ${window.port}`);
 
   const interval = setInterval(() => {
     fetch(`http://0.0.0.0:${window.port}/api/ping`)
@@ -301,7 +301,7 @@ ipcMain.on('request-backend-port', async (event) => {
       ]);
 
       window.backendProcess.on('error', (e: Error) => {
-        error(window.browserWindow, `Error from backend process: ${e.message}`);
+        console.log(window.browserWindow, `Error from backend process: ${e.message}`);
       });
 
       window.backendProcess.stdout.on('data', (data: Buffer) => {

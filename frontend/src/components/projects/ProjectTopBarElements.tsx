@@ -14,32 +14,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ProjectsAPI } from '@/api/api/ProjectsAPI';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+
 import { useProjectStore } from '@/store/projects/useProjectStore';
 import { localStorageTyped } from '@/utils/common/localStorage';
 import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
-import { Link } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import { AddAssetDropdown } from '../editables/assets/AddAssetDropdown';
 import { ContextMenu } from '../common/ContextMenu';
+import { LeaveProjectDialog } from '../common/LeaveProjectDialog';
 
 const { getItem: checkIfChanged } = localStorageTyped<boolean>('isAssetChanged');
 
 export function ProjectTopBarElements() {
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const projectName = useProjectStore((state) => state.projectName);
 
-  const contextMenuItems = useProjectContextMenu();
+  const handleCancel = () => {
+    setIsLeaveDialogOpen(false);
+  };
 
   const handleBackToProjects = () => {
-    if (
-      checkIfChanged() &&
-      !window.confirm(`Are you sure you want to leave this project? Any unsaved changes will be lost.`)
-    ) {
-      return;
+    if (checkIfChanged()) {
+      setIsLeaveDialogOpen(true);
     }
-
-    ProjectsAPI.closeProject();
   };
+
+  const contextMenuItems = useProjectContextMenu(handleBackToProjects);
 
   return (
     <>
@@ -58,6 +60,7 @@ export function ProjectTopBarElements() {
           </ContextMenu>
         </div>
         <AddAssetDropdown />
+        <LeaveProjectDialog onCancel={handleCancel} isOpen={isLeaveDialogOpen} />
       </div>
     </>
   );

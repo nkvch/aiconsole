@@ -15,31 +15,17 @@
 // limitations under the License.
 
 import { XIcon } from 'lucide-react';
-import { ProjectsAPI } from '@/api/api/ProjectsAPI';
-import { localStorageTyped } from '../common/localStorage';
+
 import { ContextMenuItems } from '@/types/common/contextMenu';
 
-const { getItem: checkIfChanged } = localStorageTyped<boolean>('isAssetChanged');
-
-export function useProjectContextMenu() {
-  const handleBackToProjects = () => {
-    if (
-      checkIfChanged() &&
-      !window.confirm(`Are you sure you want to leave this project? Any unsaved changes will be lost.`)
-    ) {
-      return;
-    }
-
-    ProjectsAPI.closeProject();
-  };
-
+export function useProjectContextMenu(actionHandler: () => void) {
   const menuItems: ContextMenuItems = [
     {
       type: 'item',
       key: 'Close Project',
       icon: XIcon,
       title: 'Close Project',
-      action: handleBackToProjects,
+      action: actionHandler,
     },
   ];
 
