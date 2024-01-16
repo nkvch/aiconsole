@@ -283,8 +283,6 @@ export function ChatPage() {
           <AlertDialog
             title="Are you sure you want to exit this chat?"
             isOpen={blockerState === 'blocked'}
-            confirmationButtonText="Yes, exit"
-            cancelButtonText="No, stay"
             onClose={reset}
             onConfirm={confirm}
             confirmationButtonText="Leave"
