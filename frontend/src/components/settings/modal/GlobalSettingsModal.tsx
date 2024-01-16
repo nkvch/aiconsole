@@ -30,6 +30,7 @@ import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 export const GlobalSettingsModal = () => {
   const isSettingsModalVisible = useSettingsStore((state) => state.isSettingsModalVisible);
   const setSettingsModalVisibility = useSettingsStore((state) => state.setSettingsModalVisibility);
+  const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
 
   const [usernameFormValue, setUsernameFormValue] = useState<string | undefined>(undefined);
   const username = useSettingsStore((state) => state.username);
@@ -43,8 +44,8 @@ export const GlobalSettingsModal = () => {
     setEmailFormValue(email);
   }, [email]);
 
-  const [apiKeyValue, setApiKeyValue] = useState<string | undefined>('');
-  const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
+  const [apiKeyValue, setApiKeyValue] = useState<string | undefined>(openAiApiKey);
+
   useEffect(() => {
     setApiKeyValue(openAiApiKey || '');
   }, [openAiApiKey]);
@@ -137,7 +138,7 @@ export const GlobalSettingsModal = () => {
                 setUsername={setUsernameFormValue}
                 setImage={handleSetAvatarImage}
               />
-              <GlobalSettingsApiSection apiKey={openAiApiKey} setApiKey={setApiKeyValue} />
+              <GlobalSettingsApiSection apiKey={apiKeyValue} setApiKey={setApiKeyValue} />
               <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
               <div className="flex items-center justify-end gap-[10px] py-[40px]">
                 <Button variant="secondary" bold onClick={handleModalClose}>
