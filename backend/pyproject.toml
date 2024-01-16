@@ -36,6 +36,7 @@ sentry-sdk = {extras = ["fastapi"], version = "^1.39.1"}
 rich = "^13.7.0"
 types-requests = "^2.31.0.20240106"
 types-setuptools = "^69.0.0.20240106"
+platformdirs = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"

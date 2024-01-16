@@ -187,8 +187,8 @@ export function ChatPage() {
       await renameChat(newChat);
 
       showToast({
-        title: 'Renamed',
-        message: 'renamed',
+        title: 'Overwritten',
+        message: 'The chat has been successfully overwritten.',
         variant: 'success',
       });
     }
