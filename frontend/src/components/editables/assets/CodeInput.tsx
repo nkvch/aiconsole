@@ -26,7 +26,6 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
 
 const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
-
 const DEFAULT_MIN_HEIGHT = '180px';
 
 interface CodeInputProps {
@@ -157,7 +156,7 @@ export function CodeInput({
   };
 
   const codeInputCore = (fullScreen: boolean) => (
-    <div className={cn('relative group', { 'h-full': fullHeight })}>
+    <div className={cn('relative', { 'h-full': fullHeight })}>
       {label && (fullScreen || !withFullscreen) && (
         <div className="font-semibold text-white mb-[10px] flex ">
           <label htmlFor={label} className="py-[12px]">
@@ -192,7 +191,7 @@ export function CodeInput({
           highlight={(code) => onHighlight(code)}
           padding={10}
           className={cn(
-            'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400  text-[15px] text-white  rounded-[8px]',
+            'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400 text-[15px] text-gray-300 focus:text-white rounded-[8px]',
             {
               'opacity-[0.7] ': disabled,
               'bg-transparent': transparent,

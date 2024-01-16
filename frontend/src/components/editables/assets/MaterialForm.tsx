@@ -43,7 +43,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
 
   return (
     <>
-      <FormGroup className="relative group">
+      <FormGroup className="relative">
         <TextInput
           className="min-h-[90px]"
           label="Usage"
@@ -56,11 +56,10 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
         />
         <MarkdownSupported />
       </FormGroup>
-      <FormGroup className="w-full h-full flex overflow-clip flex-col">
+      <FormGroup className="w-full h-full flex flex-col">
         <div className="flex-1">
           {codeEditorSectionContent ? (
             <CodeInput
-              fullHeight
               label={codeEditorSectionContent.label}
               labelContent={
                 <CodeEditorLabelContent showPreview={showPreview} onClick={() => setShowPreview((prev) => !prev)} />
@@ -71,8 +70,8 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
               readOnly={showPreview}
             />
           ) : null}
+          <MarkdownSupported />
         </div>
-        <MarkdownSupported />
       </FormGroup>
     </>
   );
