@@ -56,7 +56,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
         />
         <MarkdownSupported />
       </FormGroup>
-      <FormGroup className="w-full h-full flex flex-col">
+      <FormGroup className="w-full flex flex-col">
         <div className="flex-1">
           {codeEditorSectionContent ? (
             <CodeInput
