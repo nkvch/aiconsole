@@ -224,6 +224,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
 
   const confirmPageEscape = () => {
     getInitialAsset();
+    setItem(false);
     proceed?.();
   };
 

@@ -14,20 +14,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { useState } from 'react';
 import { XIcon } from 'lucide-react';
 
 import { ContextMenuItems } from '@/types/common/contextMenu';
+import { ProjectsAPI } from '@/api/api/ProjectsAPI';
+import { localStorageTyped } from '../common/localStorage';
 
-export function useProjectContextMenu(actionHandler: () => void) {
+const { getItem: checkIfChanged } = localStorageTyped<boolean>('isAssetChanged');
+
+export function useProjectContextMenu() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const backToProjects = () => {
+    if (checkIfChanged()) {
+      setIsDialogOpen(true);
+    } else {
+      ProjectsAPI.closeProject();
+    }
+  };
+
+  const closeDialog = () => setIsDialogOpen(false);
+
   const menuItems: ContextMenuItems = [
     {
       type: 'item',
       key: 'Close Project',
       icon: XIcon,
       title: 'Close Project',
-      action: actionHandler,
+      action: backToProjects,
     },
   ];
 
-  return menuItems;
+  return { menuItems, isDialogOpen, closeDialog, backToProjects };
 }

@@ -19,41 +19,24 @@ import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useProjectStore } from '@/store/projects/useProjectStore';
-import { localStorageTyped } from '@/utils/common/localStorage';
 import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
 import { AddAssetDropdown } from '../editables/assets/AddAssetDropdown';
 import { ContextMenu } from '../common/ContextMenu';
 import { LeaveProjectDialog } from '../common/LeaveProjectDialog';
-import { ProjectsAPI } from '@/api/api/ProjectsAPI';
-
-const { getItem: checkIfChanged } = localStorageTyped<boolean>('isAssetChanged');
 
 export function ProjectTopBarElements() {
-  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
   const projectName = useProjectStore((state) => state.projectName);
 
-  const handleCancel = () => {
-    setIsLeaveDialogOpen(false);
-  };
-
-  const handleBackToProjects = () => {
-    if (checkIfChanged()) {
-      setIsLeaveDialogOpen(true);
-    } else {
-      ProjectsAPI.closeProject();
-    }
-  };
-
-  const contextMenuItems = useProjectContextMenu(handleBackToProjects);
+  const { menuItems, isDialogOpen, closeDialog, backToProjects } = useProjectContextMenu();
 
   return (
     <>
       <div className="flex text-sm gap-2 items-center pr-5">
         <div className="flex items-center justify-center gap-[30px]">
-          <button className="w-[36px] h-[36px]" onClick={handleBackToProjects}>
+          <button className="w-[36px] h-[36px]" onClick={backToProjects}>
             <img src="favicon.png" className="shadows-lg h-full w-full" alt="Logo" />
           </button>
-          <ContextMenu options={contextMenuItems}>
+          <ContextMenu options={menuItems}>
             <Link
               to={`/chats/${uuidv4()}`}
               className="h-11 text-grey-300 font-bold  text-lg text-gray-400 hover:animate-pulse cursor-pointer flex gap-2 items-center mr-[32px] uppercase"
@@ -63,7 +46,7 @@ export function ProjectTopBarElements() {
           </ContextMenu>
         </div>
         <AddAssetDropdown />
-        <LeaveProjectDialog onCancel={handleCancel} isOpen={isLeaveDialogOpen} />
+        <LeaveProjectDialog onCancel={closeDialog} isOpen={isDialogOpen} />
       </div>
     </>
   );
