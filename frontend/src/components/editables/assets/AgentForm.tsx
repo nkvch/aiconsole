@@ -7,7 +7,6 @@ import { useMemo, useState } from 'react';
 import { CodeInput } from './CodeInput';
 import { HelperLabel } from './HelperLabel';
 import { ErrorObject, TextInput } from './TextInput';
-import { MarkdownSupported } from '../MarkdownSupported';
 
 const executionModes = [
   {
@@ -64,24 +63,23 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
     <>
       <div className="flex gap-[20px]">
         {/* <ImageUploader /> */}
-        <FormGroup className="w-full">
+        <FormGroup horizontal>
           <TextInput
             label="Usage"
             name="usage"
             fullWidth
             placeholder="Write text here"
             value={agent.usage}
-            className="w-full min-h-[90px]"
+            className="w-full"
             onChange={handleUsageChange}
             helperText="Usage is used to help identify when this agent should be used. "
             resize
           />
-          <MarkdownSupported />
         </FormGroup>
       </div>
       <div className="flex gap-[20px]">
-        <FormGroup className="w-full h-full flex-col">
-          <div className="flex flex-col flex-1">
+        <FormGroup className="w-full h-full flex">
+          <div className="flex-1">
             <TextInput
               label="Execution mode"
               name="executionMode"
@@ -113,11 +111,10 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
               value={agent.system}
               withFullscreen
               codeLanguage="markdown"
-              maxHeight={'calc(100vh - 200px)'}
+              maxHeight={isCustomMode ? 'calc(100% - 120px)' : 'calc(100% - 200px)'}
               onChange={setAsset}
             />
           </div>
-          <MarkdownSupported />
         </FormGroup>
       </div>
     </>

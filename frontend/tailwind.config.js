@@ -83,28 +83,28 @@ export default {
           css: {
             color: '#ABABAB',
             h1: {
-              fontSize: '28px',
+              fontSize: '56px',
               color: theme('colors.white'),
-              fontWeight: 700,
+              fontWeight: 900,
               lineHeight: 'normal',
               letterSpacing: '-1.12px',
             },
             h2: {
-              fontSize: '24px',
+              fontSize: '26px',
               color: theme('colors.white'),
-              fontWeight: 700,
+              fontWeight: 900,
               lineHeight: 'normal',
             },
             h3: {
-              fontSize: '18px',
+              fontSize: '22px',
               color: theme('colors.white'),
-              fontWeight: 700,
+              fontWeight: 900,
               lineHeight: 'normal',
             },
             h4: {
-              fontSize: '15px',
+              fontSize: '16px',
               color: theme('colors.gray[300]'),
-              fontWeight: 700,
+              fontWeight: 600,
               lineHeight: 'normal',
             },
             p: {

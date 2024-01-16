@@ -105,8 +105,8 @@ const SideBarItem = ({
         }
       }
       showToast({
-        title: 'Overwritten',
-        message: `The ${editableObjectType} has been successfully overwritten.`,
+        title: 'Renamed',
+        message: 'renamed',
         variant: 'success',
       });
     }
