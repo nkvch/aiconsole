@@ -285,8 +285,8 @@ export function ChatPage() {
             isOpen={blockerState === 'blocked'}
             onClose={reset}
             onConfirm={confirm}
-            confirmationButtonText="Leave"
-            cancelButtonText="Cancel"
+            confirmationButtonText="Yes, exit"
+            cancelButtonText="No, stay"
           >
             Changes that you made may not be saved.
           </AlertDialog>
