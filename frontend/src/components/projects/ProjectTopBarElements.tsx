@@ -24,6 +24,7 @@ import { useProjectContextMenu } from '@/utils/projects/useProjectContextMenu';
 import { AddAssetDropdown } from '../editables/assets/AddAssetDropdown';
 import { ContextMenu } from '../common/ContextMenu';
 import { LeaveProjectDialog } from '../common/LeaveProjectDialog';
+import { ProjectsAPI } from '@/api/api/ProjectsAPI';
 
 const { getItem: checkIfChanged } = localStorageTyped<boolean>('isAssetChanged');
 
@@ -38,6 +39,8 @@ export function ProjectTopBarElements() {
   const handleBackToProjects = () => {
     if (checkIfChanged()) {
       setIsLeaveDialogOpen(true);
+    } else {
+      ProjectsAPI.closeProject();
     }
   };
 
