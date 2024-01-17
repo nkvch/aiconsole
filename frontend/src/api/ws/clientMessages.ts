@@ -53,6 +53,14 @@ export const OpenChatClientMessageSchema = BaseClientMessageSchema.extend({
 
 export type OpenChatClientMessage = z.infer<typeof OpenChatClientMessageSchema>;
 
+export const StopChatClientMessageSchema = BaseClientMessageSchema.extend({
+  type: z.literal('StopChatClientMessage'),
+  request_id: z.string(),
+  chat_id: z.string(),
+});
+
+export type StopChatClientMessage = z.infer<typeof StopChatClientMessageSchema>;
+
 export const CloseChatClientMessageSchema = BaseClientMessageSchema.extend({
   type: z.literal('CloseChatClientMessage'),
   chat_id: z.string(),
@@ -81,6 +89,7 @@ export const ClientMessageSchema = z.union([
   AcquireLockClientMessageSchema,
   ReleaseLockClientMessageSchema,
   OpenChatClientMessageSchema,
+  StopChatClientMessageSchema,
   CloseChatClientMessageSchema,
   AcceptCodeClientMessageSchema,
   ProcessChatClientMessageSchema,

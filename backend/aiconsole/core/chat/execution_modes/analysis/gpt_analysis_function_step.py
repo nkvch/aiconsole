@@ -172,7 +172,7 @@ async def gpt_analysis_function_step(
         tools=[
             ToolDefinition(
                 type="function",
-                function=ToolFunctionDefinition(**plan_class.openai_schema),
+                function=ToolFunctionDefinition(**plan_class.openai_schema()),
             )
         ],
         presence_penalty=2,

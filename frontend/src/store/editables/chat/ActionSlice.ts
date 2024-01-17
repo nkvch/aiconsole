@@ -68,7 +68,7 @@ export const createActionSlice: StateCreator<ChatStore, [], [], ActionSlice> = (
 
     if (chat && chat.lock_id) {
       useWebSocketStore.getState().sendMessage({
-        type: 'ReleaseLockClientMessage',
+        type: 'StopChatClientMessage',
         request_id: uuidv4(),
         chat_id: chat.id,
       });

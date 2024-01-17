@@ -13,17 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
-
 Connection manager for websockets. Keeps track of all active connections
-
 """
-
 import logging
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import TYPE_CHECKING
-from uuid import uuid4
 
 from fastapi import WebSocket
 
@@ -31,7 +27,6 @@ if TYPE_CHECKING:
     from aiconsole.api.websockets.server_messages import BaseServerMessage
 
 _log = logging.getLogger(__name__)
-_active_connections: list["AICConnection"] = []
 
 
 @dataclass(frozen=True)
@@ -41,43 +36,42 @@ class AcquiredLock:
 
 
 class AICConnection:
-    _websocket: WebSocket
-    open_chats_ids: set[str] = set()
-    acquired_locks: list[AcquiredLock] = []
-
     def __init__(self, websocket: WebSocket):
-        self._websocket = websocket
+        self.websocket = websocket
+        self.open_chats_ids: set[str] = set()
+        self.acquired_locks: list[AcquiredLock] = []
 
     async def send(self, msg: "BaseServerMessage"):
-        await self._websocket.send_json({"type": msg.get_type(), **msg.model_dump(mode="json")})
+        await self.websocket.send_json({"type": msg.get_type(), **msg.model_dump(mode="json")})
 
 
-async def connect(websocket: WebSocket):
-    await websocket.accept()
-    connection = AICConnection(websocket)
-    _active_connections.append(connection)
-    _log.info("Connected")
-    return connection
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[AICConnection] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        connection = AICConnection(websocket)
+        self.active_connections.append(connection)
+        _log.info("Connected")
+        return connection
+
+    def disconnect(self, connection: AICConnection):
+        self.active_connections.remove(connection)
+        _log.info("Disconnected")
+
+    async def send_to_chat(
+        self, message: BaseServerMessage, chat_id: str, except_connection: AICConnection | None = None
+    ):
+        for connection in self.active_connections:
+            if chat_id in connection.open_chats_ids and except_connection != connection:
+                await connection.send(message)
+
+    async def send_to_all(self, message: BaseServerMessage):
+        for connection in self.active_connections:
+            await connection.send(message)
 
 
-def disconnect(connection: AICConnection):
-    _active_connections.remove(connection)
-    _log.info("Disconnected")
-
-
-async def send_message_to_chat(
-    chat_id: str,
-    msg: "BaseServerMessage",
-    source_connection_to_ommit: AICConnection | None = None,
-):
-    # _log.debug(f"Sending message to {chat_id}: {msg}")
-    for connection in _active_connections:
-        if chat_id in connection.open_chats_ids and connection != source_connection_to_ommit:
-            await connection.send(msg)
-
-
-async def send_message_to_all(msg: "BaseServerMessage", source_connection_to_ommit: AICConnection | None = None):
-    # _log.debug(f"Sending message to all: {msg}")
-    for connection in _active_connections:
-        if connection != source_connection_to_ommit:
-            await connection.send(msg)
+@lru_cache
+def connection_manager():
+    return ConnectionManager()

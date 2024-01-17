@@ -21,6 +21,7 @@ import litellm  # type: ignore
 from litellm.caching import Cache  # type: ignore
 from openai import AuthenticationError
 
+from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import DebugJSONServerMessage
 from aiconsole.core.gpt.partial import GPTPartialResponse
 from aiconsole.core.gpt.request import GPTRequest
@@ -86,13 +87,11 @@ class GPTExecutor:
                 self.response = self.partial_response.to_final_response()
 
                 if _log.isEnabledFor(logging.DEBUG):
-                    await DebugJSONServerMessage(
-                        message="GPT",
-                        object={
-                            "request": self.request,
-                            "response": self.response.model_dump(),
-                        },
-                    ).send_to_all()
+                    await connection_manager().send_to_all(
+                        DebugJSONServerMessage(
+                            message="GPT", object={"request": self.request, "response": self.response.model_dump()}
+                        )
+                    )
 
                 return
             except AuthenticationError:

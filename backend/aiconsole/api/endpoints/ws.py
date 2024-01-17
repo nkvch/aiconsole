@@ -13,14 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import asyncio
 import logging
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks
 
-from aiconsole.api.websockets import connection_manager
+from aiconsole.api.websockets.connection_manager import (
+    ConnectionManager,
+    connection_manager,
+)
 from aiconsole.api.websockets.handle_incoming_message import handle_incoming_message
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
-from aiconsole.core.chat.locking import chats
 from aiconsole.core.project import project
 
 router = APIRouter()
@@ -29,21 +32,25 @@ _log = logging.getLogger(__name__)
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    background_tasks: BackgroundTasks,
+    connection_manager: ConnectionManager = Depends(connection_manager),
+):
     connection = await connection_manager.connect(websocket)
     await project.send_project_init(connection)
 
     try:
         while True:
             _log.debug("Waiting for message")
-            json_data = await websocket.receive_json()
+            json_data = await connection.websocket.receive_json()
             _log.debug(f"Received message: {json_data}")
             try:
-                await handle_incoming_message(connection, json_data)
+                await handle_incoming_message(connection, json_data, background_tasks)
             except Exception as e:
-                await ErrorServerMessage(
-                    error=f"Error handling message: {e} type={e.__class__.__name__}"
-                ).send_to_connection(connection)
+                await connection.send(
+                    ErrorServerMessage(error=f"Error handling message: {e} type={e.__class__.__name__}")
+                )
                 _log.exception(e)
                 _log.error(f"Error handling message: {e}")
     except WebSocketDisconnect:

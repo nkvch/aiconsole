@@ -25,37 +25,8 @@ from aiconsole.core.gpt.types import (
     GPTToolCall,
 )
 
-last_system_message = None
 
-
-def convert_message(group: AICMessageGroup, message: AICMessage, is_last: bool) -> list[GPTRequestMessage]:
-    global last_system_message
-
-    result: list[GPTRequestMessage] = []
-
-    #
-    # Augment the messages with system messages with meta data about which agent is speaking and what materials were available
-    #
-
-    if group.task:
-        system_message = f"""
-As a director I have assigned you ({group.actor_id}) and given you access to the following materials text: {", ".join(group.materials_ids) if group.materials_ids else "None"}.
-""".strip()
-
-        # Only provide a task for last message
-        if is_last:
-            system_message += "\n\nYour job: " + group.task
-
-        if last_system_message != system_message:
-            result.append(
-                GPTRequestTextMessage(
-                    role="system",
-                    name="director",
-                    content=system_message,
-                )
-            )
-            last_system_message = system_message
-
+def convert_message(group: AICMessageGroup, message: AICMessage) -> list[GPTRequestMessage]:
     tool_calls = [
         GPTToolCall(
             id=tool_call.id,
@@ -71,14 +42,14 @@ As a director I have assigned you ({group.actor_id}) and given you access to the
         for tool_call in message.tool_calls
     ]
 
-    result.append(
+    result: list[GPTRequestMessage] = [
         GPTRequestTextMessage(
             role=group.role,
             content=message.content,
             name=group.actor_id if group.actor_id != "user" else None,
             tool_calls=tool_calls or None,
-        ),
-    )
+        )
+    ]
 
     for tool_call in message.tool_calls:
         tool_call_id = tool_call.id
@@ -102,15 +73,34 @@ As a director I have assigned you ({group.actor_id}) and given you access to the
 
 
 def convert_messages(chat: Chat) -> list[GPTRequestMessage]:
-    global last_system_message
     last_system_message = None
 
     messages: list[GPTRequestMessage] = []
 
     for message_group in chat.message_groups:
         is_last_group = message_group == chat.message_groups[-1]
+        if message_group.task:
+            # Augment the messages with system messages with meta data about which agent is speaking and what materials were available
+            system_message = f"""
+As a director I have assigned you ({message_group.actor_id}) and given you access to the following materials text: {", ".join(message_group.materials_ids) if message_group.materials_ids else "None"}.
+""".strip()
+
+            # Only provide a task for last message
+            if is_last_group:
+                system_message += "\n\nYour job: " + message_group.task
+
+            if last_system_message != system_message:
+                messages.append(
+                    GPTRequestTextMessage(
+                        role="system",
+                        name="director",
+                        content=system_message,
+                    )
+                )
+                last_system_message = system_message
+
         for message in message_group.messages:
-            is_last = is_last_group and message == message_group.messages[-1]
-            messages.extend(convert_message(message_group, message, is_last=is_last))
+            # is_last = is_last_group and message == message_group.messages[-1]
+            messages.extend(convert_message(message_group, message))
 
     return messages

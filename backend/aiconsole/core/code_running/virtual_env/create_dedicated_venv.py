@@ -2,8 +2,8 @@ import logging
 import shutil
 import subprocess
 import sys
-
-import pkg_resources
+from dataclasses import dataclass
+from importlib import metadata
 
 from aiconsole.consts import DIR_WITH_AICONSOLE_PACKAGE
 from aiconsole.core.code_running.virtual_env.install_and_upgrade_pip import (
@@ -12,12 +12,18 @@ from aiconsole.core.code_running.virtual_env.install_and_upgrade_pip import (
 from aiconsole.core.code_running.virtual_env.install_dependencies import (
     install_dependencies,
 )
+from aiconsole.utils.events import InternalEvent
 from aiconsole_toolkit.env import (
     get_current_project_venv_path,
     get_current_project_venv_python_path,
 )
 
 _log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class WaitForEnvEvent(InternalEvent):
+    pass
 
 
 def run_subprocess(*args):
@@ -48,7 +54,7 @@ def save_current_app_version_to_venv():
 
 
 def venv_version_string():
-    version = pkg_resources.get_distribution("aiconsole").version
+    version = metadata.version("aiconsole")
     version += f" (Python {sys.version.split(' ')[0]})"
     if is_web_server_dev_editable_version():
         version += " (Editable version)"
@@ -68,7 +74,7 @@ def get_current_app_version_from_venv():
     return None
 
 
-async def create_dedicated_venv():
+def create_dedicated_venv():
     venv_path = get_current_project_venv_path()
 
     if not venv_path.exists() or get_current_app_version_from_venv() != venv_version_string():

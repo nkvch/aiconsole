@@ -52,7 +52,7 @@ def check_installation():
             exit(1)
 
     if platform.system() == "Windows":
-        python_path = python_dir / "Scripts" / "python3.exe"
+        python_path = python_dir / "python.exe"
     else:
         python_path = python_dir / "bin" / "python3"
     install_dependencies(python_path=python_path, dependency_path=DIR_WITH_AICONSOLE_PACKAGE)

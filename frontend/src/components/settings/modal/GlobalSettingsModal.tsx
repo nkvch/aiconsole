@@ -43,7 +43,7 @@ export const GlobalSettingsModal = () => {
     setProfilePictureFormValue(profile_picture);
   }, [profile_picture]);
 
-  const [apiKeyValue, setApiKeyValue] = useState<string | undefined>('');
+  const [apiKeyValue, setApiKeyValue] = useState<string | undefined>(undefined);
   const openai_api_key = useSettingsStore((state) => state.settings.openai_api_key);
   useEffect(() => {
     setApiKeyValue(openai_api_key || '');
@@ -134,6 +134,7 @@ export const GlobalSettingsModal = () => {
                 setUsername={setUsernameFormValue}
                 setImage={handleSetAvatarImage}
               />
+
               <GlobalSettingsApiSection apiKey={openai_api_key} setApiKey={setApiKeyValue} />
               <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
               <div className="flex items-center justify-end gap-[10px] py-[40px]">

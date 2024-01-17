@@ -111,7 +111,6 @@ class openai_function:
 
 class OpenAISchema(BaseModel):
     @classmethod
-    @property
     def openai_schema(cls):
         """
         Return the schema in the format of OpenAI's schema as jsonschema
@@ -155,7 +154,7 @@ class OpenAISchema(BaseModel):
         if throw_error:
             assert "function_call" in message, "No function call detected"
             assert (
-                message["function_call"]["name"] == cls.openai_schema["name"]  # type: ignore
+                message["function_call"]["name"] == cls.openai_schema()["name"]  # type: ignore
             ), "Function name does not match"
 
         function_call = message["function_call"]

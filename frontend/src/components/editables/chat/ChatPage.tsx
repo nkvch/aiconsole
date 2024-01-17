@@ -86,10 +86,9 @@ export function ChatPage() {
   const loadingMessages = useChatStore((state) => state.loadingMessages);
   const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
-  const stopWork = useChatStore((state) => state.stopWork);
   const submitCommand = useChatStore((state) => state.submitCommand);
+  const stopWork = useChatStore((state) => state.stopWork);
   const newCommand = useChatStore((state) => state.newCommand);
-  const isProjectOpen = useProjectStore((state) => state.isProjectOpen);
   const isProjectLoading = useProjectStore((state) => state.isProjectLoading);
   const appendFilePathToCommand = useChatStore((state) => state.appendFilePathToCommand);
   const showToast = useToastsStore((state) => state.showToast);
@@ -165,12 +164,11 @@ export function ChatPage() {
     if (textAreas.length === 1) {
       textAreas[0].focus();
     }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => {
       stopWork();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat?.id, isProjectOpen]); //Initentional trigger when chat_id changes
+  }, [chat?.id, stopWork]); //Initentional trigger when chat_id changes
 
   if (!chat) {
     return (
@@ -187,8 +185,8 @@ export function ChatPage() {
       await renameChat(newChat);
 
       showToast({
-        title: 'Renamed',
-        message: 'renamed',
+        title: 'Overwritten',
+        message: 'The chat has been successfully overwritten.',
         variant: 'success',
       });
     }
@@ -285,8 +283,8 @@ export function ChatPage() {
             isOpen={blockerState === 'blocked'}
             onClose={reset}
             onConfirm={confirm}
-            confirmationButtonText="Leave"
-            cancelButtonText="Cancel"
+            confirmationButtonText="Yes, exit"
+            cancelButtonText="No, stay"
           >
             Changes that you made may not be saved.
           </AlertDialog>

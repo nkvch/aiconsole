@@ -24,13 +24,21 @@ from aiconsole.api.websockets.client_messages import (
     AcceptCodeClientMessage,
     AcquireLockClientMessage,
     CloseChatClientMessage,
+    StopChatClientMessage,
     InitChatMutationClientMessage,
     OpenChatClientMessage,
     ProcessChatClientMessage,
     ReleaseLockClientMessage,
 )
-from aiconsole.api.websockets.connection_manager import AcquiredLock, AICConnection
-from aiconsole.api.websockets.server_messages import ChatOpenedServerMessage
+from aiconsole.api.websockets.connection_manager import (
+    AcquiredLock,
+    AICConnection,
+    connection_manager,
+)
+from aiconsole.api.websockets.server_messages import (
+    ChatOpenedServerMessage,
+    NotificationServerMessage,
+)
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
@@ -45,10 +53,14 @@ from aiconsole.core.chat.execution_modes.execution_mode import (
 from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
-from aiconsole.core.chat.locking import DefaultChatMutator, acquire_lock, release_lock
+from aiconsole.core.chat.locking import DefaultChatMutator, acquire_lock, release_lock, wait_for_lock
 from aiconsole.core.chat.types import AICMessageGroup, Chat
+from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
+    WaitForEnvEvent,
+)
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
 from aiconsole.core.project import project
+from aiconsole.utils.events import internal_events
 
 _log = logging.getLogger(__name__)
 
@@ -66,8 +78,12 @@ director_agent = Agent(
     system="",
 )
 
+stop_flag = False
 
-async def handle_incoming_message(connection: AICConnection, json: dict):
+tasks = []
+
+
+async def handle_incoming_message(connection: AICConnection, json: dict, background_tasks):
     message_type = json["type"]
     handler = {
         AcquireLockClientMessage.__name__: lambda connection, json: _handle_acquire_lock_ws_message(
@@ -78,6 +94,9 @@ async def handle_incoming_message(connection: AICConnection, json: dict):
         ),
         OpenChatClientMessage.__name__: lambda connection, json: _handle_open_chat_ws_message(
             connection, OpenChatClientMessage(**json)
+        ),
+        StopChatClientMessage.__name__: lambda connection, json: _handle_stop_chat_ws_message(
+            connection, StopChatClientMessage(**json)
         ),
         CloseChatClientMessage.__name__: lambda connection, json: _handle_close_chat_ws_message(
             connection, CloseChatClientMessage(**json)
@@ -94,8 +113,10 @@ async def handle_incoming_message(connection: AICConnection, json: dict):
     }[message_type]
 
     _log.info(f"Handling message {message_type}")
-
-    return await handler(connection, json)
+    tasks.append(asyncio.ensure_future(handler(connection, json)))
+    if message_type == "StopChatClientMessage":
+        for task in tasks:
+            task.cancel()
 
 
 async def _handle_acquire_lock_ws_message(connection: AICConnection, message: AcquireLockClientMessage):
@@ -134,15 +155,21 @@ async def _handle_open_chat_ws_message(connection: AICConnection, message: OpenC
 
         connection.open_chats_ids.add(message.chat_id)
 
-        await ChatOpenedServerMessage(
-            chat=chat,
-        ).send_to_connection(connection)
+        await connection.send(
+            ChatOpenedServerMessage(
+                chat=chat,
+            )
+        )
     finally:
         await release_lock(chat_id=message.chat_id, request_id=temporary_request_id)
 
 
+async def _handle_stop_chat_ws_message(connection: AICConnection, message: StopChatClientMessage):
+    pass
+
+
 async def _handle_close_chat_ws_message(connection: AICConnection, message: CloseChatClientMessage):
-    connection.open_chats_ids.remove(message.chat_id)
+    connection.open_chats_ids.discard(message.chat_id)
 
 
 async def _handle_init_chat_mutation_ws_message(
@@ -154,8 +181,19 @@ async def _handle_init_chat_mutation_ws_message(
 
 
 async def _handle_accept_code_ws_message(connection: AICConnection, message: AcceptCodeClientMessage):
+    async def _notify(event):
+        await connection_manager().send_to_chat(
+            NotificationServerMessage(title="Wait", message="Environment is still being created"),
+            message.chat_id,
+        )
+
     try:
         chat = await acquire_lock(chat_id=message.chat_id, request_id=message.request_id)
+
+        internal_events().subscribe(
+            WaitForEnvEvent,
+            _notify,
+        )
 
         chat_mutator = DefaultChatMutator(
             chat_id=message.chat_id,

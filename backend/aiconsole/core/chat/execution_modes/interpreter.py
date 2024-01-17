@@ -23,6 +23,7 @@ from uuid import uuid4
 
 from pydantic import Field
 
+from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.chat.chat_mutations import (
     AppendToCodeToolCallMutation,
@@ -159,7 +160,10 @@ async def _run_code(context: ProcessChatContext, tool_call_id):
                     )
                 )
         except Exception:
-            await ErrorServerMessage(error=traceback.format_exc().strip()).send_to_chat(context.chat_mutator.chat.id)
+            await connection_manager().send_to_chat(
+                ErrorServerMessage(error=traceback.format_exc().strip()), context.chat_mutator.chat.id
+            )
+
             await context.chat_mutator.mutate(
                 AppendToOutputToolCallMutation(
                     tool_call_id=tool_call_id,
@@ -185,6 +189,8 @@ async def _generate_response(
 
     message_id = str(uuid4())
 
+    messages = [message for message in convert_messages(context.chat_mutator.chat)]
+
     await context.chat_mutator.mutate(
         CreateMessageMutation(
             message_group_id=message_group.id,
@@ -199,15 +205,15 @@ async def _generate_response(
             GPTRequest(
                 system_message=system_message,
                 gpt_mode=context.agent.gpt_mode,
-                messages=[message for message in convert_messages(context.chat_mutator.chat)],
+                messages=messages,
                 tools=[
                     ToolDefinition(
                         type="function",
-                        function=ToolFunctionDefinition(**python.openai_schema),
+                        function=ToolFunctionDefinition(**python.openai_schema()),
                     ),
                     ToolDefinition(
                         type="function",
-                        function=ToolFunctionDefinition(**applescript.openai_schema),
+                        function=ToolFunctionDefinition(**applescript.openai_schema()),
                     ),
                 ],
                 min_tokens=250,
@@ -318,7 +324,7 @@ async def _generate_response(
                                 tool_call_data.code = function_call.arguments
                                 await send_code_delta(code_delta)
                         else:
-                            arguments = function_call.arguments
+                            arguments_str = function_call.arguments
                             languages = language_map.keys()
 
                             if tool_call_data.language is None and function_call.name in languages:
@@ -327,7 +333,7 @@ async def _generate_response(
 
                             # This can now be both a string and a json object
                             try:
-                                arguments = json.loads(arguments)
+                                arguments = json.loads(arguments_str)
 
                                 code_delta = ""
                                 headline_delta = ""
@@ -345,20 +351,20 @@ async def _generate_response(
                                 if code_delta or headline_delta:
                                     await send_code_delta(code_delta, headline_delta)
                             except json.JSONDecodeError:
-                                if not arguments:
+                                if not arguments_str:
                                     continue
 
                                 # incorrect OpenAI response, where code is passed like a string, not JSON
-                                if not arguments.startswith("{"):
+                                if not arguments_str.startswith("{"):
                                     await send_language_if_needed("python")
 
-                                    code_delta = arguments[len(tool_call_data.code) :]
+                                    code_delta = arguments_str[len(tool_call_data.code) :]
                                     await send_code_delta(code_delta)
                                 # incorrect OpenAI response, where code is passed JSON like string, so each chunk is a part of JSON
-                                elif '"code": ' in arguments:
+                                elif '"code": ' in arguments_str:
                                     await send_language_if_needed("python")
 
-                                    code = arguments.partition('"code": ')[2].replace('"""', "").replace("}", "")
+                                    code = arguments_str.partition('"code": ')[2].replace('"""', "").replace("}", "")
                                     code_delta = code[len(tool_call_data.code) - 1 :]
                                     await send_code_delta(code_delta)
 

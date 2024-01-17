@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import cast
 from uuid import uuid4
 
-from litellm.utils import StreamingChoices
+from litellm.utils import StreamingChoices  # type: ignore
 
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.materials.content_evaluation_context import (
