@@ -6,6 +6,11 @@ on:
       - '*.*.*'
       - '*.*.*-rc.*'
 
+env:
+  BE_SENTRY_DSN: ${{ secrets.BE_SENTRY_DSN }}
+  VITE_APTABASE_KEY: ${{ secrets.VITE_APTABASE_KEY }}
+  VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+
 jobs:
   version-update:
     runs-on: ubuntu-latest
