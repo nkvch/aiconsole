@@ -67,12 +67,13 @@ export function MessageComponent({ message, group }: MessageProps) {
                         a: ({ node, href, ...props }) => {
                           if (href === 'command') {
                             const command = (Array.isArray(props.children) ? props.children[0]?.toString() : '') ?? '';
+
                             return (
                               <a
                                 {...props}
                                 className="text-secondary hover:text-secondary-light cursor-pointer"
                                 onClick={() => {
-                                  if (command) submitCommand(command);
+                                  submitCommand(command ? command : props.children);
                                 }}
                               >
                                 {props.children}
