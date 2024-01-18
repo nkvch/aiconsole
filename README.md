@@ -76,6 +76,10 @@ The only module you can safelly access is aiconsole_toolkit, it's built with run
 - [ ] Generative UI
 - [ ] Web Hosted SaaS like version
 
+# Tracking
+
+We use [Sentry](https://sentry.io) for tracking errors in our production releases and [Aptabase](https://aptabase.com/) for analytics.
+
 # Contributing
 
 We welcome contributions from the community to make AI Console even better. If you have any ideas, bug reports, or feature requests, please open an issue on the GitHub repository. Feel free to submit pull requests as well!
@@ -102,10 +106,11 @@ In order to run the non electron development version of AIConsole:
 3. To publish the desktop app: `cd electron && yarn && yarn publish`
 
 # Running tests
+
 1. To run the tests you have to go to the backend folder: `cd backend`
 2. Run the tests: `poetry run pytest .`
 
-There are also tests, which are currently skipped in out pytest settings. 
+There are also tests, which are currently skipped in out pytest settings.
 To run them, please execute each test file separately, for example: `poetry run pytest aiconsole/tests/test_factorial_of_number.py`
 
 # License
