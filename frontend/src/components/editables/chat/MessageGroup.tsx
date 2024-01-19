@@ -23,6 +23,7 @@ import { AnalysisClosed, AnalysisOpened } from './Analysis';
 import { MessageComponent } from './messages/MessageComponent';
 import { MessageControls } from './messages/MessageControls';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { useSettingsStore } from '@/store/settings/useSettingsStore';
 
 export function MessageGroup({ group }: { group: AICMessageGroup }) {
   const [isAnalysisManuallyOpen, setIsAnalysisManuallyOpen] = useState<boolean | undefined>(undefined);
@@ -30,6 +31,8 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
   const lockId = useChatStore((state) => state.chat?.lock_id);
 
   const isOpen = isAnalysisManuallyOpen == undefined ? group.messages.length === 0 : isAnalysisManuallyOpen;
+  const currentUsername = useSettingsStore((state) => state.username) || '';
+  const currentEmail = useSettingsStore((state) => state.userEmail) || '';
 
   return (
     <div
@@ -39,8 +42,9 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
     >
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
         <div className="flex-none items-center flex flex-col max-w-[120px] ">
+          {/* Must me replaced with group username and email for multiuser */}
           {group.role === 'user' ? (
-            <UserInfo username={group.username} email={group.email} />
+            <UserInfo username={currentUsername} email={currentEmail} />
           ) : (
             <AgentInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
           )}
