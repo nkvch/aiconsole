@@ -23,7 +23,6 @@ export const createChatsSlice: StateCreator<EditablesStore, [], [], ChatsSlice> 
       set(() => ({
         chats: [],
       }));
-      console.log(e);
     }
   },
 });
