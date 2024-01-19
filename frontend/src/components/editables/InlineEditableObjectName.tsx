@@ -24,6 +24,7 @@ interface InlineEditableObjectNameProps {
   setIsEditing: (isEditing: boolean) => void;
   className?: string;
   onRename?: (newName: string) => void;
+  editableObjectType: 'chat' | 'agent' | 'material';
 }
 
 const InlineEditableObjectName = ({
@@ -32,6 +33,7 @@ const InlineEditableObjectName = ({
   setIsEditing,
   className,
   onRename,
+  editableObjectType
 }: InlineEditableObjectNameProps) => {
   const [inputText, setInputText] = useState(editableObject.name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +62,7 @@ const InlineEditableObjectName = ({
   };
 
   return (
-    <div onDoubleClick={() => setIsEditing(true)} className={cn('cursor-pointer', className)}>
+    <div onDoubleClick={() => setIsEditing(editableObjectType !== 'chat')} className={cn('cursor-pointer', className)}>
       {isEditing ? (
         <input
           className="outline-none border h-[24px] border-gray-400 px-[5px] w-full text-white bg-gray-600 focus:border-primary resize-none overflow-hidden rounded-[4px] focus:outline-none"

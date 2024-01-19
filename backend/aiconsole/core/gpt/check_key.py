@@ -38,16 +38,19 @@ cached_good_keys = set()
 
 # Verify the OpenAI key has access to the required models
 def check_key(key: str) -> bool:
-    if key in cached_good_keys:
-        return True
+    try:
+        if key in cached_good_keys:
+            return True
 
-    client = OpenAI(api_key=key)
-    models = client.models.list()
-    available_models = [model.id for model in models]
+        client = OpenAI(api_key=key)
+        models = client.models.list()
+        available_models = [model.id for model in models]
 
-    good = set(MODELS_TO_CHECK_WHILE_VERIFYING_KEY).issubset(set(available_models))
+        good = set(MODELS_TO_CHECK_WHILE_VERIFYING_KEY).issubset(set(available_models))
 
-    if good:
-        cached_good_keys.add(key)
+        if good:
+            cached_good_keys.add(key)
+    except openai.AuthenticationError:
+        good = False
 
     return good

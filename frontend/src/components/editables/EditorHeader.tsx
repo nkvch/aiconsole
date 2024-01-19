@@ -31,7 +31,6 @@ export function EditorHeader({ editable, onRename, children, isChanged, editable
       navigate(`/chats/${lastUsedChat.id}`);
     }
   };
-
   if (!editable) {
     return <div className="flex flex-col w-full h-full items-center justify-center"></div>;
   }
@@ -48,7 +47,12 @@ export function EditorHeader({ editable, onRename, children, isChanged, editable
         </Button>
       ) : null}
       <div className="px-[20px] py-[13px] w-full flex flex-row gap-[10px] cursor-pointer  bg-gray-90 shadow-md items-center overflow-clip relative">
-        <div onClick={() => setIsEditing(true)} className="flex flex-row gap-[10px] items-center w-full">
+        <div
+          onClick={() => {
+            setIsEditing(editableObjectType !== 'chat');
+          }}
+          className="flex flex-row gap-[10px] items-center w-full"
+        >
           <AssetIcon
             className={cn(
               'flex-none',
@@ -71,6 +75,7 @@ export function EditorHeader({ editable, onRename, children, isChanged, editable
             isEditing={isEditing}
             setIsEditing={setIsEditing}
             className={'flex-grow truncate ' + (isChanged ? ' italic font-bold ' : '')}
+            editableObjectType={editableObjectType}
           />
         </div>
         <div className="self-end text-gray-400 text-[15px] min-w-fit">{children}</div>

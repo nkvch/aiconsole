@@ -118,18 +118,19 @@ export function useEditableObjectContextMenu({
     }
 
     const content: ContextMenuItems = [
-      {
-        type: 'item',
-        icon: Edit,
-        title: 'Rename',
-        hidden: !setIsEditing || (editableObject as Asset)?.defined_in === 'aiconsole',
-        action: () => {
-          if (!setIsEditing) {
-            return;
-          }
-          setIsEditing(true);
-        },
-      },
+      // TODO: Enable when we have a rename feature
+      // {
+      //   type: 'item',
+      //   icon: Edit,
+      //   title: 'Rename',
+      //   hidden: !setIsEditing || (editableObject as Asset)?.defined_in === 'aiconsole',
+      //   action: () => {
+      //     if (!setIsEditing) {
+      //       return;
+      //     }
+      //     setIsEditing(true);
+      //   },
+      // },
       {
         type: 'item',
         icon: Copy,
