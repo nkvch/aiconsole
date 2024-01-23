@@ -49,7 +49,7 @@ class FileObserver:
         if self.observing:
             try:
                 self._observer.start()
-                _log.info(f"[{self.__class__.__name__}] Observing for changes: {', '.join(map(str, self.observing))}.")
+                _log.info(f"[{self.__class__.__name__}] Observing for changes: {self.observing}.")
             except RuntimeError as e:
                 _log.error(f"[{self.__class__.__name__}] Error starting observer: {e}")
 
