@@ -37,6 +37,7 @@ export const GlobalSettingsModal = () => {
   const email = useSettingsStore((state) => state.userEmail);
   const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl);
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
+  const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
 
   const { reset, control, setValue } = useForm<GlobalSettingsFormData>();
 
@@ -50,6 +51,7 @@ export const GlobalSettingsModal = () => {
         },
         openai_api_key: openAiApiKey,
         avatarUrl: userAvatarUrl,
+        code_autorun: alwaysExecuteCode,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,6 +117,8 @@ export const GlobalSettingsModal = () => {
 
   const handleSetAvatarImage = (avatar: File) => setValue('avatar', avatar);
 
+  const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun);
+
   // useEffect(() => {
   //   const resetState = () => {
   //     setUsernameFormValue(username);
@@ -157,9 +161,7 @@ export const GlobalSettingsModal = () => {
                 onImageSelected={handleSetAvatarImage}
               />
               <GlobalSettingsApiSection control={control} />
-              {/* 
-              <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
-               */}
+              <GlobalSettingsCodeSection control={control} onChange={handleSetAutorun} />
               <div className="flex items-center justify-end gap-[10px] py-[40px]">
                 <Button variant="secondary" bold onClick={handleModalClose}>
                   Cancel
