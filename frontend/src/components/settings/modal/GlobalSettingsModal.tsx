@@ -143,7 +143,7 @@ export const GlobalSettingsModal = () => {
     <Root open={isSettingsModalVisible}>
       <Portal>
         <Content asChild className="fixed" onEscapeKeyDown={handleModalClose}>
-          <div className="w-full h-[100vh] z-[99] top-0 left-0 right-0 bg-gray-900">
+          <div className="w-full h-[100vh] z-[98] top-0 left-0 right-0 bg-gray-900">
             <TopGradient />
             <div className="flex justify-between items-center px-[30px] py-[26px] relative z-10">
               <img src={`favicon.svg`} className="h-[48px] w-[48px] cursor-pointer filter" />
