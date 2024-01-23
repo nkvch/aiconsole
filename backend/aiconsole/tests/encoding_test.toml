@@ -1,0 +1,7 @@
+lines = '''
+The first newline is
+trimmed in raw strings.
+All other whitespace
+¡¤¦©¶º¼ÅΜ℘∅√♠
+[•¡¤¦§¨©ª«¬-®¯±²³¶¹º»¼½¾¿‡•…‪‰‹›⁠⁰€™■･�]
+'''

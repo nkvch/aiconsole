@@ -49,7 +49,7 @@ def get_python_version(python_executable):
 def save_current_app_version_to_venv():
     venv_path = get_current_project_venv_path()
     version_file_path = venv_path / "aic_version"
-    with open(version_file_path, "w", encoding="utf8") as f:
+    with open(version_file_path, "w", encoding="utf8", errors="replace") as f:
         f.write(venv_version_string())
 
 
@@ -69,7 +69,7 @@ def get_current_app_version_from_venv():
     venv_path = get_current_project_venv_path()
     version_file_path = venv_path / "aic_version"
     if version_file_path.exists():
-        with open(version_file_path, "r", encoding="utf8") as f:
+        with open(version_file_path, "r", encoding="utf8", errors="replace") as f:
             return f.read()
     return None
 

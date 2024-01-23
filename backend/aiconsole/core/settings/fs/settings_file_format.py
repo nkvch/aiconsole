@@ -42,7 +42,7 @@ def _get_document(file_path: Path) -> tomlkit.TOMLDocument:
     if not file_path.exists():
         return tomlkit.document()
 
-    with file_path.open("r", encoding="utf8") as file:
+    with file_path.open("r", encoding="utf8", errors="replace") as file:
         return tomlkit.loads(file.read())
 
 
@@ -64,5 +64,5 @@ def _update_document(document: tomlkit.TOMLDocument, settings_data: PartialSetti
 
 def _write_document(file_path: Path, document: tomlkit.TOMLDocument):
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    with file_path.open("w", encoding="utf8") as file:
+    with file_path.open("w", encoding="utf8", errors="replace") as file:
         file.write(document.as_string())

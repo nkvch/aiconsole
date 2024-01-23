@@ -128,6 +128,6 @@ def read_material(id: str):
     if not os.path.exists(path):
         raise Exception(f"Material with id {id} does not exist")
 
-    with open(path, 'r', encoding="utf8") as f:
+    with open(path, 'r', encoding="utf8", errors='replace') as f:
         return f.read()
 """

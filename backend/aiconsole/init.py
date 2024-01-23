@@ -26,8 +26,6 @@ from aiconsole.consts import log_config
 config.dictConfig(log_config)
 _log = logging.getLogger(__name__)
 
-os.environ["PYTHONIOENCODING"] = "utf8"
-
 
 def run_aiconsole(dev: bool):
     parser = argparse.ArgumentParser(description="Start the backend server.")

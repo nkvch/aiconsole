@@ -34,7 +34,7 @@ def read_command_history() -> list[str]:
     file_path = os.path.join(get_aic_directory(), COMMANDS_HISTORY_JSON)
     try:
         if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf8") as f:
+            with open(file_path, "r", encoding="utf8", errors="replace") as f:
                 return json.load(f)
         return []
     except IOError as error:
@@ -45,7 +45,7 @@ def read_command_history() -> list[str]:
 def write_command_history(commands: list[str]):
     file_path = os.path.join(get_aic_directory(), COMMANDS_HISTORY_JSON)
     try:
-        with open(file_path, "w", encoding="utf8") as f:
+        with open(file_path, "w", encoding="utf8", errors="replace") as f:
             json.dump(commands, f)
     except IOError as error:
         _log.exception(f"Failed to write the command history file: {file_path}", exc_info=error)
