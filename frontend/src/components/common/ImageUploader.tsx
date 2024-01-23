@@ -63,7 +63,8 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     }
   };
 
-  const generateWithAi = () => {};
+  // TODO: Implement when backend is ready
+  // const generateWithAi = () => {};
 
   const menuItems: ContextMenuItems = [
     {
@@ -73,13 +74,13 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
       title: `Upload ${previewImage ? 'new' : ''} photo`,
       action: handleUploadButtonClick,
     },
-    {
-      type: 'item',
-      key: 'Generate with AI',
-      icon: Shapes,
-      title: 'Generate with AI',
-      action: generateWithAi,
-    },
+    // {
+    //   type: 'item',
+    //   key: 'Generate with AI',
+    //   icon: Shapes,
+    //   title: 'Generate with AI',
+    //   action: generateWithAi,
+    // },
     { type: 'separator', key: 'delete-separator', hidden: !previewImage },
     {
       type: 'item',
