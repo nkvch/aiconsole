@@ -41,6 +41,7 @@ export const GlobalSettingsModal = () => {
   const { reset, control, setValue } = useForm<GlobalSettingsFormData>();
 
   useEffect(() => {
+    // Initial form values are cached, so we need to reset with the right ones
     if (isSettingsModalVisible) {
       reset({
         user_profile: {
@@ -155,7 +156,8 @@ export const GlobalSettingsModal = () => {
                 avatarUrl={userAvatarUrl}
                 onImageSelected={handleSetAvatarImage}
               />
-              {/* <GlobalSettingsApiSection apiKey={apiKeyValue} setApiKey={setApiKeyValue} />
+              <GlobalSettingsApiSection control={control} />
+              {/* 
               <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
                */}
               <div className="flex items-center justify-end gap-[10px] py-[40px]">

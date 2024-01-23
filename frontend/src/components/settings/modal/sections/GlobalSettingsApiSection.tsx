@@ -14,23 +14,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import type { Control } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
+
 import { TextInput } from '@/components/editables/assets/TextInput';
+import { GlobalSettingsFormData } from '@/forms/globalSettingsForm';
 
 interface GlobalSectionApiSectionProps {
-  apiKey?: string;
-  setApiKey: (value: string | undefined) => void;
+  control: Control<GlobalSettingsFormData>;
 }
 
-const GlobalSettingsApiSection = ({ apiKey, setApiKey }: GlobalSectionApiSectionProps) => {
+const GlobalSettingsApiSection = ({ control }: GlobalSectionApiSectionProps) => {
   return (
     <div className="border border-gray-600 rounded-xl p-[20px]">
-      <TextInput
-        value={apiKey || ''}
-        onChange={setApiKey}
-        horizontal
-        placeholder="OpenAI API key..."
-        label="API"
-        name="api"
+      <Controller
+        control={control}
+        name="openai_api_key"
+        render={({ field }) => (
+          <TextInput {...field} horizontal placeholder="OpenAI API key..." label="API" name="api" />
+        )}
       />
     </div>
   );
