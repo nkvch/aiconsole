@@ -45,6 +45,7 @@ interface TextInputProps {
   disabled?: boolean;
   required?: boolean;
   errors?: ErrorObject;
+  error?: string;
   setErrors?: React.Dispatch<React.SetStateAction<ErrorObject>>;
   withTooltip?: boolean;
   tootltipText?: string;
@@ -69,7 +70,7 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
       disabled = false,
       required,
       name,
-      errors,
+      error,
       setErrors,
       withTooltip = false,
       horizontal,
@@ -97,8 +98,6 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
         }));
       }
     };
-
-    const error = errors?.[name];
 
     const handleBlur = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
       checkIfEmpty(e.target.value);
@@ -134,31 +133,33 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
     const core = resize ? textarea : input;
 
     return (
-      <div
-        className={cn('flex gap-[20px] flex-col relative', {
-          'flex-row items-center': horizontal,
-          'w-full': fullWidth,
-        })}
-      >
-        {label ? (
-          <div className="text-white text-[15px] flex items-center gap-[30px] ">
-            <label htmlFor={label} className="min-w-fit">
-              {label}
-            </label>
-            {labelChildren}
-            {helperText ? <HelperLabel helperText={helperText} learnMoreLink={learnMoreLink} /> : null}
-          </div>
-        ) : null}
+      <>
+        <div
+          className={cn('flex gap-[20px] flex-col relative', {
+            'flex-row items-center': horizontal,
+            'w-full': fullWidth,
+          })}
+        >
+          {label ? (
+            <div className="text-white text-[15px] flex items-center gap-[30px] ">
+              <label htmlFor={label} className="min-w-fit">
+                {label}
+              </label>
+              {labelChildren}
+              {helperText ? <HelperLabel helperText={helperText} learnMoreLink={learnMoreLink} /> : null}
+            </div>
+          ) : null}
 
-        {withTooltip && !hidden ? (
-          <Tooltip label={tootltipText} position="top" align="end" disableAnimation>
-            {core}
-          </Tooltip>
-        ) : null}
+          {withTooltip && !hidden ? (
+            <Tooltip label={tootltipText} position="top" align="end" disableAnimation>
+              {core}
+            </Tooltip>
+          ) : null}
 
-        {!withTooltip && !hidden ? core : null}
-        {error && !hidden && <div className="text-danger text-sm absolute right-0 -bottom-[8px]">{error}</div>}
-      </div>
+          {!withTooltip && !hidden ? core : null}
+        </div>
+        {error && !hidden && <div className="text-danger flex justify-end text-xs pt-1">{error}</div>}
+      </>
     );
   },
 );

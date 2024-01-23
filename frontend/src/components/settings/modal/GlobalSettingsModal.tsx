@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Content, Portal, Root } from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import TopGradient from '@/components/common/TopGradient';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
@@ -26,7 +27,7 @@ import { Icon } from '../../common/icons/Icon';
 import GlobalSettingsApiSection from './sections/GlobalSettingsApiSection';
 import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
 import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
-import { GlobalSettingsFormData } from '@/forms/globalSettingsForm';
+import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
 export const GlobalSettingsModal = () => {
@@ -39,7 +40,9 @@ export const GlobalSettingsModal = () => {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
 
-  const { reset, control, setValue } = useForm<GlobalSettingsFormData>();
+  const { reset, control, setValue, formState, handleSubmit } = useForm<GlobalSettingsFormData>({
+    resolver: zodResolver(GlobalSettingsFormSchema),
+  });
 
   useEffect(() => {
     // Initial form values are cached, so we need to reset with the right ones
@@ -115,6 +118,12 @@ export const GlobalSettingsModal = () => {
   //   setSettingsModalVisibility(false);
   // };
 
+  console.log(formState.errors);
+
+  const onSubmit = (data: GlobalSettingsFormData) => {
+    console.log(data);
+  };
+
   const handleSetAvatarImage = (avatar: File) => setValue('avatar', avatar);
 
   const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun);
@@ -136,6 +145,9 @@ export const GlobalSettingsModal = () => {
   // }, [isSettingsModalVisible]); // reset state when modal is closed or opened
 
   const handleModalClose = () => {
+    if (formState.isDirty) {
+      console.log('form dirty! discard changes modal');
+    }
     setSettingsModalVisibility(false);
   };
 
@@ -155,19 +167,21 @@ export const GlobalSettingsModal = () => {
             </div>
 
             <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-center gap-5">
-              <GlobalSettingsUserSection
-                control={control}
-                avatarUrl={userAvatarUrl}
-                onImageSelected={handleSetAvatarImage}
-              />
-              <GlobalSettingsApiSection control={control} />
-              <GlobalSettingsCodeSection control={control} onChange={handleSetAutorun} />
-              <div className="flex items-center justify-end gap-[10px] py-[40px]">
-                <Button variant="secondary" bold onClick={handleModalClose}>
-                  Cancel
-                </Button>
-                <Button>{'Save'}</Button>
-              </div>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <GlobalSettingsUserSection
+                  control={control}
+                  avatarUrl={userAvatarUrl}
+                  onImageSelected={handleSetAvatarImage}
+                />
+                <GlobalSettingsApiSection control={control} />
+                <GlobalSettingsCodeSection control={control} onChange={handleSetAutorun} />
+                <div className="flex items-center justify-end gap-[10px] py-[40px]">
+                  <Button variant="secondary" bold onClick={handleModalClose}>
+                    Cancel
+                  </Button>
+                  <Button>{'Save'}</Button>
+                </div>
+              </form>
             </div>
           </div>
         </Content>

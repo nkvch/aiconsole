@@ -1,6 +1,6 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-import { Loader, Plus, Shapes, Trash, Upload } from 'lucide-react';
+import { Loader, Plus, Trash, Upload } from 'lucide-react';
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';

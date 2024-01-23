@@ -16,6 +16,7 @@
     "url": "https://github.com/10clouds/aiconsole.git"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.3.4",
     "@mantine/hooks": "^7.1.7",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-checkbox": "^1.0.4",
