@@ -119,7 +119,7 @@ export const ResponseServerMessageSchema = BaseServerMessageSchema.extend({
 
 export type ResponseServerMessage = z.infer<typeof ResponseServerMessageSchema>;
 
-export const ServerMessageSchema = z.union([
+export const ServerMessageSchema = z.discriminatedUnion('type', [
   NotificationServerMessageSchema,
   DebugJSONServerMessageSchema,
   ErrorServerMessageSchema,
