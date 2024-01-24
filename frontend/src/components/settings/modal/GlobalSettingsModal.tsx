@@ -39,8 +39,9 @@ export const GlobalSettingsModal = () => {
   const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl);
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
+  const saveSettings = useSettingsStore((state) => state.saveSettings);
 
-  const { reset, control, setValue, formState, handleSubmit } = useForm<GlobalSettingsFormData>({
+  const { reset, control, setValue, formState, handleSubmit, getFieldState } = useForm<GlobalSettingsFormData>({
     resolver: zodResolver(GlobalSettingsFormSchema),
   });
 
@@ -60,42 +61,42 @@ export const GlobalSettingsModal = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSettingsModalVisible]);
 
-  // const save = async () => {
-  //   let avatarFormData: FormData | null = null;
-
-  //   // check if avatar was overwritten to avoid sending unnecessary requests
-  //   if (isAvatarOverwritten && userAvatarData) {
-  //     avatarFormData = new FormData();
-  //     avatarFormData.append('avatar', userAvatarData);
-  //   }
-
-  //   useSettingsStore.getState().saveSettings(
-  //     {
-  //       user_profile:
-  //         usernameFormValue !== username || emailFormValue !== email
-  //           ? {
-  //               username: usernameFormValue !== username ? usernameFormValue : undefined,
-  //               email: emailFormValue !== email ? emailFormValue : undefined,
-  //             }
-  //           : undefined,
-  //       openai_api_key: apiKeyValue !== openAiApiKey ? apiKeyValue : undefined,
-  //       code_autorun: isAutoRun !== alwaysExecuteCode ? isAutoRun : undefined,
-  //     },
-  //     true,
-  //     avatarFormData,
-  //   );
-  //   setSettingsModalVisibility(false);
-  // };
-
-  console.log(formState.errors);
-
   const onSubmit = (data: GlobalSettingsFormData) => {
-    console.log(data);
+    if (!Object.keys(formState.dirtyFields).length) {
+      setSettingsModalVisibility(false);
+      return;
+    }
+
+    let avatarFormData: FormData | null = null;
+
+    const isProfileDirty = getFieldState('user_profile').isDirty;
+    const isApiKeyDirty = getFieldState('openai_api_key').isDirty;
+    const isAutorunDirty = getFieldState('code_autorun').isDirty;
+    const isAvatarDirty = getFieldState('avatar').isDirty;
+
+    console.log(isAvatarDirty, data.avatar);
+
+    if (isAvatarDirty && data.avatar) {
+      avatarFormData = new FormData();
+      avatarFormData.append('avatar', data.avatar);
+    }
+
+    saveSettings(
+      {
+        ...(isProfileDirty ? { user_profile: data.user_profile } : {}),
+        ...(isApiKeyDirty ? { openai_api_key: data.openai_api_key } : {}),
+        ...(isAutorunDirty ? { code_autorun: data.code_autorun } : {}),
+      },
+      true,
+      avatarFormData,
+    );
+
+    setSettingsModalVisibility(false);
   };
 
-  const handleSetAvatarImage = (avatar: File) => setValue('avatar', avatar);
+  const handleSetAvatarImage = (avatar: File) => setValue('avatar', avatar, { shouldDirty: true });
 
-  const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun);
+  const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun, { shouldDirty: true });
 
   const handleModalClose = () => {
     if (formState.isDirty) {
@@ -118,7 +119,6 @@ export const GlobalSettingsModal = () => {
                 Close
               </Button>
             </div>
-
             <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-center gap-5">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <GlobalSettingsUserSection
@@ -132,7 +132,7 @@ export const GlobalSettingsModal = () => {
                   <Button variant="secondary" bold onClick={handleModalClose}>
                     Cancel
                   </Button>
-                  <Button>{'Save'}</Button>
+                  <Button type="submit">{'Save'}</Button>
                 </div>
               </form>
             </div>

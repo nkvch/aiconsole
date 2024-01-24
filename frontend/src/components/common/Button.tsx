@@ -50,6 +50,7 @@ interface ButtonProps {
   onMouseEnter?: MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
   onContextMenu?: MouseEventHandler<HTMLButtonElement>;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -72,6 +73,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       dataAutofocus,
       transparent,
       onContextMenu,
+      type = 'button',
       ...props
     },
     ref,
@@ -95,6 +97,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
+        type={type}
         ref={ref}
         autoFocus={autoFocus}
         onClick={onClick}
