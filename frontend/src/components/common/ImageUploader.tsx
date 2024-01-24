@@ -92,7 +92,7 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   ];
 
   return (
-    <div className="border border-gray-600 rounded-[12px] px-[20px] py-[15px] flex flex-col items-center gap-[10px] w-fit min-w-[160px]">
+    <div className="border border-gray-600 rounded-[12px] px-[20px] py-[15px] flex flex-col items-center gap-[10px] w-fit min-w-[160px] bg-gray-900">
       <input
         type="file"
         accept="image/*"

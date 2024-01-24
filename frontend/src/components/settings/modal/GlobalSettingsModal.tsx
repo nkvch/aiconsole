@@ -60,37 +60,6 @@ export const GlobalSettingsModal = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSettingsModalVisible]);
 
-  // const [usernameFormValue, setUsernameFormValue] = useState<string | undefined>(undefined);
-  //
-  // useEffect(() => {
-  //   setUsernameFormValue(username);
-  // }, [username]);
-
-  // const [emailFormValue, setEmailFormValue] = useState<string | undefined>(undefined);
-  //
-  // useEffect(() => {
-  //   setEmailFormValue(email);
-  // }, [email]);
-
-  // const [apiKeyValue, setApiKeyValue] = useState<string | undefined>(openAiApiKey);
-
-  // useEffect(() => {
-  //   setApiKeyValue(openAiApiKey || '');
-  // }, [openAiApiKey]);
-
-  // const [isAutoRun, setIsAutoRun] = useState(false);
-  // const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
-  // useEffect(() => {
-  //   setIsAutoRun(alwaysExecuteCode);
-  // }, [alwaysExecuteCode]);
-
-  // const [userAvatarData, setUserAvatarData] = useState<File>();
-  // const [isAvatarOverwritten, setIsAvatarOverwritten] = useState(false);
-
-  // const handleAutoRunChange = (autorun: boolean) => {
-  //   setIsAutoRun(autorun);
-  // };
-
   // const save = async () => {
   //   let avatarFormData: FormData | null = null;
 
@@ -128,22 +97,6 @@ export const GlobalSettingsModal = () => {
 
   const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun);
 
-  // useEffect(() => {
-  //   const resetState = () => {
-  //     setUsernameFormValue(username);
-  //     setEmailFormValue(email);
-  //     setApiKeyValue(openAiApiKey);
-  //     setIsAutoRun(alwaysExecuteCode);
-  //     setUserAvatarData(undefined);
-  //     setIsAvatarOverwritten(false);
-  //   };
-
-  //   if (isSettingsModalVisible) {
-  //     resetState();
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isSettingsModalVisible]); // reset state when modal is closed or opened
-
   const handleModalClose = () => {
     if (formState.isDirty) {
       console.log('form dirty! discard changes modal');
@@ -175,7 +128,7 @@ export const GlobalSettingsModal = () => {
                 />
                 <GlobalSettingsApiSection control={control} />
                 <GlobalSettingsCodeSection control={control} onChange={handleSetAutorun} />
-                <div className="flex items-center justify-end gap-[10px] py-[40px]">
+                <div className="flex items-center justify-end gap-[10px] mt-[60px]">
                   <Button variant="secondary" bold onClick={handleModalClose}>
                     Cancel
                   </Button>

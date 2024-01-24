@@ -41,6 +41,7 @@ interface TextInputProps {
   name: string;
   className?: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -66,6 +67,7 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
       value,
       className,
       onChange,
+      onBlur,
       placeholder,
       disabled = false,
       required,
@@ -100,6 +102,7 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
     };
 
     const handleBlur = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+      onBlur?.();
       checkIfEmpty(e.target.value);
     };
 
@@ -142,7 +145,7 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
         >
           {label ? (
             <div className="text-white text-[15px] flex items-center gap-[30px] ">
-              <label htmlFor={label} className="min-w-fit">
+              <label htmlFor={label} className="min-w-max">
                 {label}
               </label>
               {labelChildren}
@@ -157,8 +160,10 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
           ) : null}
 
           {!withTooltip && !hidden ? core : null}
+          {error && !hidden && (
+            <div className="text-danger flex justify-end text-xs absolute right-0 -bottom-[20px]">{error}</div>
+          )}
         </div>
-        {error && !hidden && <div className="text-danger flex justify-end text-xs pt-1">{error}</div>}
       </>
     );
   },

@@ -28,7 +28,7 @@ const getStatusColor = (statusColor?: StatusColor) => {
     case 'purple':
       return 'border-primary text-gray-300 [&>svg]:text-primary bg-gray-700';
     default:
-      return 'border-gray-500 text-white [&>svg]:text-white bg-gray-700';
+      return 'border-gray-500 text-gray-300 [&>svg]:text-gray-500 bg-gray-900';
   }
 };
 

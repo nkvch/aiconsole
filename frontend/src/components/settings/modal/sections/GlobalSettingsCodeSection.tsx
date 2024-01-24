@@ -31,10 +31,9 @@ const GlobalSettingsCodeSection = ({ control, onChange }: GlobalSettingsCodeSect
   const watchAutorun = useWatch({ control, name: 'code_autorun' });
 
   return (
-    <div className="border border-gray-600 rounded-xl p-[20px] pt-[15px] flex flex-col gap-5">
-      <p className="text-white text-[15px] leading-6">Code run</p>
+    <div className="border border-gray-600 rounded-xl py-[15px] px-5 flex flex-col gap-4">
       <div className="flex items-center gap-5">
-        <h4 className="text-white font-semibold text-[16px] leading-[19px]">Always run code</h4>
+        <h4 className="text-white text-[15px] leading-[19px]">Always run code</h4>
         <div className="flex items-center gap-[10px]">
           <Button statusColor={watchAutorun ? 'green' : 'base'} variant="status" onClick={() => onChange(true)}>
             <Icon icon={Check} /> YES
@@ -44,6 +43,10 @@ const GlobalSettingsCodeSection = ({ control, onChange }: GlobalSettingsCodeSect
           </Button>
         </div>
       </div>
+      <span className="text-xs text-gray-400 block">
+        The agents can automatically run code they produce in the chat. Select "Yes" if you want to enable it or "No"
+        if you want to approve the code manually.
+      </span>
     </div>
   );
 };

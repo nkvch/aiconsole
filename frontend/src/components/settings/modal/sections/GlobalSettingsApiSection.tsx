@@ -26,24 +26,23 @@ interface GlobalSectionApiSectionProps {
 
 const GlobalSettingsApiSection = ({ control }: GlobalSectionApiSectionProps) => {
   return (
-    <div className="border border-gray-600 rounded-xl p-[20px]">
+    <div className="border border-gray-600 rounded-x py-[15px] px-5 mb-5 rounded-xl">
       <Controller
         rules={{ required: true }}
         control={control}
         name="openai_api_key"
         render={({ field, fieldState: { error } }) => (
-          <>
-            <TextInput
-              {...field}
-              horizontal
-              placeholder="OpenAI API key..."
-              label="API"
-              name="api"
-              error={error?.message}
-            />
-          </>
+          <TextInput
+            {...field}
+            horizontal
+            placeholder="OpenAI API key..."
+            label="OpenAI API key"
+            name="api"
+            error={error?.message}
+          />
         )}
       />
+      <span className="text-xs text-gray-400 block pt-3">AIConsole requires GPT-4 as a default processing model.</span>
     </div>
   );
 };
