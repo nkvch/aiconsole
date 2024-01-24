@@ -23,12 +23,8 @@ import { useSettingsStore } from '../settings/useSettingsStore';
 
 export type ProjectSlice = {
   projectPath?: string; //undefined means loading, '' means no project, otherwise path
-  tempPath?: string;
   projectName?: string;
-  isProjectDirectory?: boolean;
   chooseProject: (path?: string) => Promise<void>;
-  resetIsProjectFlag: () => void;
-  checkPath: (path?: string) => Promise<void>;
   isProjectLoading: boolean;
   isProjectOpen: boolean;
   isProjectSwitchFetching: boolean;
@@ -40,8 +36,6 @@ export type ProjectSlice = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useProjectStore = create<ProjectSlice>((set, _) => ({
   projectPath: undefined,
-  tempPath: undefined,
-  isProjectDirectory: undefined,
   projectName: undefined,
   isProjectLoading: true,
   isProjectOpen: false,
@@ -86,12 +80,6 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
       isProjectSwitchFetching: false,
     }));
   },
-  resetIsProjectFlag: () => {
-    set({
-      isProjectDirectory: undefined,
-      tempPath: '',
-    });
-  },
   chooseProject: async (path?: string) => {
     // If we are in electron environment, use electron dialog, otherwise rely on the backend to open the dialog
     if (!path && window?.electron?.openDirectoryPicker) {
@@ -100,10 +88,7 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
         set({
           isProjectSwitchFetching: true,
         });
-        (await ProjectsAPI.chooseProject(path).json()) as {
-          name: string;
-          path: string;
-        };
+        await ProjectsAPI.chooseProject(path);
       }
 
       return;
@@ -113,34 +98,6 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
         isProjectSwitchFetching: true,
       });
     }
-    (await ProjectsAPI.chooseProject(path).json()) as {
-      name: string;
-      path: string;
-    };
-  },
-  checkPath: async (pathToCheck?: string) => {
-    // If we are in electron environment, use electron dialog, otherwise rely on the backend to open the dialog
-    let pathFromElectron;
-
-    if (!pathToCheck && window?.electron?.openDirectoryPicker) {
-      pathFromElectron = await window?.electron?.openDirectoryPicker();
-
-      if (!pathFromElectron) {
-        return;
-      }
-    }
-
-    const path = pathToCheck || pathFromElectron || (await ProjectsAPI.getInitialPath()).directory;
-    const { is_project } = await ProjectsAPI.isProjectDirectory(path);
-    set({
-      isProjectDirectory: is_project,
-      tempPath: path,
-    });
-    if (is_project === undefined && !path) {
-      (await ProjectsAPI.chooseProject(path).json()) as {
-        name: string;
-        path: string;
-      };
-    }
+    await ProjectsAPI.chooseProject(path);
   },
 }));

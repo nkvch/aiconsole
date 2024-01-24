@@ -14,65 +14,80 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ProjectsAPI } from '@/api/api/ProjectsAPI';
 import { useCallback, useEffect, useState } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 
+export enum ProjectModalMode {
+  OPEN_NEW,
+  OPEN_EXISTING,
+  CLOSED,
+}
+
 export const useProjectFileManager = () => {
-  const [isNewProjectModalOpen, setNewProjectModalOpen] = useState(false);
-  const [isOpenProjectModalOpen, setOpenProjectModalOpen] = useState(false);
+  const [projectModalMode, setProjectModalMode] = useState<ProjectModalMode>(ProjectModalMode.CLOSED);
+  const [tempPath, setTempPath] = useState('');
+  const [isProjectDirectory, setIsProjectDirectory] = useState<boolean>();
+
   const chooseProject = useProjectStore((state) => state.chooseProject);
-  const resetIsProjectFlag = useProjectStore((state) => state.resetIsProjectFlag);
-  const checkPath = useProjectStore((state) => state.checkPath);
-  const tempPath = useProjectStore((state) => state.tempPath);
-  const isProjectDirectory = useProjectStore((state) => state.isProjectDirectory);
+
+  const checkPath = async (pathToCheck?: string) => {
+    let pathFromElectron;
+
+    if (!pathToCheck && window?.electron?.openDirectoryPicker) {
+      pathFromElectron = await window?.electron?.openDirectoryPicker();
+
+      if (!pathFromElectron) {
+        return;
+      }
+    }
+
+    const path = pathToCheck || pathFromElectron || (await ProjectsAPI.getInitialPath()).directory;
+    const { is_project: isProject } = await ProjectsAPI.isProjectDirectory(path);
+    setIsProjectDirectory(isProject);
+    setTempPath(path);
+    if (isProject === undefined && !path) {
+      await ProjectsAPI.chooseProject(path);
+    }
+  };
+
+  const resetIsProjectFlag = () => {
+    setIsProjectDirectory(undefined);
+    setTempPath('');
+  };
 
   const openProjectConfirmation = useCallback(() => {
     chooseProject(tempPath);
     resetIsProjectFlag();
-    setNewProjectModalOpen(false);
-    setOpenProjectModalOpen(false);
-  }, [chooseProject, resetIsProjectFlag, tempPath]);
+    setProjectModalMode(ProjectModalMode.CLOSED);
+  }, [chooseProject, tempPath]);
 
   useEffect(() => {
-    if (isProjectDirectory === false && isNewProjectModalOpen) {
+    if (isProjectDirectory === false && projectModalMode === ProjectModalMode.OPEN_NEW) {
       openProjectConfirmation();
       return;
     }
-    if (isProjectDirectory === true && isOpenProjectModalOpen) {
+    if (isProjectDirectory === true && projectModalMode === ProjectModalMode.OPEN_EXISTING) {
       openProjectConfirmation();
       return;
     }
-  }, [openProjectConfirmation, isNewProjectModalOpen, isOpenProjectModalOpen, isProjectDirectory]);
+  }, [openProjectConfirmation, projectModalMode, isProjectDirectory]);
 
-  const openProject = () => {
+  const initProject = (mode: 'new' | 'existing') => {
     checkPath();
-    setOpenProjectModalOpen(true);
-    setNewProjectModalOpen(false);
+    setProjectModalMode(mode === 'new' ? ProjectModalMode.OPEN_NEW : ProjectModalMode.OPEN_EXISTING);
   };
 
-  const newProject = () => {
-    checkPath();
-    setNewProjectModalOpen(true);
-    setOpenProjectModalOpen(false);
-  };
-
-  const handleReset = () => {
+  const resetProjectOpening = () => {
     resetIsProjectFlag();
-    setNewProjectModalOpen(false);
-    setOpenProjectModalOpen(false);
+    setProjectModalMode(ProjectModalMode.CLOSED);
   };
-
-  useEffect(() => {
-    resetIsProjectFlag();
-  }, [resetIsProjectFlag]);
 
   return {
-    newProject,
-    openProject,
+    initProject,
     isProjectDirectory,
-    isNewProjectModalOpen,
-    isOpenProjectModalOpen,
-    handleReset,
+    projectModalMode,
+    resetProjectOpening,
     openProjectConfirmation,
     tempPath,
   };

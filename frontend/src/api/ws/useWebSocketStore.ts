@@ -16,11 +16,12 @@
 
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { ErrorEvent } from 'reconnecting-websocket/events';
+
 import { create } from 'zustand';
 import { useAPIStore } from '../../store/useAPIStore';
 import { ClientMessage } from './clientMessages';
 import { handleServerMessage } from './handleServerMessage';
-import { ServerMessage } from './serverMessages';
+import { ServerMessage, ServerMessageSchema } from './serverMessages';
 
 export type WebSockeStore = {
   ws: ReconnectingWebSocket | null;
@@ -56,8 +57,12 @@ export const useWebSocketStore = create<WebSockeStore>((set, get) => ({
     };
 
     ws.onmessage = async (e: MessageEvent) => {
-      const data: ServerMessage = JSON.parse(e.data);
-      handleServerMessage(data);
+      const parsedData = ServerMessageSchema.safeParse(JSON.parse(e.data));
+      if (parsedData.success) {
+        handleServerMessage(parsedData.data);
+      } else {
+        console.log('Error parsing message: ', parsedData.error);
+      }
     };
 
     ws.onerror = (e: ErrorEvent) => {
@@ -100,7 +105,7 @@ export const useWebSocketStore = create<WebSockeStore>((set, get) => ({
       // Handler for incoming messages
       const messageHandler = (e: MessageEvent) => {
         try {
-          const incomingMessage: ServerMessage = JSON.parse(e.data); //TOOD: Zod parsing
+          const incomingMessage = ServerMessageSchema.parse(JSON.parse(e.data));
 
           // Check if the incoming message meets the criteria
           if (responseCriteria(incomingMessage)) {

@@ -21,12 +21,45 @@ import { useSettingsStore } from '@/store/settings/useSettingsStore';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ProjectCard } from './ProjectCard';
 import { RecentProjectsEmpty } from './RecentProjectsEmpty';
+import AlertDialog from '../common/AlertDialog';
+import { useCallback, useState } from 'react';
+import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
+
+export type ModalProjectTitle = 'Locate' | 'Delete';
+export interface ModalProjectProps {
+  name: string;
+  title: ModalProjectTitle;
+  path: string;
+}
 
 export function Home() {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
   const isApiKeyValid = useSettingsStore((state) => state.isApiKeyValid);
   const isProjectLoading = useProjectStore((state) => state.isProjectLoading);
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
+  const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
+  const { initProject } = useProjectFileManager();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentProject, setCurrentProject] = useState<ModalProjectProps>({ name: '', title: 'Locate', path: '' });
+  const isLocateType = currentProject.title === 'Locate';
+
+  const openModalProject = (project: ModalProjectProps) => {
+    setCurrentProject(project);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentProject({ name: '', title: 'Locate', path: '' });
+  };
+
+  const deleteProject = useCallback(
+    (path: string) => async () => {
+      await removeRecentProject(path);
+      closeModal();
+    },
+    [removeRecentProject],
+  );
 
   return (
     <div className="min-h-[100vh] bg-recent-bg bg-cover bg-top">
@@ -49,12 +82,19 @@ export function Home() {
                     <div className="px-4 pb-[30px] text-center opacity-75 text-gray-400">Recent projects:</div>
                   </div>
                   <div className="w-full flex flex-wrap justify-center gap-[20px] mx-auto overflow-auto pr-5">
-                    {recentProjects.map(({ name, path, recent_chats, stats }) => (
+                    {recentProjects.map(({ name, path, recent_chats, stats, incorrect_path }) => (
                       <div
                         key={path}
                         className="w-full md:w-[calc(50%-10px)] xl:w-[calc(33.333%-13.33px)] 2xl:w-[calc(25%-15px)]"
                       >
-                        <ProjectCard name={name} path={path} recentChats={recent_chats} stats={stats} />
+                        <ProjectCard
+                          name={name}
+                          path={path}
+                          recentChats={recent_chats}
+                          incorrectPath={incorrect_path}
+                          stats={stats}
+                          openModalProject={openModalProject}
+                        />
                       </div>
                     ))}
                   </div>
@@ -68,6 +108,18 @@ export function Home() {
           </div>
         )}
       </div>
+      <AlertDialog
+        title={isLocateType ? "Can't find the project" : 'Delete file'}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onConfirm={isLocateType ? () => initProject('existing') : deleteProject(currentProject.path)}
+        confirmationButtonText={isLocateType ? 'Locate project' : 'Yes, delete'}
+        cancelButtonText={isLocateType ? 'Close' : 'No, cancel'}
+      >
+        {isLocateType
+          ? `The "${currentProject.name}" project has been deleted or its location has been changed.`
+          : 'Are you sure you want to delete the file?'}
+      </AlertDialog>
     </div>
   );
 }

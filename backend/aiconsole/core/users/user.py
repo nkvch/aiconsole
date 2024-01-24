@@ -33,7 +33,15 @@ class UserProfileService:
             if gravatar_profile:
                 return self._create_user_profile_from_gravatar(email, gravatar_profile)
 
-        return UserProfile(
+            if email != user_profile.email:
+                return UserProfile(
+                    username=email or DEFAULT_USERNAME,
+                    email=email,
+                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
+                    gravatar=False,
+                )
+
+        return user_profile or UserProfile(
             username=email or DEFAULT_USERNAME,
             email=email,
             avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),

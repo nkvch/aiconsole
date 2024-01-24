@@ -36,12 +36,13 @@ const ChatOptions = () => {
   const agents = useEditablesStore((state) => state.agents);
   const materials = useEditablesStore((state) => state.materials);
   const isChatLoading = useChatStore((state) => state.isChatLoading);
+  const isChatOptionsExpanded = useChatStore((state) => state.isChatOptionsExpanded);
+  const setIsChatOptionsExpanded = useChatStore((state) => state.setIsChatOptionsExpanded);
 
   const [materialsOptions, setMaterialsOptions] = useState<Material[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('aiChoice');
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
   const [allowExtraMaterials, setAllowExtraMaterials] = useState<boolean>(false);
-  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     // TODO: set options from chat
@@ -82,12 +83,12 @@ const ChatOptions = () => {
 
   return (
     <div className="text-gray-300 flex flex-col gap-5 flex-1">
-      <Collapsible.Root open={open} onOpenChange={setOpen}>
+      <Collapsible.Root open={isChatOptionsExpanded} onOpenChange={setIsChatOptionsExpanded}>
         <Collapsible.Trigger className="w-full pt-5">
           <div className="w-full flex justify-between group h-6 transition ease-in-out">
             <h3 className="text-sm">Chat options</h3>
             <div className="hidden group-hover:block">
-              {open ? (
+              {isChatOptionsExpanded ? (
                 <ArrowDownLeftSquare className="stroke-[1.2]" />
               ) : (
                 <ArrowUpRightSquare className="stroke-[1.2]" />

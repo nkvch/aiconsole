@@ -25,10 +25,12 @@ export type ChatSlice = {
   chat?: Chat;
   lastUsedChat?: Chat;
   isChatLoading: boolean;
+  isChatOptionsExpanded: boolean;
   setLastUsedChat: (chat: Chat) => void;
   setChat: (chat: Chat) => void;
   renameChat: (newChat: Chat) => Promise<void>;
   setIsChatLoading: (isLoading: boolean) => void;
+  setIsChatOptionsExpanded: (isExpanded: boolean) => void;
 };
 
 export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set, get) => ({
@@ -36,6 +38,7 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
   chat: undefined,
   agent: undefined,
   lastUsedChat: undefined,
+  isChatOptionsExpanded: true,
   materials: [],
   setLastUsedChat: (chat: Chat) => {
     set({ lastUsedChat: chat });
@@ -52,5 +55,8 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
   },
   setIsChatLoading: (isLoading: boolean) => {
     set({ isChatLoading: isLoading });
+  },
+  setIsChatOptionsExpanded: (isExpanded: boolean) => {
+    set({ isChatOptionsExpanded: isExpanded });
   },
 });

@@ -40,7 +40,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
         <div className="flex-none items-center flex flex-col max-w-[120px] ">
           {group.role === 'user' ? (
-            <UserInfo username={group.username} email={group.email} />
+            <UserInfo username={group.username} />
           ) : (
             <AgentInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
           )}

@@ -13,31 +13,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
+import { useMemo } from 'react';
 
-import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
-import { Button } from '../common/Button';
-import { cn } from '@/utils/common/cn';
-import { Icon } from '../common/icons/Icon';
-import AlertDialog from '../common/AlertDialog';
 import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
+import { cn } from '@/utils/common/cn';
+import { ProjectModalMode, useProjectFileManager } from '@/utils/projects/useProjectFileManager';
+import AlertDialog from '../common/AlertDialog';
+import { Button } from '../common/Button';
+import { Icon } from '../common/icons/Icon';
 
 interface ProjectButtonsProps {
   className?: string;
 }
 
 export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element {
-  const {
-    isProjectDirectory,
-    isNewProjectModalOpen,
-    isOpenProjectModalOpen,
-    openProject,
-    newProject,
-    handleReset,
-    openProjectConfirmation,
-    tempPath,
-  } = useProjectFileManager();
+  const { isProjectDirectory, projectModalMode, initProject, resetProjectOpening, openProjectConfirmation, tempPath } =
+    useProjectFileManager();
 
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
 
@@ -50,26 +42,30 @@ export function ProjectButtons({ className }: ProjectButtonsProps): JSX.Element 
     <div className={cn(className)}>
       <AlertDialog
         title="This folder already contains an AIConsole project"
-        isOpen={isProjectDirectory === true && isNewProjectModalOpen && Boolean(tempPath)}
-        onClose={handleReset}
+        isOpen={isProjectDirectory === true && projectModalMode === ProjectModalMode.OPEN_NEW && Boolean(tempPath)}
+        onClose={resetProjectOpening}
         onConfirm={openProjectConfirmation}
       >
         Do you want to open it instead?
       </AlertDialog>
       <AlertDialog
         title="There is no project in this directory"
-        isOpen={isProjectDirectory === false && isOpenProjectModalOpen && Boolean(tempPath)}
-        onClose={handleReset}
+        isOpen={
+          isProjectDirectory === false && projectModalMode === ProjectModalMode.OPEN_EXISTING && Boolean(tempPath)
+        }
+        onClose={resetProjectOpening}
         onConfirm={openProjectConfirmation}
+        confirmationButtonText="Yes, create"
+        cancelButtonText="No, close"
       >
         Do you want to create one there instead?
       </AlertDialog>
 
-      <Button small onClick={newProject}>
+      <Button small onClick={() => initProject('new')}>
         {addButtonLabel} <Icon icon={Plus} />
       </Button>
 
-      <Button small variant="secondary" onClick={openProject}>
+      <Button small variant="secondary" onClick={() => initProject('existing')} transparent>
         Open an Existing Project
       </Button>
     </div>
