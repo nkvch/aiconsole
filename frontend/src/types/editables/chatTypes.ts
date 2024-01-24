@@ -3,12 +3,12 @@ import { EditableObjectSchema, GPTRoleSchema } from './assetTypes'; // Import ne
 
 export const AICToolCallSchema = z.object({
   id: z.string(),
-  language: z.string().optional(),
+  language: z.string().optional().nullable(),
   is_executing: z.boolean(),
   is_streaming: z.boolean(),
   code: z.string(),
   headline: z.string(),
-  output: z.string().optional(),
+  output: z.string().optional().nullable(),
 });
 
 export type AICToolCall = z.infer<typeof AICToolCallSchema>;
@@ -44,7 +44,7 @@ export const ChatHeadlineSchema = EditableObjectSchema.extend({
 export type ChatHeadline = z.infer<typeof ChatHeadlineSchema>;
 
 export const ChatSchema = EditableObjectSchema.extend({
-  lock_id: z.string().optional(),
+  lock_id: z.string().optional().nullable(),
   title_edited: z.boolean(),
   last_modified: z.string(),
   message_groups: z.array(AICMessageGroupSchema),
