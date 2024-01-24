@@ -34,7 +34,7 @@ def save_credential(module: str, credential: str, value: str):
 
     # Load the existing JSON object or create an empty one if the file doesn't exist
     try:
-        with open(file_path, "r", encoding="utf8") as f:
+        with open(file_path, "r", encoding="utf8", errors="replace") as f:
             credentials = json.load(f)
     except FileNotFoundError:
         credentials = {}
@@ -43,7 +43,7 @@ def save_credential(module: str, credential: str, value: str):
     credentials[credential] = value
 
     # Save the updated credentials back to the JSON file
-    with open(file_path, "w", encoding="utf8") as f:
+    with open(file_path, "w", encoding="utf8", errors="replace") as f:
         json.dump(credentials, f, indent=4)  # Use an indent of 4 for pretty printing
 
 
@@ -59,7 +59,7 @@ def load_credentials(module: str, credentials: list[str]) -> dict[str, str]:
 
         # Try file
         try:
-            with open(get_credentials_directory() / (module + ".json"), "r", encoding="utf8") as f:
+            with open(get_credentials_directory() / (module + ".json"), "r", encoding="utf8", errors="replace") as f:
                 value = str(json.loads(f.read())[credential])
                 if value:
                     result[credential] = value

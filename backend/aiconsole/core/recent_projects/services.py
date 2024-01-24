@@ -37,7 +37,7 @@ class RecentProjectsStats:
         python_api_count = 0
         for path, ids in [base_ids, core_ids]:
             for id in ids:
-                with open(path / f"{id}.toml", "r", encoding="utf8") as file:
+                with open(path / f"{id}.toml", "r", encoding="utf8", errors="replace") as file:
                     tomldoc = rtoml.loads(file.read())
 
                 content_type = MaterialContentType(str(tomldoc["content_type"]).strip())

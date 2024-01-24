@@ -29,7 +29,7 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
     file_path = history_directory / f"{id}.json"
 
     if file_path.exists():
-        with open(file_path, "r", encoding="utf8") as f:
+        with open(file_path, "r", encoding="utf8", errors="replace") as f:
             data = json.load(f)
 
             # Convert old format

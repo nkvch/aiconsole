@@ -20,13 +20,25 @@ import { ContextMenuItems } from '@/types/common/contextMenu';
 import { RecentProject } from '@/types/projects/RecentProject';
 import { cn } from '@/utils/common/cn';
 import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
-import { Blocks, LucideIcon, MessageSquare, MoreVertical, ScanText, StickyNote, Trash } from 'lucide-react';
+import {
+  Blocks,
+  LucideIcon,
+  MessageSquare,
+  MoreVertical,
+  ScanText,
+  StickyNote,
+  Trash,
+  AlertTriangle,
+  LocateFixed,
+} from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ContextMenu, ContextMenuRef } from '../common/ContextMenu';
 import { Icon } from '../common/icons/Icon';
 import { AgentAvatar } from '../editables/chat/AgentAvatar';
 import { Spinner } from '../editables/chat/Spinner';
+import { ModalProjectProps, ModalProjectTitle } from './Home';
+import Tooltip from '../common/Tooltip';
 
 const MAX_CHATS_TO_DISPLAY = 3;
 interface CounterItemProps {
@@ -42,11 +54,13 @@ const CounterItem = ({ icon, count, className }: CounterItemProps) => (
   </div>
 );
 
-export type ProjectCardProps = Omit<RecentProject, 'recent_chats'> & {
+export type ProjectCardProps = Omit<RecentProject, 'recent_chats' | 'incorrect_path'> & {
   recentChats: string[];
+  incorrectPath: boolean;
+  openModalProject: (project: ModalProjectProps) => void;
 };
 
-export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps) {
+export function ProjectCard({ name, path, recentChats, incorrectPath, stats, openModalProject }: ProjectCardProps) {
   const chooseProject = useProjectStore((state) => state.chooseProject);
   const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
   const [isShowingContext, setIsShowingContext] = useState(false);
@@ -55,7 +69,7 @@ export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps
   const inputRef = useRef<HTMLInputElement>(null);
   const isProjectSwitchFetching = useProjectStore((state) => state.isProjectSwitchFetching);
   const [isCurrentProjectFetching, setIsCurrentProjectFetching] = useState(false);
-  const { isProjectDirectory } = useProjectFileManager();
+  const { tempPath } = useProjectFileManager();
 
   const { chats_count, materials_dynamic_note_count, materials_note_count, materials_python_api_count, agents } =
     stats;
@@ -147,8 +161,35 @@ export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps
     [deleteProject],
   );
 
+  const openModal = useCallback(
+    (title: ModalProjectTitle) => openModalProject({ name, title, path }),
+    [name, openModalProject, path],
+  );
+
+  const contextMenuItemsIncorrectPath: ContextMenuItems = useMemo(
+    () => [
+      {
+        type: 'item',
+        icon: LocateFixed,
+        title: 'Locate',
+        action: () => openModal('Locate'),
+      },
+      {
+        type: 'item',
+        icon: Trash,
+        title: 'Delete',
+        action: () => openModal('Delete'),
+      },
+    ],
+    [openModal],
+  );
+
   return (
-    <ContextMenu options={contextMenuItems} ref={triggerRef} onOpenChange={handleOpenContextChange}>
+    <ContextMenu
+      options={incorrectPath ? contextMenuItemsIncorrectPath : contextMenuItems}
+      ref={triggerRef}
+      onOpenChange={handleOpenContextChange}
+    >
       <div
         className={cn(
           'border-2 border-gray-600 p-[30px] pb-[20px] rounded-[20px] w-full transition-bg duration-150  cursor-pointer bg-gray-900 hover:bg-project-item-gradient flex flex-col justify-between relative',
@@ -156,9 +197,10 @@ export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps
             'bg-project-item-gradient': isShowingContext,
             'opacity-50 hover:bg-gray-900 cursor-default': isProjectSwitchFetching,
             group: !isProjectSwitchFetching,
+            'opacity-50': incorrectPath,
           },
         )}
-        onMouseDown={goToProjectChat}
+        onMouseDown={incorrectPath ? () => openModal('Locate') : goToProjectChat}
       >
         <div className="flex flex-row items-center w-full mb-[15px]">
           <div className="flex-grow align-left h-[40px]">
@@ -172,16 +214,32 @@ export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps
                 onChange={(e) => setInputText(e.target.value)}
               />
             ) : (
-              <h3
-                className={cn(
-                  'text-[22px] font-black transition-colors text-gray-400  group-hover:text-white duration-150',
-                  {
-                    'text-white': isShowingContext,
-                  },
+              <div className="flex items-center gap-[10px]">
+                {incorrectPath && (
+                  <Tooltip
+                    label="We can't find the project"
+                    position="top"
+                    align="center"
+                    sideOffset={10}
+                    disableAnimation
+                    withArrow
+                  >
+                    <div>
+                      <Icon icon={AlertTriangle} width={24} height={24} className="text-gray-400" />
+                    </div>
+                  </Tooltip>
                 )}
-              >
-                {name}
-              </h3>
+                <h3
+                  className={cn(
+                    'text-[22px] font-black transition-colors text-gray-400  group-hover:text-white duration-150',
+                    {
+                      'text-white': isShowingContext,
+                    },
+                  )}
+                >
+                  {name}
+                </h3>
+              </div>
             )}
           </div>
 
@@ -202,7 +260,7 @@ export function ProjectCard({ name, path, recentChats, stats }: ProjectCardProps
             className={cn(
               'bg-project-item-gradient-2  w-[calc(100%+40px)] absolute -left-[20px] -right-[20px] top-0 bottom-[-5px] z-10 group-hover:hidden',
               {
-                hidden: isShowingContext || isProjectDirectory,
+                hidden: isShowingContext || Boolean(tempPath),
               },
             )}
           />

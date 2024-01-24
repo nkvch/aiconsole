@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from pathlib import Path
 
 # this is a path to the root of the project - usually the installed one
@@ -51,24 +52,36 @@ MAX_RECENT_PROJECTS = 8
 
 LOG_FORMAT: str = "{name} {funcName} {message}"
 LOG_STYLE: str = "{"
-LOG_LEVEL: str = "DEBUG"
-LOG_HANDLERS: list[str] = ["consoleHandler"]
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
+if LOG_LEVEL == "DEBUG":
+    LOG_HANDLERS: list[str] = ["developmentHandler"]
+else:
+    LOG_HANDLERS: list[str] = ["defaultHandler"]
 
 log_config = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "console": {
+        "rich": {
             "()": "logging.Formatter",
             "fmt": LOG_FORMAT,
+            "datefmt": "%H:%M:%S ",
             "style": LOG_STYLE,
-        }
+        },
+        "default": {"()": "logging.Formatter", "fmt": "{asctime} [{levelname}] {name}: {message}", "style": "{"},
     },
     "handlers": {
-        "consoleHandler": {
-            "formatter": "console",
+        "developmentHandler": {
+            "formatter": "rich",
             "class": "rich.logging.RichHandler",
             "rich_tracebacks": True,
+        },
+        "defaultHandler": {
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "level": "INFO",
         },
     },
     "loggers": {

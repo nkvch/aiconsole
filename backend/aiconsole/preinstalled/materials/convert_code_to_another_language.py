@@ -20,7 +20,7 @@ _log = logging.getLogger(__name__)
 
 
 def convert_language(file_name, desired_language):
-    file_contents = open(file_name, encoding="utf8").read()
+    file_contents = open(file_name, encoding="utf8", errors="replace").read()
 
     completion: litellm.ModelResponse = cast(
         litellm.ModelResponse,
@@ -38,7 +38,7 @@ def convert_language(file_name, desired_language):
 
     # Create .py file with the same name
     file_name = os.path.splitext(file_name)[0] + "_translated.txt"
-    with open(file_name, "w", encoding="utf8") as f:
+    with open(file_name, "w", encoding="utf8", errors="replace") as f:
         f.write(completion.choices[0]["message"]["content"])
         f.write("\\n")
         # Write existing code into multiline comment

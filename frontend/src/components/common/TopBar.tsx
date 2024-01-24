@@ -36,7 +36,7 @@ export function TopBar({ children }: React.PropsWithChildren<TopBarProps>) {
       <div className="flex gap-2 w-full items-center">
         {children}
         <ContextMenu options={menuItems} ref={triggerRef} triggerClassName="ml-auto">
-          <Button variant="secondary" small iconOnly onClick={openSettings}>
+          <Button variant="secondary" small iconOnly onClick={openSettings} transparent>
             <Icon icon={Settings} width={24} height={24} />
           </Button>
         </ContextMenu>

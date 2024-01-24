@@ -48,7 +48,7 @@ async def save_asset_to_fs(asset: Asset):
     asset.version = ".".join(current_version_parts)
 
     # Save to .toml file
-    with (path / f"{asset.id}.toml").open("w", encoding="utf8") as file:
+    with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
         # FIXME: preserve formatting and comments in the file using tomlkit
 
         # Ignore None values in model_dump

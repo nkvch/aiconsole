@@ -64,7 +64,7 @@ class Material(Asset):
                 base_search_path = project_dir_path
             else:
                 base_search_path = core_resource_path
-            with open(base_search_path / content_file, "r", encoding="utf8") as file:
+            with open(base_search_path / content_file, "r", encoding="utf8", errors="replace") as file:
                 return file.read()
 
         return self.content

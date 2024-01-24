@@ -31,5 +31,5 @@ def save_chat_history(chat: Chat):
             os.remove(file_path)
     else:
         os.makedirs(history_directory, exist_ok=True)
-        with open(file_path, "w", encoding="utf8") as f:
+        with open(file_path, "w", encoding="utf8", errors="replace") as f:
             json.dump(chat.model_dump(exclude={"id", "last_modified"}), f, indent=4)

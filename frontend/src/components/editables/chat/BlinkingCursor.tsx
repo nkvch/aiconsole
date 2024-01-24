@@ -14,29 +14,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useEffect, useState } from 'react';
-
-export const BlinkingCursor = () => {
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setVisible((v) => !v);
-    }, 500);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <svg
-      className={`inline-block ${visible ? '' : 'invisible'}`}
-      width="8" // This can be adjusted to match the width of your cursor
-      height="12" // This can be adjusted to match the height of your cursor
-      viewBox="0 0 8 16"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect fill="currentColor" x="0" y="0" width="100%" height="100%" />
-    </svg>
-  );
-};
+export const BlinkingCursor = () => (
+  <svg
+    className="inline-block blinking-cursor"
+    width="8" // This can be adjusted to match the width of your cursor
+    height="12" // This can be adjusted to match the height of your cursor
+    viewBox="0 0 8 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect fill="currentColor" x="0" y="0" width="100%" height="100%" />
+  </svg>
+);
