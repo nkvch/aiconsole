@@ -75,6 +75,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
     if (avatar) {
       await SettingsAPI.setUserAvatar(avatar);
+      // Refetch updated avatar
       const { avatar_url } = await SettingsAPI.getUserAvatar(user_profile?.email);
       set({
         userAvatarUrl: avatar_url,

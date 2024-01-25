@@ -41,7 +41,7 @@ export const GlobalSettingsModal = () => {
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
   const saveSettings = useSettingsStore((state) => state.saveSettings);
 
-  const { reset, control, setValue, formState, handleSubmit, getFieldState } = useForm<GlobalSettingsFormData>({
+  const { reset, control, setValue, formState, handleSubmit } = useForm<GlobalSettingsFormData>({
     resolver: zodResolver(GlobalSettingsFormSchema),
   });
 
@@ -62,6 +62,7 @@ export const GlobalSettingsModal = () => {
   }, [isSettingsModalVisible]);
 
   const onSubmit = (data: GlobalSettingsFormData) => {
+    // No fields changed, close the modal
     if (!Object.keys(formState.dirtyFields).length) {
       setSettingsModalVisibility(false);
       return;
@@ -69,23 +70,19 @@ export const GlobalSettingsModal = () => {
 
     let avatarFormData: FormData | null = null;
 
-    const isProfileDirty = getFieldState('user_profile').isDirty;
-    const isApiKeyDirty = getFieldState('openai_api_key').isDirty;
-    const isAutorunDirty = getFieldState('code_autorun').isDirty;
-    const isAvatarDirty = getFieldState('avatar').isDirty;
+    // Get all modified fields
+    const dirtyFields = Object.keys(formState.dirtyFields) as Array<keyof GlobalSettingsFormData>;
 
-    console.log(isAvatarDirty, data.avatar);
-
-    if (isAvatarDirty && data.avatar) {
+    if (dirtyFields.includes('avatar') && data.avatar) {
       avatarFormData = new FormData();
       avatarFormData.append('avatar', data.avatar);
     }
 
     saveSettings(
       {
-        ...(isProfileDirty ? { user_profile: data.user_profile } : {}),
-        ...(isApiKeyDirty ? { openai_api_key: data.openai_api_key } : {}),
-        ...(isAutorunDirty ? { code_autorun: data.code_autorun } : {}),
+        ...(dirtyFields.includes('user_profile') ? { user_profile: data.user_profile } : {}),
+        ...(dirtyFields.includes('openai_api_key') ? { openai_api_key: data.openai_api_key } : {}),
+        ...(dirtyFields.includes('code_autorun') ? { code_autorun: data.code_autorun } : {}),
       },
       true,
       avatarFormData,
@@ -99,7 +96,7 @@ export const GlobalSettingsModal = () => {
   const handleSetAutorun = (autorun: boolean) => setValue('code_autorun', autorun, { shouldDirty: true });
 
   const handleModalClose = () => {
-    if (formState.isDirty) {
+    if (Object.keys(formState.dirtyFields).length) {
       console.log('form dirty! discard changes modal');
     }
     setSettingsModalVisibility(false);
