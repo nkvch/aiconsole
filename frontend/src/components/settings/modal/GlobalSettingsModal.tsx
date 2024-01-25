@@ -28,6 +28,7 @@ import GlobalSettingsApiSection from './sections/GlobalSettingsApiSection';
 import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
 import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
+import { Settings } from '@/types/settings/Settings';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
 export const GlobalSettingsModal = () => {
@@ -68,25 +69,28 @@ export const GlobalSettingsModal = () => {
       return;
     }
 
+    // Fields we don't want to directly send
+    const ignoreFields = ['avatar'];
+
     let avatarFormData: FormData | null = null;
 
-    // Get all modified fields
+    // Get all modified fields from the form state
     const dirtyFields = Object.keys(formState.dirtyFields) as Array<keyof GlobalSettingsFormData>;
 
+    // Create FormData if there's an avatar file selected
     if (dirtyFields.includes('avatar') && data.avatar) {
       avatarFormData = new FormData();
       avatarFormData.append('avatar', data.avatar);
     }
 
-    saveSettings(
-      {
-        ...(dirtyFields.includes('user_profile') ? { user_profile: data.user_profile } : {}),
-        ...(dirtyFields.includes('openai_api_key') ? { openai_api_key: data.openai_api_key } : {}),
-        ...(dirtyFields.includes('code_autorun') ? { code_autorun: data.code_autorun } : {}),
-      },
-      true,
-      avatarFormData,
-    );
+    // Filter out ignored fields and create the data object
+    const profileData = dirtyFields
+      .filter((field) => !ignoreFields.includes(field))
+      .reduce<Settings>((prev, next) => {
+        return { ...prev, [next]: data[next] };
+      }, {});
+
+    saveSettings(profileData, true, avatarFormData);
 
     setSettingsModalVisibility(false);
   };

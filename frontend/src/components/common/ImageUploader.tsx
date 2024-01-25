@@ -1,6 +1,6 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-import { Loader, Plus, Trash, Upload } from 'lucide-react';
+import { Loader, Plus, Upload } from 'lucide-react';
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';
@@ -37,9 +37,10 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     }
   };
 
-  const removeImage = () => {
-    setPreviewImage(null);
-  };
+  // TODO: Implement when backend is ready
+  // const removeImage = () => {
+  //   setPreviewImage(null);
+  // };
 
   const handleUploadButtonClick = () => {
     if (fileInputRef.current) {
@@ -81,14 +82,14 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     //   title: 'Generate with AI',
     //   action: generateWithAi,
     // },
-    { type: 'separator', key: 'delete-separator', hidden: !previewImage },
-    {
-      type: 'item',
-      icon: Trash,
-      title: 'Delete',
-      hidden: !previewImage,
-      action: removeImage,
-    },
+    // { type: 'separator', key: 'delete-separator', hidden: !previewImage },
+    // {
+    //   type: 'item',
+    //   icon: Trash,
+    //   title: 'Delete',
+    //   hidden: !previewImage,
+    //   action: removeImage,
+    // },
   ];
 
   return (
