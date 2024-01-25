@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { Content, Portal, Root } from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
@@ -29,6 +29,7 @@ import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
 import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
 import { Settings } from '@/types/settings/Settings';
+import { UnsavedSettingsDialog } from '@/components/common/UnsavedSettingsDialog';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
 export const GlobalSettingsModal = () => {
@@ -41,6 +42,8 @@ export const GlobalSettingsModal = () => {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
   const saveSettings = useSettingsStore((state) => state.saveSettings);
+
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
 
   const { reset, control, setValue, formState, handleSubmit } = useForm<GlobalSettingsFormData>({
     resolver: zodResolver(GlobalSettingsFormSchema),
@@ -101,10 +104,18 @@ export const GlobalSettingsModal = () => {
 
   const handleModalClose = () => {
     if (Object.keys(formState.dirtyFields).length) {
-      console.log('form dirty! discard changes modal');
+      setConfirmationDialogOpen(true);
+      return;
     }
     setSettingsModalVisibility(false);
   };
+
+  const discardChanges = () => {
+    setConfirmationDialogOpen(false);
+    setSettingsModalVisibility(false);
+  };
+
+  const hideConfirmationDialog = () => setConfirmationDialogOpen(false);
 
   return (
     <Root open={isSettingsModalVisible}>
@@ -137,6 +148,11 @@ export const GlobalSettingsModal = () => {
                 </div>
               </form>
             </div>
+            <UnsavedSettingsDialog
+              onCancel={hideConfirmationDialog}
+              isOpen={confirmationDialogOpen}
+              onConfirm={discardChanges}
+            />
           </div>
         </Content>
       </Portal>
