@@ -124,31 +124,35 @@ body {
 .sidebar-typography h1 {
   font-size: 28px;
   color: theme('colors.white');
-  font-weight: 900;
   line-height: 34px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .sidebar-typography h2 {
   font-size: 24px;
   color: theme('colors.white');
-  font-weight: 900;
   line-height: 29px;
   margin-top: 20px;
   margin-bottom: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .sidebar-typography h3 {
   font-size: 18px;
   color: theme('colors.white');
-  font-weight: 900;
   line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .sidebar-typography h4 {
   font-size: 15px;
   color: theme('colors.white');
-  font-weight: 900;
   line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .message-gradient {

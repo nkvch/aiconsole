@@ -22,15 +22,8 @@ import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ProjectCard } from './ProjectCard';
 import { RecentProjectsEmpty } from './RecentProjectsEmpty';
 import AlertDialog from '../common/AlertDialog';
-import { useCallback, useState } from 'react';
-import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
-
-export type ModalProjectTitle = 'Locate' | 'Delete';
-export interface ModalProjectProps {
-  name: string;
-  title: ModalProjectTitle;
-  path: string;
-}
+import { useCallback, useEffect, useMemo } from 'react';
+import { useProjectFileManagerStore, ProjectModalMode } from '@/store/projects/useProjectFileManagerStore';
 
 export function Home() {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
@@ -38,28 +31,90 @@ export function Home() {
   const isProjectLoading = useProjectStore((state) => state.isProjectLoading);
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
   const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
-  const { initProject } = useProjectFileManager();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentProject, setCurrentProject] = useState<ModalProjectProps>({ name: '', title: 'Locate', path: '' });
-  const isLocateType = currentProject.title === 'Locate';
-
-  const openModalProject = (project: ModalProjectProps) => {
-    setCurrentProject(project);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setCurrentProject({ name: '', title: 'Locate', path: '' });
-  };
+  const projectModalMode = useProjectFileManagerStore((state) => state.projectModalMode);
+  const isProjectDirectory = useProjectFileManagerStore((state) => state.isProjectDirectory);
+  const tempPath = useProjectFileManagerStore((state) => state.tempPath);
+  const resetProjectOpening = useProjectFileManagerStore((state) => state.resetProjectOpening);
+  const openProjectConfirmation = useProjectFileManagerStore((state) => state.openProjectConfirmation);
+  const initProject = useProjectFileManagerStore((state) => state.initProject);
+  const projectName = useProjectFileManagerStore((state) => state.projectName);
 
   const deleteProject = useCallback(
     (path: string) => async () => {
       await removeRecentProject(path);
-      closeModal();
+      resetProjectOpening();
     },
-    [removeRecentProject],
+    [removeRecentProject, resetProjectOpening],
   );
+
+  const alertDialogConfig = {
+    locate: {
+      title: "Can't find the project",
+      message: `The "${projectName}" project has been deleted or its location has been changed.`,
+      confirmText: 'Locate project',
+      cancelText: 'Close',
+      onConfirm: () => initProject(ProjectModalMode.OPEN_EXISTING),
+      onCancel: resetProjectOpening,
+    },
+    delete: {
+      title: 'Delete file',
+      message: 'Are you sure you want to delete the file?',
+      confirmText: 'Yes, delete',
+      cancelText: 'No, cancel',
+      onConfirm: deleteProject(tempPath),
+      onCancel: resetProjectOpening,
+    },
+    existingProject: {
+      title: 'This folder already contains an AIConsole project',
+      message: 'Do you want to open it instead?',
+      confirmText: undefined,
+      cancelText: undefined,
+      onConfirm: openProjectConfirmation,
+      onCancel: resetProjectOpening,
+    },
+    newProject: {
+      title: 'There is no project in this directory',
+      message: 'Do you want to create one there instead?',
+      confirmText: 'Yes, create',
+      cancelText: 'No, close',
+      onConfirm: openProjectConfirmation,
+      onCancel: resetProjectOpening,
+    },
+  };
+
+  const currentAlertDialogConfig = useMemo(() => {
+    if (projectModalMode === ProjectModalMode.LOCATE) {
+      return alertDialogConfig.locate;
+    } else if (projectModalMode === ProjectModalMode.DELETE) {
+      return alertDialogConfig.delete;
+    } else if (isProjectDirectory === true && projectModalMode === ProjectModalMode.OPEN_NEW && Boolean(tempPath)) {
+      return alertDialogConfig.existingProject;
+    } else if (
+      isProjectDirectory === false &&
+      projectModalMode === ProjectModalMode.OPEN_EXISTING &&
+      Boolean(tempPath)
+    ) {
+      return alertDialogConfig.newProject;
+    }
+    return null;
+  }, [
+    alertDialogConfig.delete,
+    alertDialogConfig.existingProject,
+    alertDialogConfig.locate,
+    alertDialogConfig.newProject,
+    isProjectDirectory,
+    projectModalMode,
+    tempPath,
+  ]);
+
+  useEffect(() => {
+    if (
+      (isProjectDirectory === false && projectModalMode === ProjectModalMode.OPEN_NEW) ||
+      (isProjectDirectory === true && projectModalMode === ProjectModalMode.OPEN_EXISTING)
+    ) {
+      openProjectConfirmation();
+    }
+  }, [openProjectConfirmation, projectModalMode, isProjectDirectory]);
 
   return (
     <div className="min-h-[100vh] bg-recent-bg bg-cover bg-top">
@@ -93,7 +148,6 @@ export function Home() {
                           recentChats={recent_chats}
                           incorrectPath={incorrect_path}
                           stats={stats}
-                          openModalProject={openModalProject}
                         />
                       </div>
                     ))}
@@ -108,18 +162,18 @@ export function Home() {
           </div>
         )}
       </div>
-      <AlertDialog
-        title={isLocateType ? "Can't find the project" : 'Delete file'}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onConfirm={isLocateType ? () => initProject('existing') : deleteProject(currentProject.path)}
-        confirmationButtonText={isLocateType ? 'Locate project' : 'Yes, delete'}
-        cancelButtonText={isLocateType ? 'Close' : 'No, cancel'}
-      >
-        {isLocateType
-          ? `The "${currentProject.name}" project has been deleted or its location has been changed.`
-          : 'Are you sure you want to delete the file?'}
-      </AlertDialog>
+      {currentAlertDialogConfig && (
+        <AlertDialog
+          title={currentAlertDialogConfig.title}
+          isOpen={!!currentAlertDialogConfig}
+          onClose={currentAlertDialogConfig.onCancel}
+          onConfirm={currentAlertDialogConfig.onConfirm}
+          confirmationButtonText={currentAlertDialogConfig.confirmText}
+          cancelButtonText={currentAlertDialogConfig.cancelText}
+        >
+          {currentAlertDialogConfig.message}
+        </AlertDialog>
+      )}
     </div>
   );
 }

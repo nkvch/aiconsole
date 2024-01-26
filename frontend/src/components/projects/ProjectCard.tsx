@@ -15,30 +15,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ProjectModalMode, useProjectFileManagerStore } from '@/store/projects/useProjectFileManagerStore';
 import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { RecentProject } from '@/types/projects/RecentProject';
 import { cn } from '@/utils/common/cn';
-import { useProjectFileManager } from '@/utils/projects/useProjectFileManager';
 import {
+  AlertTriangle,
   Blocks,
+  LocateFixed,
   LucideIcon,
   MessageSquare,
   MoreVertical,
   ScanText,
   StickyNote,
   Trash,
-  AlertTriangle,
-  LocateFixed,
 } from 'lucide-react';
 import { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ContextMenu, ContextMenuRef } from '../common/ContextMenu';
+import Tooltip from '../common/Tooltip';
 import { Icon } from '../common/icons/Icon';
 import { AgentAvatar } from '../editables/chat/AgentAvatar';
 import { Spinner } from '../editables/chat/Spinner';
-import { ModalProjectProps, ModalProjectTitle } from './Home';
-import Tooltip from '../common/Tooltip';
 
 const MAX_CHATS_TO_DISPLAY = 3;
 interface CounterItemProps {
@@ -57,10 +56,9 @@ const CounterItem = ({ icon, count, className }: CounterItemProps) => (
 export type ProjectCardProps = Omit<RecentProject, 'recent_chats' | 'incorrect_path'> & {
   recentChats: string[];
   incorrectPath: boolean;
-  openModalProject: (project: ModalProjectProps) => void;
 };
 
-export function ProjectCard({ name, path, recentChats, incorrectPath, stats, openModalProject }: ProjectCardProps) {
+export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: ProjectCardProps) {
   const chooseProject = useProjectStore((state) => state.chooseProject);
   const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
   const [isShowingContext, setIsShowingContext] = useState(false);
@@ -69,7 +67,8 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats, ope
   const inputRef = useRef<HTMLInputElement>(null);
   const isProjectSwitchFetching = useProjectStore((state) => state.isProjectSwitchFetching);
   const [isCurrentProjectFetching, setIsCurrentProjectFetching] = useState(false);
-  const { tempPath } = useProjectFileManager();
+  const projectModalMode = useProjectFileManagerStore((state) => state.projectModalMode);
+  const openModal = useProjectFileManagerStore((state) => state.openModal);
 
   const { chats_count, materials_dynamic_note_count, materials_note_count, materials_python_api_count, agents } =
     stats;
@@ -161,27 +160,22 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats, ope
     [deleteProject],
   );
 
-  const openModal = useCallback(
-    (title: ModalProjectTitle) => openModalProject({ name, title, path }),
-    [name, openModalProject, path],
-  );
-
   const contextMenuItemsIncorrectPath: ContextMenuItems = useMemo(
     () => [
       {
         type: 'item',
         icon: LocateFixed,
         title: 'Locate',
-        action: () => openModal('Locate'),
+        action: () => openModal(ProjectModalMode.LOCATE, path, name),
       },
       {
         type: 'item',
         icon: Trash,
         title: 'Delete',
-        action: () => openModal('Delete'),
+        action: () => openModal(ProjectModalMode.DELETE, path, name),
       },
     ],
-    [openModal],
+    [name, openModal, path],
   );
 
   return (
@@ -200,7 +194,7 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats, ope
             'opacity-50': incorrectPath,
           },
         )}
-        onMouseDown={incorrectPath ? () => openModal('Locate') : goToProjectChat}
+        onMouseDown={incorrectPath ? () => openModal(ProjectModalMode.LOCATE, path, name) : goToProjectChat}
       >
         <div className="flex flex-row items-center w-full mb-[15px]">
           <div className="flex-grow align-left h-[40px]">
@@ -260,7 +254,7 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats, ope
             className={cn(
               'bg-project-item-gradient-2  w-[calc(100%+40px)] absolute -left-[20px] -right-[20px] top-0 bottom-[-5px] z-10 group-hover:hidden',
               {
-                hidden: isShowingContext || Boolean(tempPath),
+                hidden: isShowingContext || projectModalMode !== ProjectModalMode.CLOSED,
               },
             )}
           />
@@ -279,8 +273,12 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats, ope
           <CounterItem icon={ScanText} count={materials_dynamic_note_count} />
           <CounterItem icon={Blocks} count={materials_python_api_count} />
           <div className="flex items-center text-[15px] text-gray-300">
-            <AgentAvatar agentId="1" type="extraSmall" className="mb-0" />
-            <AgentAvatar agentId="2" type="extraSmall" className="relative -left-[12px] mb-0" />
+            <AgentAvatar agentId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
+            <AgentAvatar
+              agentId={agents.agent_ids[1] || '2'}
+              type="extraSmall"
+              className="relative -left-[12px] mb-0"
+            />
             <span className="-ml-[2px]">{agents.count}</span>
           </div>
         </div>

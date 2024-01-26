@@ -25,11 +25,22 @@ def save_chat_history(chat: Chat):
     history_directory = get_history_directory()
     file_path = history_directory / f"{chat.id}.json"
 
+    new_content = chat.model_dump(exclude={"id", "last_modified"})
+
     if len(chat.message_groups) == 0:
         # delete instead
         if os.path.exists(file_path):
             os.remove(file_path)
     else:
         os.makedirs(history_directory, exist_ok=True)
+
+        # check if file exists and contents are the same
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf8", errors="replace") as f:
+                old_content = json.load(f)
+                if old_content == new_content:
+                    return  # contents are the same, no need to write to file
+
+        # write new content to file
         with open(file_path, "w", encoding="utf8", errors="replace") as f:
-            json.dump(chat.model_dump(exclude={"id", "last_modified"}), f, indent=4)
+            json.dump(new_content, f, indent=4)

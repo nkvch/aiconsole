@@ -17,9 +17,6 @@
 from fastapi import APIRouter, Response, status
 from send2trash import send2trash  # type: ignore
 
-from aiconsole.core.chat.load_chat_history import load_chat_history
-from aiconsole.core.chat.save_chat_history import save_chat_history
-from aiconsole.core.chat.types import Chat
 from aiconsole.core.project.paths import get_history_directory
 
 router = APIRouter()

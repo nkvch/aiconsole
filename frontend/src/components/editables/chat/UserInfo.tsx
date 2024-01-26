@@ -21,7 +21,7 @@ import { useUserContextMenu } from '@/utils/common/useUserContextMenu';
 import { UserAvatar } from './UserAvatar';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 
-export function UserInfo({ username }: { username?: string }) {
+export function UserInfo({ username }: { username?: string | null }) {
   const triggerRef = useRef<ContextMenuRef>(null);
 
   const userMenuItems = useUserContextMenu();

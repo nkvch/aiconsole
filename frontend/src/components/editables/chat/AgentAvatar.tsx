@@ -23,6 +23,7 @@ export function AgentAvatar({ agentId, title, type, className }: AgentAvatarProp
         'w-6 h-6': type === 'extraSmall',
         'border-[2px] border-agent shadow-agent': agent?.status === 'forced',
         'shadow-md': agent?.status !== 'forced',
+        hidden: !agentId,
       })}
     />
   );
