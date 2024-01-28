@@ -54,7 +54,8 @@ export function MessageComponent({ message, group }: MessageProps) {
         hideControls
       >
         <div className="flex flex-col gap-2">
-          {(message.content || message.is_streaming) && (
+          {message.is_streaming && !message.content && message.tool_calls.length === 0 && <BlinkingCursor />}
+          {message.content && (
             <div className="max-w-[700px]">
               {group.role !== 'user' && (
                 <div className="flex-grow">
@@ -67,12 +68,13 @@ export function MessageComponent({ message, group }: MessageProps) {
                         a: ({ node, href, ...props }) => {
                           if (href === 'command') {
                             const command = (Array.isArray(props.children) ? props.children[0]?.toString() : '') ?? '';
+
                             return (
                               <a
                                 {...props}
                                 className="text-secondary hover:text-secondary-light cursor-pointer"
                                 onClick={() => {
-                                  if (command) submitCommand(command);
+                                  submitCommand(command ? command : props.children);
                                 }}
                               >
                                 {props.children}
@@ -123,11 +125,9 @@ export function MessageComponent({ message, group }: MessageProps) {
                     >
                       {message.content}
                     </ReactMarkdown>
-                    {message.is_streaming && !message.content && message.tool_calls.length === 0 && <BlinkingCursor />}
                   </div>
                 </div>
               )}
-
               {group.role === 'user' && (
                 <div className="flex-grow">
                   {message.content.split('\n').map((line, index) => (
@@ -140,10 +140,8 @@ export function MessageComponent({ message, group }: MessageProps) {
               )}
             </div>
           )}
-
-          {message.tool_calls.map((toolCall) => (
-            <ToolCall key={toolCall.id} group={group} toolCall={toolCall} />
-          ))}
+          {!message.is_streaming &&
+            message.tool_calls.map((toolCall) => <ToolCall key={toolCall.id} group={group} toolCall={toolCall} />)}
         </div>
       </EditableContentMessage>
     </div>

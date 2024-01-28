@@ -17,20 +17,17 @@
 import { create } from 'zustand';
 
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
+import { ProjectsAPI } from '../../api/api/ProjectsAPI';
 import { useChatStore } from '../editables/chat/useChatStore';
 import { useSettingsStore } from '../settings/useSettingsStore';
-import { ProjectsAPI } from '../../api/api/ProjectsAPI';
 
 export type ProjectSlice = {
   projectPath?: string; //undefined means loading, '' means no project, otherwise path
-  tempPath?: string;
   projectName?: string;
-  isProjectDirectory?: boolean | undefined;
   chooseProject: (path?: string) => Promise<void>;
-  resetIsProjectFlag: () => void;
-  checkPath: (path?: string) => Promise<void>;
   isProjectLoading: boolean;
   isProjectOpen: boolean;
+  isProjectSwitchFetching: boolean;
   onProjectOpened: ({ path, name, initial }: { path: string; name: string; initial: boolean }) => Promise<void>;
   onProjectClosed: () => Promise<void>;
   onProjectLoading: () => void;
@@ -39,11 +36,10 @@ export type ProjectSlice = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useProjectStore = create<ProjectSlice>((set, _) => ({
   projectPath: undefined,
-  tempPath: undefined,
-  isProjectDirectory: undefined,
   projectName: undefined,
   isProjectLoading: true,
   isProjectOpen: false,
+  isProjectSwitchFetching: false,
   onProjectOpened: async ({ path, name, initial }: { path: string; name: string; initial: boolean }) => {
     if (!path || !name) {
       throw new Error('Project path or name is not defined');
@@ -54,6 +50,7 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
       projectName: name,
       isProjectOpen: true,
       isProjectLoading: false,
+      isProjectSwitchFetching: false,
     }));
 
     await Promise.all([useChatStore.getState().initCommandHistory(), useEditablesStore.getState().initChatHistory()]);
@@ -80,55 +77,27 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
       projectName: undefined,
       isProjectOpen: false,
       isProjectLoading: true,
+      isProjectSwitchFetching: false,
     }));
-  },
-  resetIsProjectFlag: () => {
-    set({
-      isProjectDirectory: undefined,
-      tempPath: '',
-    });
   },
   chooseProject: async (path?: string) => {
     // If we are in electron environment, use electron dialog, otherwise rely on the backend to open the dialog
     if (!path && window?.electron?.openDirectoryPicker) {
       const path = await window?.electron?.openDirectoryPicker();
       if (path) {
-        (await ProjectsAPI.chooseProject(path).json()) as {
-          name: string;
-          path: string;
-        };
+        set({
+          isProjectSwitchFetching: true,
+        });
+        await ProjectsAPI.chooseProject(path);
       }
 
       return;
     }
-    (await ProjectsAPI.chooseProject(path).json()) as {
-      name: string;
-      path: string;
-    };
-  },
-  checkPath: async (pathToCheck?: string) => {
-    // If we are in electron environment, use electron dialog, otherwise rely on the backend to open the dialog
-    let pathFromElectron;
-
-    if (!pathToCheck && window?.electron?.openDirectoryPicker) {
-      pathFromElectron = await window?.electron?.openDirectoryPicker();
-
-      if (!pathFromElectron) {
-        return;
-      }
+    if (path) {
+      set({
+        isProjectSwitchFetching: true,
+      });
     }
-
-    const path = pathToCheck || pathFromElectron || (await ProjectsAPI.getInitialPath()).directory;
-    const { is_project } = await ProjectsAPI.isProjectDirectory(path);
-    set({
-      isProjectDirectory: is_project,
-      tempPath: path,
-    });
-    if (is_project === undefined && !path) {
-      (await ProjectsAPI.chooseProject(path).json()) as {
-        name: string;
-        path: string;
-      };
-    }
+    await ProjectsAPI.chooseProject(path);
   },
 }));

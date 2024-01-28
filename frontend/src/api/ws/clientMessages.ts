@@ -49,6 +49,7 @@ export type ReleaseLockClientMessage = z.infer<typeof ReleaseLockClientMessageSc
 export const OpenChatClientMessageSchema = BaseClientMessageSchema.extend({
   type: z.literal('OpenChatClientMessage'),
   chat_id: z.string(),
+  request_id: z.string(),
 });
 
 export type OpenChatClientMessage = z.infer<typeof OpenChatClientMessageSchema>;
@@ -64,6 +65,7 @@ export type StopChatClientMessage = z.infer<typeof StopChatClientMessageSchema>;
 export const CloseChatClientMessageSchema = BaseClientMessageSchema.extend({
   type: z.literal('CloseChatClientMessage'),
   chat_id: z.string(),
+  request_id: z.string(),
 });
 
 export type CloseChatClientMessage = z.infer<typeof CloseChatClientMessageSchema>;

@@ -21,6 +21,8 @@ from aiconsole.core.chat.chat_mutations import ChatMutation
 
 
 class BaseClientMessage(BaseModel):
+    chat_id: str
+
     def get_type(self):
         return self.__class__.__name__
 
@@ -32,38 +34,33 @@ class BaseClientMessage(BaseModel):
 # This is both an incoming and an outgoing message
 class InitChatMutationClientMessage(BaseClientMessage):
     request_id: str
-    chat_id: str
     mutation: ChatMutation
 
 
 class AcquireLockClientMessage(BaseClientMessage):
     request_id: str
-    chat_id: str
 
 
 class ReleaseLockClientMessage(BaseClientMessage):
     request_id: str
-    chat_id: str
 
 
 class OpenChatClientMessage(BaseClientMessage):
-    chat_id: str
+    request_id: str
 
 
 class StopChatClientMessage(BaseClientMessage):
-    chat_id: str
     request_id: str
 
+
 class CloseChatClientMessage(BaseClientMessage):
-    chat_id: str
+    request_id: str
 
 
 class AcceptCodeClientMessage(BaseClientMessage):
     request_id: str
-    chat_id: str
     tool_call_id: str
 
 
 class ProcessChatClientMessage(BaseClientMessage):
     request_id: str
-    chat_id: str

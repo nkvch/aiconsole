@@ -111,6 +111,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
         ).start()
 
     async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
+        _log.debug(f"Running code:\n{code}\n---")
         retry_count = 0
         max_retries = 3
 
@@ -124,7 +125,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
             return
 
         while retry_count <= max_retries:
-            _log.info(f"Running code:\n{code}\n---")
+            # _log.info(f"Running code:\n{code}\n---")
 
             self.done.clear()
 
@@ -155,7 +156,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
             if not self.output_queue.empty():
                 yield self.output_queue.get()
             else:
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
             try:
                 output = self.output_queue.get(timeout=0.3)  # Waits for 0.3 seconds
                 yield output
@@ -168,7 +169,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
                     for _ in range(3):
                         if not self.output_queue.empty():
                             yield self.output_queue.get()
-                        time.sleep(0.2)
+                        await asyncio.sleep(0.2)
                     break
 
     def handle_stream_output(self, stream, is_error_stream):

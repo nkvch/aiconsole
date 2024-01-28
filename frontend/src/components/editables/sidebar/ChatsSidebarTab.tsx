@@ -14,16 +14,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import useGroupByDate from '@/utils/editables/useGroupByDate';
-import SideBarItem from './SideBarItem';
+import { useEffect } from 'react';
 import ChatOptions from '../assets/ChatOptions';
-import { useChatStore } from '@/store/editables/chat/useChatStore';
+import SideBarItem from './SideBarItem';
 
 export const ChatsSidebarTab = () => {
   const chatHeadlines = useEditablesStore((state) => state.chats);
   const chat = useChatStore((state) => state.chat);
   const { today, yesterday, previous7Days, older } = useGroupByDate(chatHeadlines);
+  const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
+
+  useEffect(() => {
+    if (chat?.id) {
+      setIsChatLoading(false);
+    }
+  }, [chat?.id, setIsChatLoading]);
 
   const sections = [
     { title: 'Today', headlines: today },
@@ -50,15 +58,13 @@ export const ChatsSidebarTab = () => {
         )}
       </div>
 
-      {chat?.id && (
-        <div>
-          <hr className=" border-gray-600" />
+      <div>
+        <hr className=" border-gray-600" />
 
-          <div className="w-full px-5">
-            <ChatOptions />
-          </div>
+        <div className="w-full px-5">
+          <ChatOptions />
         </div>
-      )}
+      </div>
     </div>
   );
 };

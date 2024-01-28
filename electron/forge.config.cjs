@@ -49,19 +49,12 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'AIConsole',
+        authors: '10Clouds',
         // An URL to an ICO file to use as the application icon (displayed in Control Panel > Programs and Features).
         iconUrl: 'https://url/to/icon.ico',
         loadingGif: './assets/blank.gif',
         // The ICO file to use as the icon for the generated Setup.exe
         setupIcon: './assets/installer-icon.ico',
-      },
-    },
-    {
-      name: '@electron-forge/maker-zip',
-      config: {
-        icon: './assets/icon.png',
-        name: 'AIConsole',
-        options: {},
       },
     },
     {

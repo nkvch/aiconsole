@@ -15,6 +15,8 @@
 # limitations under the License.
 
 
+from collections import defaultdict
+
 from aiconsole.core.code_running.code_interpreters.base_code_interpreter import (
     BaseCodeInterpreter,
 )
@@ -23,23 +25,34 @@ from aiconsole.core.code_running.code_interpreters.language_map import language_
 code_interpreters = {}
 
 
-def get_code_interpreter(language) -> BaseCodeInterpreter:
-    if language not in code_interpreters:
-        # Case in-sensitive
-        language = language.lower()
+def get_code_interpreter(language: str, chat_id: str) -> BaseCodeInterpreter:
+    language = language.lower()
 
-        try:
-            code_interpreters[language] = language_map[language]()
-        except KeyError:
-            raise ValueError(f"Unknown or unsupported language: {language}")
+    if language not in language_map:
+        raise ValueError(f"Unknown or unsupported language: {language}")
 
-    return code_interpreters[language]
+    if chat_id not in code_interpreters:
+        code_interpreters[chat_id] = {}
+    if language not in code_interpreters[chat_id]:
+        code_interpreters[chat_id][language] = language_map[language]()
+    return code_interpreters[chat_id][language]
 
 
-def reset_code_interpreters():
+def reset_code_interpreters(chat_id: str | None = None):
     global code_interpreters
 
-    for code_interpreter in code_interpreters.values():
+    interpreters = []
+    if chat_id is not None:
+        if chat_id in code_interpreters:
+            interpreters = code_interpreters[chat_id].values()
+    else:
+        for chat_interpreters in code_interpreters.values():
+            for interpreter in chat_interpreters.values():
+                interpreters.append(interpreter)
+    for code_interpreter in interpreters:
         code_interpreter.terminate()
 
-    code_interpreters = {}
+    if chat_id is not None and chat_id in code_interpreters:
+        code_interpreters[chat_id] = {}
+    else:
+        code_interpreters = {}

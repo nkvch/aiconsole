@@ -48,8 +48,8 @@ export type ErrorServerMessage = z.infer<typeof ErrorServerMessageSchema>;
 
 export const InitialProjectStatusServerMessageSchema = BaseServerMessageSchema.extend({
   type: z.literal('InitialProjectStatusServerMessage'),
-  project_name: z.string().optional(),
-  project_path: z.string().optional(),
+  project_name: z.string().optional().nullable(),
+  project_path: z.string().optional().nullable(),
 });
 
 export type InitialProjectStatusServerMessage = z.infer<typeof InitialProjectStatusServerMessageSchema>;
@@ -106,7 +106,20 @@ export const ChatOpenedServerMessageSchema = BaseServerMessageSchema.extend({
 
 export type ChatOpenedServerMessage = z.infer<typeof ChatOpenedServerMessageSchema>;
 
-export const ServerMessageSchema = z.union([
+export const ResponseServerMessageSchema = BaseServerMessageSchema.extend({
+  request_id: z.string(),
+  is_error: z.boolean(),
+  payload: z.object({
+    project_name: z.string(),
+    project_path: z.string(),
+    chat_id: z.string(),
+  }),
+  type: z.literal('ResponseServerMessage'),
+});
+
+export type ResponseServerMessage = z.infer<typeof ResponseServerMessageSchema>;
+
+export const ServerMessageSchema = z.discriminatedUnion('type', [
   NotificationServerMessageSchema,
   DebugJSONServerMessageSchema,
   ErrorServerMessageSchema,
@@ -118,6 +131,7 @@ export const ServerMessageSchema = z.union([
   SettingsServerMessageSchema,
   NotifyAboutChatMutationServerMessageSchema,
   ChatOpenedServerMessageSchema,
+  ResponseServerMessageSchema,
 ]);
 
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;

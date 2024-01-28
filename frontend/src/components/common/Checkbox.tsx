@@ -14,25 +14,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { FC } from 'react';
-import { Check } from 'lucide-react';
+import { useChatStore } from '@/store/editables/chat/useChatStore';
 import * as ReactCheckbox from '@radix-ui/react-checkbox';
+import { Check } from 'lucide-react';
+import { FC } from 'react';
 
 type CheckboxProps = {
   checked: boolean;
   id: string;
+  disabled?: boolean;
   onChange: (checked: boolean) => void;
 };
 
 const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange }) => {
   const handleCheckedChange = (isChecked: ReactCheckbox.CheckedState) => onChange(isChecked === true);
+  const isChatLoading = useChatStore((state) => state.isChatLoading);
 
   return (
     <ReactCheckbox.Root
-      className="hover:bg-violet3 flex h-[24px] w-[24px] appearance-none items-center justify-center rounded-[4px] bg-transparent outline outline-1 outline-gray-500 m-[1px] text-white focus:outline-gray-400 hover:outline-gray-400"
+      className="hover:bg-violet3 flex h-[24px] w-[24px] appearance-none items-center justify-center rounded-[4px] bg-transparent outline outline-1 outline-gray-500 m-[1px] text-white focus:outline-gray-400 hover:outline-gray-400 disabled:hover:outline-gray-500"
       checked={checked}
       id={id}
       onCheckedChange={handleCheckedChange}
+      disabled={isChatLoading}
     >
       <ReactCheckbox.Indicator>
         <Check />

@@ -23,6 +23,7 @@ import { EmptyChat } from '@/components/editables/chat/EmptyChat';
 import { MessageGroup } from '@/components/editables/chat/MessageGroup';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { useProjectStore } from '@/store/projects/useProjectStore';
 import { Chat } from '@/types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
@@ -86,6 +87,7 @@ export function ChatPage() {
   const loadingMessages = useChatStore((state) => state.loadingMessages);
   const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
+  const initChatHistory = useEditablesStore((state) => state.initChatHistory);
   const submitCommand = useChatStore((state) => state.submitCommand);
   const stopWork = useChatStore((state) => state.stopWork);
   const newCommand = useChatStore((state) => state.newCommand);
@@ -95,10 +97,9 @@ export function ChatPage() {
   const menuItems = useEditableObjectContextMenu({ editable: chat, editableObjectType: 'chat' });
   const renameChat = useChatStore((state) => state.renameChat);
   const setChat = useChatStore((state) => state.setChat);
-  const commandInputs = useChatStore((state) => state.commandHistory);
-  const isCommandInputEmpty = commandInputs && commandInputs[commandInputs.length - 1].length === 0;
+  const hasAnyCommandInput = command.trim() !== '';
   const setCommand = useChatStore((state) => state.editCommand);
-  const blocker = useBlocker(!isCommandInputEmpty);
+  const blocker = useBlocker(hasAnyCommandInput);
 
   const { reset, proceed, state: blockerState } = blocker || {};
 
@@ -170,6 +171,14 @@ export function ChatPage() {
     };
   }, [chat?.id, stopWork]); //Initentional trigger when chat_id changes
 
+  const isProcessesAreNotRunning = !isExecutionRunning && !isAnalysisRunning;
+
+  useEffect(() => {
+    if (hasAnyCommandInput || chat?.message_groups.length === 0) {
+      initChatHistory();
+    }
+  }, [chat?.message_groups.length, hasAnyCommandInput, initChatHistory]);
+
   if (!chat) {
     return (
       <div className="flex flex-1 justify-center items-center">
@@ -191,9 +200,6 @@ export function ChatPage() {
       });
     }
   };
-
-  const isProcessesAreNotRunning = !isExecutionRunning && !isAnalysisRunning;
-  const hasAnyCommandInput = command.trim() !== '';
 
   const getActionButton = () => {
     if (hasAnyCommandInput || chat.message_groups.length === 0) {

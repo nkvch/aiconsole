@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from pathlib import Path
 
 # this is a path to the root of the project - usually the installed one
@@ -31,9 +32,17 @@ DIR_WITH_AICONSOLE_PACKAGE = Path(__file__).parent.parent
 
 
 def AICONSOLE_USER_CONFIG_DIR() -> Path:
+    # WARNING: care with 3rd party imports, we have code that imports this file withot installing 3rd party packages
     from platformdirs import user_config_dir
 
-    return Path(user_config_dir(APPLICATION_NAME))
+    # windows path fix, no author in the path
+    windows_path_issue = Path(user_config_dir()) / APPLICATION_NAME
+    if windows_path_issue.exists():
+        return windows_path_issue
+
+    path = Path(user_config_dir(APPLICATION_NAME))
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 HISTORY_LIMIT: int = 1000
@@ -47,24 +56,36 @@ MAX_RECENT_PROJECTS = 8
 
 LOG_FORMAT: str = "{name} {funcName} {message}"
 LOG_STYLE: str = "{"
-LOG_LEVEL: str = "DEBUG"
-LOG_HANDLERS: list[str] = ["consoleHandler"]
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+
+if LOG_LEVEL == "DEBUG":
+    LOG_HANDLERS: list[str] = ["developmentHandler"]
+else:
+    LOG_HANDLERS: list[str] = ["defaultHandler"]
 
 log_config = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "console": {
+        "rich": {
             "()": "logging.Formatter",
             "fmt": LOG_FORMAT,
+            "datefmt": "%H:%M:%S ",
             "style": LOG_STYLE,
-        }
+        },
+        "default": {"()": "logging.Formatter", "fmt": "{asctime} [{levelname}] {name}: {message}", "style": "{"},
     },
     "handlers": {
-        "consoleHandler": {
-            "formatter": "console",
+        "developmentHandler": {
+            "formatter": "rich",
             "class": "rich.logging.RichHandler",
             "rich_tracebacks": True,
+        },
+        "defaultHandler": {
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "level": "INFO",
         },
     },
     "loggers": {

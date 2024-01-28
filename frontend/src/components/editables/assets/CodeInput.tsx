@@ -14,15 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Editor from 'react-simple-code-editor';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/vs2015.css';
+import Editor from 'react-simple-code-editor';
 
-import { cn } from '@/utils/common/cn';
-import { FocusEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Icon } from '@/components/common/icons/Icon';
+import { cn } from '@/utils/common/cn';
+import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Maximize2, Minimize2 } from 'lucide-react';
+import { FocusEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
 
 const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
@@ -32,6 +32,7 @@ interface CodeInputProps {
   label?: string;
   value: string;
   labelContent?: ReactNode;
+  labelSize?: 'sm' | 'md';
   className?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
@@ -59,6 +60,7 @@ export function CodeInput({
   maxHeight = DEFAULT_MAX_HEIGHT,
   minHeight = DEFAULT_MIN_HEIGHT,
   labelContent,
+  labelSize = 'sm',
   focused,
   withFullscreen,
   fullHeight = false,
@@ -158,8 +160,14 @@ export function CodeInput({
   const codeInputCore = (fullScreen: boolean) => (
     <div className={cn('relative', { 'h-full': fullHeight })}>
       {label && (fullScreen || !withFullscreen) && (
-        <div className="font-semibold text-white mb-[10px] flex ">
-          <label htmlFor={label} className="py-[12px]">
+        <div className="mb-[10px] flex">
+          <label
+            htmlFor={label}
+            className={cn('py-3 mb-[10px] flex', {
+              'text-gray-300 text-sm': labelSize === 'sm',
+              'text-white text-[15px]': labelSize === 'md',
+            })}
+          >
             {label}
           </label>{' '}
           {labelContent}

@@ -42,12 +42,13 @@ def _get_document(file_path: Path) -> tomlkit.TOMLDocument:
     if not file_path.exists():
         return tomlkit.document()
 
-    with file_path.open("r") as file:
+    with file_path.open("r", encoding="utf8", errors="replace") as file:
         return tomlkit.loads(file.read())
 
 
 def _update_document(document: tomlkit.TOMLDocument, settings_data: PartialSettingsData):
-    for key, value in settings_data.model_dump(exclude_none=True).items():
+    settings_data_dump = settings_data.model_dump(exclude_none=True)
+    for key, value in settings_data_dump.items():
         if value is None:
             continue
 
@@ -55,7 +56,7 @@ def _update_document(document: tomlkit.TOMLDocument, settings_data: PartialSetti
 
         if isinstance(item, tomlkit.items.Table) and isinstance(value, dict):
             item.update(value)
-        if isinstance(item, tomlkit.items.Array) and isinstance(value, list):
+        elif isinstance(item, tomlkit.items.Array) and isinstance(value, list):
             item.extend(value)
         else:
             document[key] = value
@@ -63,5 +64,5 @@ def _update_document(document: tomlkit.TOMLDocument, settings_data: PartialSetti
 
 def _write_document(file_path: Path, document: tomlkit.TOMLDocument):
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    with file_path.open("w") as file:
+    with file_path.open("w", encoding="utf8", errors="replace") as file:
         file.write(document.as_string())

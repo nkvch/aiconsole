@@ -1,8 +1,8 @@
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
+import { useSettingsStore } from '@/store/settings/useSettingsStore';
 import { useAPIStore } from '@/store/useAPIStore';
 import { cn } from '@/utils/common/cn';
-import ky from 'ky';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface ActorAvatarProps {
   agentId: string;
@@ -31,48 +31,20 @@ export function ActorAvatar({ agentId, title, type, className }: ActorAvatarProp
 }
 
 interface UserAvatarProps {
-  email?: string;
   title?: string;
   type: 'large' | 'small' | 'extraSmall';
   className?: string;
 }
 
-interface AvatarResponse {
-  avatar_url: string;
-  username: string;
-}
-
-const avatarCache = new Map();
-
-export function UserAvatar({ email, title, type, className }: UserAvatarProps) {
+export function UserAvatar({ title, type, className }: UserAvatarProps) {
+  const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl) || undefined;
   const [avatarURL, setAvatarURL] = useState('');
   const getBaseURL = useAPIStore((state) => state.getBaseURL);
-
-  useEffect(() => {
-    const fetchAvatar = async () => {
-      if (email && avatarCache.has(email)) {
-        setAvatarURL(avatarCache.get(email));
-        return;
-      }
-      try {
-        const response = await ky
-          .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined })
-          .json<AvatarResponse>();
-        response.avatar_url = `${getBaseURL()}/${response.avatar_url}`;
-        avatarCache.set(email, response.avatar_url);
-        setAvatarURL(response.avatar_url);
-      } catch (error) {
-        console.error('Error fetching avatar URL:', error);
-      }
-    };
-
-    fetchAvatar();
-  }, [email, getBaseURL]);
 
   return (
     <img
       title={title}
-      src={avatarURL}
+      src={userAvatarUrl}
       className={cn(className, 'rounded-full mb-[10px] mt-[5px] border border-slate-800', {
         'w-20 h-20 ': type === 'large',
         'w-16 h-16': type === 'small',

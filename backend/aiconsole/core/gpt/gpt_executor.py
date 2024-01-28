@@ -32,8 +32,7 @@ from .types import CLEAR_STR, CLEAR_STR_TYPE, GPTChoice, GPTResponse, GPTRespons
 _log = logging.getLogger(__name__)
 
 
-litellm.cache = Cache()
-litellm.cache.cache
+litellm.cache = Cache(type="local")
 litellm.set_verbose = False
 
 
@@ -71,11 +70,7 @@ class GPTExecutor:
             try:
                 _log.info("Executing GPT request:", request_dict)
                 self.request = request_dict
-                response = await litellm.acompletion(
-                    **request_dict,
-                    stream=True,
-                    # caching=True,
-                )
+                response = await litellm.acompletion(**request_dict, stream=True, caching=True, ttl=60 * 60 * 24)
 
                 self.partial_response = GPTPartialResponse()
 

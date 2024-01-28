@@ -28,6 +28,7 @@ import ky from 'ky';
 import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 import { useWebSocketStore } from '../ws/useWebSocketStore';
 import { ChatOpenedServerMessage, ServerMessage } from '../ws/serverMessages';
+import { v4 as uuidv4 } from 'uuid';
 
 const previewMaterial: (material: Material) => Promise<RenderedMaterial> = async (material: Material) =>
   ky
@@ -65,7 +66,7 @@ async function fetchEditableObject<T extends EditableObject>({
   if (editableObjectType === 'chat') {
     const response: ChatOpenedServerMessage = (await useWebSocketStore
       .getState()
-      .sendMessageAndWaitForResponse({ type: 'OpenChatClientMessage', chat_id: id }, (response: ServerMessage) => {
+      .sendMessageAndWaitForResponse({ type: 'OpenChatClientMessage', chat_id: id, request_id: uuidv4() }, (response: ServerMessage) => {
         if (response.type === 'ChatOpenedServerMessage') {
           return response.chat.id === id;
         } else {
@@ -89,6 +90,7 @@ async function closeChat(id: string): Promise<ServerMessage> {
     {
       type: 'CloseChatClientMessage',
       chat_id: id,
+      request_id: uuidv4()
     },
     (response: ServerMessage) => {
       return response.type === 'NotifyAboutChatMutationServerMessage';
@@ -168,6 +170,10 @@ async function getPathForEditableObject(editableObjectType: EditableObjectType, 
   ).path;
 }
 
+async function setAgentAvatar(agentId: string, avatar: FormData) {
+  return ky.post(`${getBaseURL()}/api/agents/${agentId}/avatar`, { body: avatar, hooks: API_HOOKS });
+}
+
 export const EditablesAPI = {
   deleteEditableObject,
   fetchEditableObjects,
@@ -179,4 +185,5 @@ export const EditablesAPI = {
   updateEditableObject,
   getPathForEditableObject,
   closeChat,
+  setAgentAvatar,
 };

@@ -63,18 +63,22 @@ The only module you can safelly access is aiconsole_toolkit, it's built with run
 
 - [x] Initial PIP release
 - [x] Switch to GPT-4 Turbo
-- [ ] Release of the desktop app for MacOS, Windows and Linux
+- [x] Release of the desktop app for MacOS, Windows and Linux
 - [ ] Integrating GPT-V
-- [ ] Integrating Dalle-3
-- [ ] IDE like experience
+- [x] Integrating Dalle-3
+- [x] IDE like experience
 - [ ] Handling of non-text materials and files (pdfs etc)
 - [ ] Better materials and integrations with various tools
 - [ ] Alternative interface to chat for working on a body of text
 - [ ] Ability to run on Azure OpenAI Models
-- [ ] Ability to run on other models than OpenAI
+- [x] Ability to run on other models than OpenAI
 - [ ] Using AI to modify materials
 - [ ] Generative UI
 - [ ] Web Hosted SaaS like version
+
+# Tracking
+
+We use [Sentry](https://sentry.io) for tracking errors in our production releases and [Aptabase](https://aptabase.com/) for analytics.
 
 # Contributing
 
@@ -102,8 +106,12 @@ In order to run the non electron development version of AIConsole:
 3. To publish the desktop app: `cd electron && yarn && yarn publish`
 
 # Running tests
+
 1. To run the tests you have to go to the backend folder: `cd backend`
 2. Run the tests: `poetry run pytest .`
+
+There are also tests, which are currently skipped in out pytest settings.
+To run them, please execute each test file separately, for example: `poetry run pytest aiconsole/tests/test_factorial_of_number.py`
 
 # License
 

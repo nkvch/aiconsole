@@ -20,7 +20,7 @@ class MissingFileName(Exception):
 class UserProfileService:
     def get_profile(self, email: str | None = None) -> UserProfile:
         user_profile = settings().unified_settings.user_profile
-        return UserProfile(
+        return user_profile or UserProfile(
             display_name=user_profile.display_name or DEFAULT_USERNAME, profile_picture=user_profile.profile_picture
         )
 

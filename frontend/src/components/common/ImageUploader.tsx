@@ -1,6 +1,6 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-import { Loader, Plus, Shapes, Trash, Upload } from 'lucide-react';
+import { Loader, Plus, Upload } from 'lucide-react';
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';
@@ -37,9 +37,10 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     }
   };
 
-  const removeImage = () => {
-    setPreviewImage(null);
-  };
+  // TODO: Implement when backend is ready
+  // const removeImage = () => {
+  //   setPreviewImage(null);
+  // };
 
   const handleUploadButtonClick = () => {
     if (fileInputRef.current) {
@@ -50,16 +51,21 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   const triggerRef = useRef<ContextMenuRef>(null);
 
   const openContextMenu = (event: MouseEvent) => {
-    if (triggerRef.current) {
-      triggerRef?.current.handleTriggerClick(event);
+    if (event.type === 'contextmenu') {
+      event.preventDefault();
+      if (triggerRef.current) {
+        triggerRef.current.handleTriggerClick(event);
+      }
     }
-
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+    if (event.type === 'click') {
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
     }
   };
 
-  const generateWithAi = () => {};
+  // TODO: Implement when backend is ready
+  // const generateWithAi = () => {};
 
   const menuItems: ContextMenuItems = [
     {
@@ -69,25 +75,25 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
       title: `Upload ${previewImage ? 'new' : ''} photo`,
       action: handleUploadButtonClick,
     },
-    {
-      type: 'item',
-      key: 'Generate with AI',
-      icon: Shapes,
-      title: 'Generate with AI',
-      action: generateWithAi,
-    },
-    { type: 'separator', key: 'delete-separator', hidden: !previewImage },
-    {
-      type: 'item',
-      icon: Trash,
-      title: 'Delete',
-      hidden: !previewImage,
-      action: removeImage,
-    },
+    // {
+    //   type: 'item',
+    //   key: 'Generate with AI',
+    //   icon: Shapes,
+    //   title: 'Generate with AI',
+    //   action: generateWithAi,
+    // },
+    // { type: 'separator', key: 'delete-separator', hidden: !previewImage },
+    // {
+    //   type: 'item',
+    //   icon: Trash,
+    //   title: 'Delete',
+    //   hidden: !previewImage,
+    //   action: removeImage,
+    // },
   ];
 
   return (
-    <div className="border border-gray-600 rounded-[12px] px-[20px] py-[15px] flex flex-col items-center gap-[10px] w-fit min-w-[160px]">
+    <div className="border border-gray-600 rounded-[12px] px-[20px] py-[15px] flex flex-col items-center gap-[10px] w-fit min-w-[160px] bg-gray-900">
       <input
         type="file"
         accept="image/*"
@@ -96,7 +102,7 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
         id="imageInput"
         ref={fileInputRef}
       />
-      <p className="text-[16px] text-white text-center">Avatar</p>
+      <p className="text-[15px] text-white text-center">Avatar</p>
       <div className="mt-[15px]">
         <ContextMenu options={menuItems} ref={triggerRef} triggerClassName="ml-auto">
           <div

@@ -18,6 +18,7 @@ export type RecentProject = {
   name: string;
   path: string;
   recent_chats: string[];
+  incorrect_path: boolean;
   stats: {
     agents: { count: number; agent_ids: string[] };
     chats_count: number;

@@ -16,23 +16,29 @@
 
 import { StateCreator } from 'zustand';
 
-import { Chat } from '@/types/editables/chatTypes';
-import { ChatStore } from './useChatStore';
-import { useEditablesStore } from '../useEditablesStore';
 import { EditablesAPI } from '@/api/api/EditablesAPI';
+import { Chat } from '@/types/editables/chatTypes';
+import { useEditablesStore } from '../useEditablesStore';
+import { ChatStore } from './useChatStore';
 
 export type ChatSlice = {
   chat?: Chat;
   lastUsedChat?: Chat;
+  isChatLoading: boolean;
+  isChatOptionsExpanded: boolean;
   setLastUsedChat: (chat: Chat) => void;
   setChat: (chat: Chat) => void;
   renameChat: (newChat: Chat) => Promise<void>;
+  setIsChatLoading: (isLoading: boolean) => void;
+  setIsChatOptionsExpanded: (isExpanded: boolean) => void;
 };
 
 export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set, get) => ({
+  isChatLoading: false,
   chat: undefined,
   agent: undefined,
   lastUsedChat: undefined,
+  isChatOptionsExpanded: true,
   materials: [],
   setLastUsedChat: (chat: Chat) => {
     set({ lastUsedChat: chat });
@@ -46,5 +52,11 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
 
     //If it's chat we need to reload chat history because there is no autoreload on change for chats
     useEditablesStore.getState().initChatHistory();
+  },
+  setIsChatLoading: (isLoading: boolean) => {
+    set({ isChatLoading: isLoading });
+  },
+  setIsChatOptionsExpanded: (isExpanded: boolean) => {
+    set({ isChatOptionsExpanded: isExpanded });
   },
 });

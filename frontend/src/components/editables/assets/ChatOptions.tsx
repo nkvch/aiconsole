@@ -14,14 +14,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useEffect, useState } from 'react';
-import { ArrowDownLeftSquare, ArrowUpRightSquare, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useDebounceCallback } from '@mantine/hooks';
-import { Content, DropdownMenu, Item, Trigger } from '@radix-ui/react-dropdown-menu';
 import * as Collapsible from '@radix-ui/react-collapsible';
+import { Content, DropdownMenu, Item, Trigger } from '@radix-ui/react-dropdown-menu';
+import { ArrowDownLeftSquare, ArrowUpRightSquare, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { Icon } from '@/components/common/icons/Icon';
 import Checkbox from '@/components/common/Checkbox';
+import { Icon } from '@/components/common/icons/Icon';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { Agent, Material } from '@/types/editables/assetTypes';
@@ -35,12 +35,14 @@ const ChatOptions = () => {
   const chat = useChatStore((state) => state.chat);
   const agents = useEditablesStore((state) => state.agents);
   const materials = useEditablesStore((state) => state.materials);
+  const isChatLoading = useChatStore((state) => state.isChatLoading);
+  const isChatOptionsExpanded = useChatStore((state) => state.isChatOptionsExpanded);
+  const setIsChatOptionsExpanded = useChatStore((state) => state.setIsChatOptionsExpanded);
 
   const [materialsOptions, setMaterialsOptions] = useState<Material[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('aiChoice');
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
   const [allowExtraMaterials, setAllowExtraMaterials] = useState<boolean>(false);
-  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     // TODO: set options from chat
@@ -75,14 +77,18 @@ const ChatOptions = () => {
     setMaterialsOptions(materials as Material[]);
   }, [materials]);
 
+  if (!chat && !isChatLoading) {
+    return;
+  }
+
   return (
     <div className="text-gray-300 flex flex-col gap-5 flex-1">
-      <Collapsible.Root open={open} onOpenChange={setOpen}>
+      <Collapsible.Root open={isChatOptionsExpanded} onOpenChange={setIsChatOptionsExpanded}>
         <Collapsible.Trigger className="w-full pt-5">
           <div className="w-full flex justify-between group h-6 transition ease-in-out">
             <h3 className="text-sm">Chat options</h3>
             <div className="hidden group-hover:block">
-              {open ? (
+              {isChatOptionsExpanded ? (
                 <ArrowDownLeftSquare className="stroke-[1.2]" />
               ) : (
                 <ArrowUpRightSquare className="stroke-[1.2]" />
@@ -116,7 +122,12 @@ const ChatOptions = () => {
             </div>
 
             <div className="flex items-center gap-2.5 mt-auto">
-              <Checkbox id="extraMaterials" checked={allowExtraMaterials} onChange={setAllowExtraMaterials} />
+              <Checkbox
+                id="extraMaterials"
+                checked={allowExtraMaterials}
+                onChange={setAllowExtraMaterials}
+                disabled={isChatLoading}
+              />
               <label htmlFor="extraMaterials" className="text-sm">
                 Let AI add extra materials
               </label>
@@ -150,13 +161,14 @@ type AgentsDropdownProps = {
 
 const AgentsDropdown = ({ agents, selectedAgent, onSelect }: AgentsDropdownProps) => {
   const [opened, setOpened] = useState<boolean>(false);
+  const isChatLoading = useChatStore((state) => state.isChatLoading);
 
   return (
     <DropdownMenu open={opened} onOpenChange={setOpened}>
-      <Trigger asChild>
+      <Trigger asChild disabled={isChatLoading}>
         <button
           className={cn(
-            'group flex justify-center items-center gap-[12px] rounded-[8px] border border-gray-500 px-[16px] py-[10px] text-gray-300 text-[16px] w-full leading-[23px] hover:border-gray-300 transition duration-200 hover:text-gray-300',
+            'group flex justify-center items-center gap-[12px] rounded-[8px] border border-gray-500 px-[16px] py-[10px] text-gray-300 text-[16px] w-full leading-[23px] hover:border-gray-300 transition duration-200 hover:text-gray-300 disabled:hover:border-gray-500',
             {
               'rounded-b-none bg-gray-700 border-gray-800 text-gray-500': opened,
             },

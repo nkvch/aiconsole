@@ -6,6 +6,9 @@ import { useToastsStore } from '@/store/common/useToastsStore';
 import { ServerMessage } from './serverMessages';
 import { applyMutation } from './chat/applyMutation';
 import { deepCopyChat } from '@/utils/editables/chatUtils';
+import { EditablesAPI } from '../api/EditablesAPI';
+import { Chat } from '@/types/editables/chatTypes';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function handleServerMessage(message: ServerMessage) {
   const showToast = useToastsStore.getState().showToast;
@@ -101,6 +104,15 @@ export async function handleServerMessage(message: ServerMessage) {
         chat: message.chat,
       });
       break;
+    case 'ResponseServerMessage': {
+      if (message.is_error) {
+        EditablesAPI.closeChat(message.payload.chat_id);
+        EditablesAPI.fetchEditableObject<Chat>({ editableObjectType: 'chat', id: uuidv4() }).then((chat) => {
+          useChatStore.getState().setChat(chat);
+        });
+      }
+      break;
+    }
     default:
       console.error('Unknown message type: ', message);
   }

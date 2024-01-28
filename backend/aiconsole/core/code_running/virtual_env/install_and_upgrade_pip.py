@@ -10,13 +10,13 @@ def install_and_update_pip(venv_path):
     venv_path = Path(venv_path)
 
     if platform.system() == "Windows":
-        pip_path = venv_path / "Scripts" / "pip.exe"
+        venv_python_path = venv_path / "Scripts" / "python.exe"
     else:
-        pip_path = venv_path / "bin" / "pip"
+        venv_python_path = venv_path / "bin" / "python"
 
     def run_subprocess(*args):
         process = subprocess.Popen(
-            [str(pip_path), "install", "--upgrade", "pip"],
+            args,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -28,10 +28,10 @@ def install_and_update_pip(venv_path):
 
         return stdout.decode().strip()
 
-    if not pip_path.exists():
+    if not venv_python_path.exists():
         _log.info("Installing pip in the virtual environment.")
-        run_subprocess(str(venv_path / "bin" / "python"), "-m", "ensurepip")
+        run_subprocess(str(venv_python_path), "-m", "ensurepip")
 
     _log.info("Upgrading pip in the virtual environment.")
-    run_subprocess(str(pip_path), "install", "--upgrade", "pip")
+    run_subprocess(str(venv_python_path), "-m", "pip", "install", "--upgrade", "pip")
     return True

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 
+import { EditablesAPI } from '@/api/api/EditablesAPI';
 import { FormGroup } from '@/components/common/FormGroup';
+import { useAssetStore } from '@/store/editables/asset/useAssetStore';
+import { Material, RenderedMaterial } from '@/types/editables/assetTypes';
+import { MarkdownSupported } from '../MarkdownSupported';
 import { CodeEditorLabelContent } from './CodeEditorLabelContent';
 import { CodeInput } from './CodeInput';
 import { TextInput } from './TextInput';
-import { Material, RenderedMaterial } from '@/types/editables/assetTypes';
-import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { useMaterialEditorContent } from './useMaterialEditorContent';
-import { EditablesAPI } from '@/api/api/EditablesAPI';
-import { MarkdownSupported } from '../MarkdownSupported';
 
 interface MaterialFormProps {
   material: Material;
@@ -64,6 +64,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
               labelContent={
                 <CodeEditorLabelContent showPreview={showPreview} onClick={() => setShowPreview((prev) => !prev)} />
               }
+              labelSize="md"
               value={codeEditorSectionContent.value}
               codeLanguage={codeEditorSectionContent.codeLanguage}
               onChange={codeEditorSectionContent.onChange}

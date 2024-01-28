@@ -14,21 +14,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { cn } from '@/utils/common/cn';
-import { Asset, EditableObject, EditableObjectType } from '@/types/editables/assetTypes';
-import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
-import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { EditablesAPI } from '@/api/api/EditablesAPI';
-import { Chat } from '@/types/editables/chatTypes';
-import { MoreVertical } from 'lucide-react';
-import { useAssets } from '@/utils/editables/useAssets';
-import { convertNameToId } from '@/utils/editables/convertNameToId';
+import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Icon } from '@/components/common/icons/Icon';
 import { useToastsStore } from '@/store/common/useToastsStore';
-import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { Asset, EditableObject, EditableObjectType } from '@/types/editables/assetTypes';
+import { Chat } from '@/types/editables/chatTypes';
+import { cn } from '@/utils/common/cn';
+import { convertNameToId } from '@/utils/editables/convertNameToId';
+import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
+import { useAssets } from '@/utils/editables/useAssets';
+import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
+import { MoreVertical } from 'lucide-react';
+import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 const SideBarItem = ({
   editableObjectType,
@@ -41,6 +41,7 @@ const SideBarItem = ({
   const navigate = useNavigate();
 
   const renameChat = useChatStore((state) => state.renameChat);
+  const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isShowingContext, setIsShowingContext] = useState(false);
@@ -147,6 +148,12 @@ const SideBarItem = ({
 
   const triggerRef = useRef<ContextMenuRef>(null);
 
+  const handleLinkClick = () => {
+    if (editableObjectType === 'chat' && editableObject.id !== useChatStore.getState().chat?.id) {
+      setIsChatLoading(true);
+    }
+  };
+
   const handleMoreIconClick = (event: MouseEvent) => {
     event.preventDefault();
     if (triggerRef.current) {
@@ -178,6 +185,7 @@ const SideBarItem = ({
               );
             }}
             to={`/${editableObjectType}s/${editableObject.id}`}
+            onClick={handleLinkClick}
           >
             {({ isActive }) => (
               <>

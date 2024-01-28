@@ -16,13 +16,13 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends, WebSocket, WebSocketDisconnect
 
 from aiconsole.api.websockets.connection_manager import (
     ConnectionManager,
     connection_manager,
 )
-from aiconsole.api.websockets.handle_incoming_message import handle_incoming_message
+from aiconsole.api.websockets.incoming_message_handler import incoming_message_handler
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.project import project
 
@@ -34,7 +34,6 @@ _log = logging.getLogger(__name__)
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    background_tasks: BackgroundTasks,
     connection_manager: ConnectionManager = Depends(connection_manager),
 ):
     connection = await connection_manager.connect(websocket)
@@ -46,7 +45,7 @@ async def websocket_endpoint(
             json_data = await connection.websocket.receive_json()
             _log.debug(f"Received message: {json_data}")
             try:
-                await handle_incoming_message(connection, json_data, background_tasks)
+                await incoming_message_handler.handle_incoming_message(connection, json_data)
             except Exception as e:
                 await connection.send(
                     ErrorServerMessage(error=f"Error handling message: {e} type={e.__class__.__name__}")

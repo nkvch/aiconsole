@@ -3,11 +3,13 @@ import { FormGroup } from '@/components/common/FormGroup';
 import { Select } from '@/components/common/Select';
 import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { Agent, Asset } from '@/types/editables/assetTypes';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CodeInput } from './CodeInput';
 import { HelperLabel } from './HelperLabel';
 import { ErrorObject, TextInput } from './TextInput';
 import { MarkdownSupported } from '../MarkdownSupported';
+import ImageUploader from '@/components/common/ImageUploader';
+import { useAPIStore } from '@/store/useAPIStore';
 
 const executionModes = [
   {
@@ -26,17 +28,29 @@ const executionModes = [
 
 interface AgentFormProps {
   agent: Agent;
+  avatarData: File | null;
+  setAvatarData: React.Dispatch<React.SetStateAction<File | null>>;
+  setIsAvatarOverwritten: React.Dispatch<React.SetStateAction<boolean>>;
   errors?: ErrorObject;
   setErrors?: React.Dispatch<React.SetStateAction<ErrorObject>>;
 }
 
 // TODO: all commented lines are ready UI - integrate it with backend when ready
-export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
+export const AgentForm = ({
+  agent,
+  errors,
+  setErrors,
+  avatarData,
+  setAvatarData,
+  setIsAvatarOverwritten,
+}: AgentFormProps) => {
   const [executionMode, setExecutionMode] = useState('');
   const [customExecutionMode, setCustomExecutionMode] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
   const setSelectedAsset = useAssetStore((state) => state.setSelectedAsset);
   const handleUsageChange = (value: string) => setSelectedAsset({ ...agent, usage: value });
   const setExecutionModeState = (value: string) => setSelectedAsset({ ...agent, execution_mode: value } as Asset);
+  const getBaseURL = useAPIStore((state) => state.getBaseURL);
 
   const isCustomMode = useMemo(() => executionMode === 'custom', [executionMode]);
 
@@ -60,10 +74,21 @@ export const AgentForm = ({ agent, errors, setErrors }: AgentFormProps) => {
       system: value,
     } as Agent);
 
+  const handleSetImage = (avatar: File) => {
+    setAvatarData(avatar);
+    setIsAvatarOverwritten(true);
+  };
+
+  useEffect(() => {
+    // new Date is used to refresh image url
+    const userAgentAvatarUrl = `${getBaseURL()}/api/agents/${agent.id}/image?time=${new Date()}`;
+    setAvatarUrl(userAgentAvatarUrl);
+  }, [getBaseURL, avatarData]);
+
   return (
     <>
       <div className="flex gap-[20px]">
-        {/* <ImageUploader /> */}
+        <ImageUploader currentImage={avatarUrl} onUpload={handleSetImage} />
         <FormGroup className="w-full">
           <TextInput
             label="Usage"

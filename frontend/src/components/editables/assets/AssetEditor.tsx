@@ -17,27 +17,27 @@
 import { useCallback, useEffect, useState } from 'react';
 import { unstable_useBlocker as useBlocker, useNavigate, useParams } from 'react-router-dom';
 
+import AlertDialog from '@/components/common/AlertDialog';
 import { Button } from '@/components/common/Button';
-import { useAssetStore } from '@/store/editables/asset/useAssetStore';
-import { Agent, Asset, AssetType, Material } from '@/types/editables/assetTypes';
-import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
-import { EditablesAPI } from '../../../api/api/EditablesAPI';
-import { useAssetChanged } from '../../../utils/editables/useAssetChanged';
-import { EditorHeader } from '../EditorHeader';
-import { localStorageTyped } from '@/utils/common/localStorage';
-import { usePrevious } from '@mantine/hooks';
-import { useAssets } from '@/utils/editables/useAssets';
-import { CheckCheck, Trash } from 'lucide-react';
 import { Icon } from '@/components/common/icons/Icon';
 import { useToastsStore } from '@/store/common/useToastsStore';
+import { useAssetStore } from '@/store/editables/asset/useAssetStore';
+import { Agent, Asset, AssetType, Material } from '@/types/editables/assetTypes';
+import { cn } from '@/utils/common/cn';
+import { localStorageTyped } from '@/utils/common/localStorage';
+import { useAssets } from '@/utils/editables/useAssets';
+import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
+import { usePrevious } from '@mantine/hooks';
+import { CheckCheck, Trash } from 'lucide-react';
+import { EditablesAPI } from '../../../api/api/EditablesAPI';
+import { useAssetChanged } from '../../../utils/editables/useAssetChanged';
 import { ContextMenu } from '../../common/ContextMenu';
-import AlertDialog from '@/components/common/AlertDialog';
+import { EditorHeader } from '../EditorHeader';
+import { AgentForm } from './AgentForm';
 import { AssetInfoBar, RestoreButton } from './AssetInfoBar';
 import { MaterialForm } from './MaterialForm';
-import { useAssetEditor } from './useAssetEditor';
-import { AgentForm } from './AgentForm';
-import { cn } from '@/utils/common/cn';
 import { ErrorObject, checkErrors } from './TextInput';
+import { useAssetEditor } from './useAssetEditor';
 
 const { setItem } = localStorageTyped<boolean>('isAssetChanged');
 
@@ -60,6 +60,8 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   const [errors, setErrors] = useState<ErrorObject>({
     executionMode: '',
   });
+  const [avatarData, setAvatarData] = useState<File | null>(null);
+  const [isAvatarOverwritten, setIsAvatarOverwritten] = useState(false);
   const asset = useAssetStore((state) => state.selectedAsset);
   const lastSavedAsset = useAssetStore((state) => state.lastSavedSelectedAsset);
   const setLastSavedSelectedAsset = useAssetStore((state) => state.setLastSavedSelectedAsset);
@@ -67,7 +69,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   const showToast = useToastsStore((state) => state.showToast);
 
   const navigate = useNavigate();
-  const isAssetChanged = useAssetChanged();
+  const isAssetChanged = useAssetChanged(isAvatarOverwritten);
   const blocker = useBlocker(isAssetChanged);
   const isPrevAssetChanged = usePrevious(isAssetChanged);
   const { updateStatusIfNecessary, isAssetStatusChanged, renameAsset } = useAssets(assetType);
@@ -185,15 +187,27 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
       setSelectedAsset(newAsset);
       useAssetStore.setState({ lastSavedSelectedAsset: newAsset });
     }
+
+    let avatarFormData: FormData | null = null;
+
+    if (isAvatarOverwritten && avatarData) {
+      avatarFormData = new FormData();
+      avatarFormData.append('avatar', avatarData);
+      await EditablesAPI.setAgentAvatar(asset.id, avatarFormData);
+      setIsAvatarOverwritten(false);
+    }
   }, [
     asset,
-    editableObjectType,
-    isAssetChanged,
     lastSavedAsset,
-    setSelectedAsset,
+    isAvatarOverwritten,
+    avatarData,
+    editableObjectType,
     updateStatusIfNecessary,
-    renameAsset,
     showToast,
+    assetType,
+    renameAsset,
+    isAssetChanged,
+    setSelectedAsset,
   ]);
 
   const getSubmitButtonLabel = useCallback((): SubmitButtonLabels => {
@@ -275,11 +289,18 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
               />
             )}
             {asset && (
-              <div className="flex-grow flex flex-col overflow-auto h-full px-[60px] py-[40px] pt-[90px] gap-5">
+              <div className="flex-grow flex flex-col overflow-auto h-full px-[60px] py-10 gap-5">
                 {assetType === 'material' ? (
                   <MaterialForm material={asset as Material} />
                 ) : (
-                  <AgentForm agent={asset as Agent} setErrors={setErrors} errors={errors} />
+                  <AgentForm
+                    agent={asset as Agent}
+                    setErrors={setErrors}
+                    errors={errors}
+                    avatarData={avatarData}
+                    setAvatarData={setAvatarData}
+                    setIsAvatarOverwritten={setIsAvatarOverwritten}
+                  />
                 )}
                 <div className="flex items-center justify-between w-full gap-[10px]">
                   {isProjectAsset ? (
