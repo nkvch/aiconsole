@@ -61,13 +61,13 @@ class ConnectionManager:
         _log.info("Disconnected")
 
     async def send_to_chat(
-        self, message: BaseServerMessage, chat_id: str, except_connection: AICConnection | None = None
+        self, message: "BaseServerMessage", chat_id: str, except_connection: AICConnection | None = None
     ):
         for connection in self.active_connections:
             if chat_id in connection.open_chats_ids and except_connection != connection:
                 await connection.send(message)
 
-    async def send_to_all(self, message: BaseServerMessage):
+    async def send_to_all(self, message: "BaseServerMessage"):
         for connection in self.active_connections:
             await connection.send(message)
 
