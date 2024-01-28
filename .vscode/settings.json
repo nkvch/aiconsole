@@ -2,7 +2,9 @@
   "python.analysis.typeCheckingMode": "basic",
   "flake8.args": [
     "--config",
-    "backend/pyproject.toml"
+    "backend/pyproject.toml",
+    "--max-line-length",
+    "119"
   ],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,

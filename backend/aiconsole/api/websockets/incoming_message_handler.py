@@ -243,7 +243,7 @@ class IncomingMessageHandler:
             if tool_call_location is None:
                 raise Exception(f"Tool call with id {message.tool_call_id} not found")
 
-            agent_id = tool_call_location.message_group.agent_id
+            agent_id = tool_call_location.message_group.actor_id
 
             agent = project.get_project_agents().get_asset(agent_id)
 
