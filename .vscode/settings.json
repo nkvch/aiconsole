@@ -27,15 +27,18 @@
       "source.organizeImports": "explicit"
     }
   },
-  "isort.args": ["--settings-file", "backend/pyproject.toml", "--profile", "black"],
+  "isort.args": [
+    "--settings-file",
+    "backend/pyproject.toml",
+    "--profile",
+    "black"
+  ],
   "isort.importStrategy": "fromEnvironment",
   "black-formatter.args": ["--line-length", "119"],
   "python.analysis.exclude": [
     "./electron/python/**",
     "./electron/node_modules/**"
   ],
-  "mypy-type-checker.args": [
-    "--check-untyped-defs"
-  ],
+  "mypy-type-checker.args": ["--check-untyped-defs"],
   "mypy-type-checker.reportingScope": "workspace"
 }
