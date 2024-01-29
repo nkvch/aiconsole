@@ -1,5 +1,6 @@
 import { Chat, getMessageGroup, getMessageLocation, getToolCallLocation } from '@/types/editables/chatTypes';
 import { ChatMutation } from '@/api/ws/chat/chatMutations';
+import { bufferMessage } from '../messageBuffer';
 
 /**
  * KEEEP THIS IN SYNC WITH BACKEND apply_mutation!
@@ -90,9 +91,11 @@ export function applyMutation(chat: Chat, mutation: ChatMutation) {
     case 'SetContentMessageMutation':
       getMessageLocation(chat, mutation.message_id).message.content = mutation.content;
       break;
-    case 'AppendToContentMessageMutation':
-      getMessageLocation(chat, mutation.message_id).message.content += mutation.content_delta;
+    case 'AppendToContentMessageMutation': {
+      const buffer = bufferMessage(getMessageLocation(chat, mutation.message_id).message.content);
+      getMessageLocation(chat, mutation.message_id).message.content = buffer(mutation.content_delta);
       break;
+    }
     case 'SetIsStreamingMessageMutation':
       getMessageLocation(chat, mutation.message_id).message.is_streaming = mutation.is_streaming;
       break;
