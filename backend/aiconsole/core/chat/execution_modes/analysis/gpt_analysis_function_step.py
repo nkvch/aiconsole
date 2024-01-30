@@ -77,10 +77,10 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
             override=False,
         )
     else:
-        picked_agent = next(
-            (agent for agent in available_agents if agent.id == arguments.actor_id),
-            None,
-        )
+        try:
+            picked_agent = next((agent for agent in available_agents if agent.id == arguments.actor_id))
+        except StopIteration:
+            picked_agent = None
 
     _log.debug(f"Chosen agent: {picked_agent}")
 

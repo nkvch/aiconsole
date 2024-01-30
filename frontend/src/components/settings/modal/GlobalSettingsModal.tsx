@@ -195,9 +195,9 @@ export const GlobalSettingsModal = () => {
         <Content asChild className="fixed" onEscapeKeyDown={handleModalClose}>
           <div className="w-full h-[100vh] z-[98] top-0 left-0 right-0 bg-gray-900">
             <TopGradient />
-            <div className="flex justify-between items-center px-[30px] py-[26px] relative z-10">
-              <img src={`favicon.svg`} className="h-[48px] w-[48px] cursor-pointer filter" />
-              <h3 className="text-gray-400 text-[14px] leading-[21px]">AIConsole settings</h3>
+            <div className="flex justify-between items-center px-[20px] py-[7px] relative z-10 border-gray-600 border-b h-[80px] min-h-[80px]">
+              <img src="favicon.png" className="shadows-lg h-[36px] w-[36px]" alt="Logo" />
+              <h3 className="text-gray-400 text-[15px] leading-[24px]">AIConsole settings</h3>
               <Button variant="secondary" onClick={handleModalClose} small>
                 <Icon icon={X} />
                 Close

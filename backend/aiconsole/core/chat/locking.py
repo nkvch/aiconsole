@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections import defaultdict
 
 from fastapi import HTTPException
@@ -25,8 +26,6 @@ chats: dict[str, Chat] = {}
 lock_events: dict[str, asyncio.Event] = defaultdict(asyncio.Event)
 
 lock_timeout = 30  # Time in seconds to wait for the lock
-
-import logging
 
 _log = logging.getLogger(__name__)
 

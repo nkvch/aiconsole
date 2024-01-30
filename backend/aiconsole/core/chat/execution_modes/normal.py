@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import cast
 from uuid import uuid4
 
+from litellm import ModelResponse  # type: ignore
 from litellm.utils import StreamingChoices  # type: ignore
 
 from aiconsole.core.assets.agents.agent import Agent
@@ -122,21 +123,24 @@ async def execution_mode_process(
         )
     )
     try:
-        async for chunk in gpt_executor.execute(
-            GPTRequest(
-                messages=convert_messages(context.chat_mutator.chat),
-                gpt_mode=context.agent.gpt_mode,
-                system_message=create_full_prompt_with_materials(
-                    intro=get_agent_system_message(context.agent),
-                    materials=context.rendered_materials,
-                ),
-                min_tokens=250,
-                preferred_tokens=2000,
+        async for chunk_or_clear in aiter(
+            gpt_executor.execute(
+                GPTRequest(
+                    messages=convert_messages(context.chat_mutator.chat),
+                    gpt_mode=context.agent.gpt_mode,
+                    system_message=create_full_prompt_with_materials(
+                        intro=get_agent_system_message(context.agent),
+                        materials=context.rendered_materials,
+                    ),
+                    min_tokens=250,
+                    preferred_tokens=2000,
+                )
             )
         ):
-            if chunk == CLEAR_STR:
+            if chunk_or_clear == CLEAR_STR:
                 await context.chat_mutator.mutate(SetContentMessageMutation(message_id=message_id, content=""))
             else:
+                chunk: ModelResponse = chunk_or_clear
                 choices = cast(list[StreamingChoices], chunk.choices)
 
                 await context.chat_mutator.mutate(

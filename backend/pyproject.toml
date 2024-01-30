@@ -34,11 +34,13 @@ types-requests = "^2.31.0.20240106"
 types-setuptools = "^69.0.0.20240106"
 platformdirs = "^4.1.0"
 pytest-repeat = "^0.9.3"
+types-send2trash = "^1.8.2.7"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"
 black = "^23.12.1"
 ipdb = "^0.13.13"
+flake8 = "^7.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.4"
@@ -49,9 +51,6 @@ line-length = 119
 
 [tool.black]
 line-length = 119
-
-[tool.flake8]
-max-line-length = 119
 
 [build-system]
 requires = ["poetry-core"]

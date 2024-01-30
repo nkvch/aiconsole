@@ -4,7 +4,7 @@ import string
 
 
 def generate_random_non_ascii_symbols(num_symbols):
-    symbols = []
+    symbols: list[str] = []
     while len(symbols) < num_symbols:
         symbol = random.choice(string.printable)
         if symbol not in string.ascii_letters and symbol not in string.digits:

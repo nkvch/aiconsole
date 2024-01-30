@@ -14,14 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Icon } from '@/components/common/icons/Icon';
-import { Settings } from 'lucide-react';
-
 interface SpinnerProps {
   width?: number;
   height?: number;
 }
 
-export function Spinner({ width = 20, height = 20 }: SpinnerProps) {
-  return <Icon icon={Settings} width={width} height={height} className="animate-spin" />;
+export function Spinner({ width = 60, height = 60 }: SpinnerProps) {
+  return <img src="/spinner.svg" alt="loading..." width={width} height={height} />;
 }

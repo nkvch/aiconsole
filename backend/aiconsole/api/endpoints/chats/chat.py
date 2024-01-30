@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from fastapi import APIRouter, Response, status
-from send2trash import send2trash  # type: ignore
+from send2trash import send2trash
 
 from aiconsole.core.project.paths import get_history_directory
 

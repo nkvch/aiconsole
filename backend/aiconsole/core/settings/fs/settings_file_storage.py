@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from aiconsole.core.settings.fs.settings_file_format import (
 from aiconsole.core.settings.settings_storage import SettingsStorage
 from aiconsole.utils.events import InternalEvent, internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
+
+_log = logging.getLogger(__name__)
 
 
 def _get_settings_from_path(file_path: Path | None) -> PartialSettingsData:

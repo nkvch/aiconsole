@@ -33,8 +33,8 @@ SPEED_GPT_MODE = GPTMode("speed")
 ANALYSIS_GPT_MODE = GPTMode("analysis")
 
 GPT_MODE_COST_MODEL = "gpt-3.5-turbo-16k-0613"
-GPT_MODE_QUALITY_MODEL = "gpt-4-1106-preview"
-GPT_MODE_ANALYSIS_MODEL = "gpt-4-1106-preview"
+GPT_MODE_QUALITY_MODEL = "gpt-4-turbo-preview"
+GPT_MODE_ANALYSIS_MODEL = "gpt-4-turbo-preview"
 GPT_MODE_SPEED_MODEL = "gpt-3.5-turbo-16k-0613"
 
 GPT_MODE_COST_MAX_TOKENS = 16384

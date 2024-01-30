@@ -58,10 +58,12 @@ LOG_FORMAT: str = "{name} {funcName} {message}"
 LOG_STYLE: str = "{"
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
+LOG_HANDLERS: list[str]
+
 if LOG_LEVEL == "DEBUG":
-    LOG_HANDLERS: list[str] = ["developmentHandler"]
+    LOG_HANDLERS = ["developmentHandler"]
 else:
-    LOG_HANDLERS: list[str] = ["defaultHandler"]
+    LOG_HANDLERS = ["defaultHandler"]
 
 log_config = {
     "version": 1,

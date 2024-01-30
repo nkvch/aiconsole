@@ -16,6 +16,7 @@
 
 import { useCallback, useState } from 'react';
 
+import { Icon } from '@/components/common/icons/Icon';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
 import { AICMessageGroup, AICToolCall } from '@/types/editables/chatTypes';
@@ -28,15 +29,14 @@ import {
   ChevronUp,
   CircleDashedIcon,
   Infinity,
-  Loader,
   Play,
 } from 'lucide-react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { duotoneDark as vs2015 } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Button } from '../../../common/Button';
+import { Spinner } from '../Spinner';
 import { EditableContentMessage } from './EditableContentMessage';
 import { ToolOutput } from './ToolOutput';
-import { Icon } from '@/components/common/icons/Icon';
 
 interface MessageProps {
   group: AICMessageGroup;
@@ -118,7 +118,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
       >
         <div className="flex flex-row gap-2 items-center ">
           <div className="flex-grow flex flex-row gap-3 items-center">
-            {shouldDisplaySpinner && <Icon icon={Loader} width={20} height={20} className="animate-spin" />}
+            {shouldDisplaySpinner && <Spinner width={20} height={20} />}
             {!shouldDisplaySpinner && !isError && tool_call.output == undefined && (
               <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success flex-shrink-0" />
             )}

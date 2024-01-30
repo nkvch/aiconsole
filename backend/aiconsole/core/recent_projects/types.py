@@ -36,4 +36,5 @@ class RecentProject(BaseModel):
     name: str
     path: SerializablePath
     recent_chats: list[str]
+    incorrect_path: bool
     stats: RecentProjectStats

@@ -1,10 +1,9 @@
 {
   "python.analysis.typeCheckingMode": "basic",
+  "flake8.cwd": "${workspaceFolder}",
   "flake8.args": [
-    "--config",
-    "backend/pyproject.toml",
     "--max-line-length",
-    "119"
+    "119",
   ],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
@@ -34,7 +33,10 @@
     "black"
   ],
   "isort.importStrategy": "fromEnvironment",
-  "black-formatter.args": ["--line-length", "119"],
+  "black-formatter.args": [
+    "--line-length",
+    "119"
+  ],
   "python.analysis.exclude": [
     "./electron/python/**",
     "./electron/node_modules/**"

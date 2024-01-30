@@ -13,23 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-from collections import defaultdict
+from typing import cast
 
 from aiconsole.core.code_running.code_interpreters.base_code_interpreter import (
     BaseCodeInterpreter,
 )
+from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.code_running.code_interpreters.language_map import language_map
 
-code_interpreters = {}
+code_interpreters: dict[str, dict[str, BaseCodeInterpreter]] = {}
 
 
-def get_code_interpreter(language: str, chat_id: str) -> BaseCodeInterpreter:
-    language = language.lower()
+def get_code_interpreter(language_raw: str, chat_id: str) -> BaseCodeInterpreter:
+    language_raw = language_raw.lower()
 
-    if language not in language_map:
-        raise ValueError(f"Unknown or unsupported language: {language}")
+    if language_raw not in language_map:
+        raise ValueError(f"Unknown or unsupported language: {language_raw}")
+
+    language: LanguageStr = cast(LanguageStr, language_raw)
 
     if chat_id not in code_interpreters:
         code_interpreters[chat_id] = {}
@@ -41,10 +42,10 @@ def get_code_interpreter(language: str, chat_id: str) -> BaseCodeInterpreter:
 def reset_code_interpreters(chat_id: str | None = None):
     global code_interpreters
 
-    interpreters = []
+    interpreters: list[BaseCodeInterpreter] = []
     if chat_id is not None:
         if chat_id in code_interpreters:
-            interpreters = code_interpreters[chat_id].values()
+            interpreters = list(code_interpreters[chat_id].values())
     else:
         for chat_interpreters in code_interpreters.values():
             for interpreter in chat_interpreters.values():
