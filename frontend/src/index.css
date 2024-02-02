@@ -31,40 +31,6 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-.downlight {
-  /* Needed to make the pseudo element stay within the bounds of the parent element. */
-  position: relative;
-  z-index: 30;
-}
-
-/* The pseudo element is now responsible for the background image. */
-.downlight::after {
-  content: '';
-  z-index: -1;
-
-  /* Make the pseudo element fill the entire parent element. */
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-
-  /* Add a background image. */
-  background-image: url('/bg1.png');
-
-  /* Make sure the image always covers the full viewport. */
-  background-size: cover;
-
-  /* Position the background image in the center of the viewport. */
-  background-position: center center;
-
-  /* Do not repeat the background image. */
-  background-repeat: no-repeat;
-
-  /* Make background transparent */
-  opacity: 0.1;
-}
-
 .button svg {
   height: 16px;
   width: 16px;
@@ -121,6 +87,38 @@ body {
   transition: 0.3s all ease;
 }
 
+h1 {
+  font-size: 28px;
+
+  @media (min-width: 800px) {
+    font-size: 38px;
+  }
+
+  @media (min-width: 1200px) {
+    font-size: 42px;
+  }
+
+  @media (min-width: 1440px) {
+    font-size: 52px;
+  }
+}
+
+h2 {
+  font-size: 24px;
+
+  @media (min-width: 800px) {
+    font-size: 32px;
+  }
+}
+
+h3 {
+  font-size: 20px;
+
+  @media (min-width: 800px) {
+    font-size: 22px;
+  }
+}
+
 .sidebar-typography h1 {
   font-size: 28px;
   color: theme('colors.white');
@@ -168,7 +166,7 @@ body {
 }
 
 .analysis-gradient {
-  background: linear-gradient(0deg, #3A2E58, #3A2E58), linear-gradient(180deg, #271E3C 0%, #1D162C 100%);
+  background: linear-gradient(0deg, #3a2e58, #3a2e58), linear-gradient(180deg, #271e3c 0%, #1d162c 100%);
 }
 
 /* Radix Collapsible */

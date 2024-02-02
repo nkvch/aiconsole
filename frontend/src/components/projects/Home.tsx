@@ -16,14 +16,15 @@
 
 import { TopBar } from '@/components/common/TopBar';
 import { HomeTopBarElements } from '@/components/projects/HomeTopBarElements';
+import { ProjectModalMode, useProjectFileManagerStore } from '@/store/projects/useProjectFileManagerStore';
 import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
+import AlertDialog from '../common/AlertDialog';
+import BackgroundGradient from '../common/BackgroundGradient';
 import { ProjectCard } from './ProjectCard';
 import { RecentProjectsEmpty } from './RecentProjectsEmpty';
-import AlertDialog from '../common/AlertDialog';
-import { useCallback, useEffect, useMemo } from 'react';
-import { useProjectFileManagerStore, ProjectModalMode } from '@/store/projects/useProjectFileManagerStore';
 
 export function Home() {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
@@ -117,7 +118,8 @@ export function Home() {
   }, [openProjectConfirmation, projectModalMode, isProjectDirectory]);
 
   return (
-    <div className="min-h-[100vh] bg-recent-bg bg-cover bg-top">
+    <div className="min-h-[100vh] relative">
+      <BackgroundGradient />
       <div>
         {openAiApiKey === undefined || isProjectLoading ? (
           <>{/* the request is in progress - don't render anything to avoid flickering */}</>
@@ -131,7 +133,7 @@ export function Home() {
                 <div className="px-5 pb-10 pt-[40px] flex-1 flex flex-col grow overflow-hidden">
                   <div className="px-[60px] text-white ">
                     <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto m-4" alt="Logo" />
-                    <h1 className="text-[32px] md:text-[38px] xl:text-[42px] 2xl:text-[56px] mb-[50px] font-black text-center">
+                    <h1 className="mb-[50px] font-black text-center">
                       Welcome to <span className=" text-primary">AIConsole!</span>
                     </h1>
                     <div className="px-4 pb-[30px] text-center opacity-75 text-gray-400">Recent projects:</div>
