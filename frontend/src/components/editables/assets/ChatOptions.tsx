@@ -49,8 +49,6 @@ const ChatOptions = () => {
   const [allowExtraMaterials, setAllowExtraMaterials] = useState<boolean>(false);
   const materialsIds = chosenMaterials.map((material) => material.id);
 
-  console.log(isAnalysisRunning, isExecutionRunning);
-
   useEffect(() => {
     setSelectedAgentId('');
     setChosenMaterials([]);
