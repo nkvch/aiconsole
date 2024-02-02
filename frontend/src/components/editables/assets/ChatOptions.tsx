@@ -166,7 +166,7 @@ const ChatOptions = () => {
                       option={option}
                       onRemove={removeSelectedMaterial}
                       key={option.id}
-                      disabled={isChatLoading || isAnalysisRunning || isExecutionRunning}
+                      disabled={isAnalysisRunning || isExecutionRunning}
                     />
                   ))}
                 </div>
@@ -179,7 +179,7 @@ const ChatOptions = () => {
                 id="extraMaterials"
                 checked={allowExtraMaterials}
                 onChange={changeAllowExtraMaterials}
-                disabled={isChatLoading || isAnalysisRunning || isExecutionRunning}
+                disabled={isAnalysisRunning || isExecutionRunning}
               />
               <label htmlFor="extraMaterials" className="text-sm">
                 Let AI add extra materials
@@ -222,13 +222,12 @@ type AgentsDropdownProps = {
 
 const AgentsDropdown = ({ agents, selectedAgent, onSelect }: AgentsDropdownProps) => {
   const [opened, setOpened] = useState<boolean>(false);
-  const isChatLoading = useChatStore((state) => state.isChatLoading);
   const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
 
   return (
     <DropdownMenu open={opened} onOpenChange={setOpened}>
-      <Trigger asChild disabled={isChatLoading || isAnalysisRunning || isExecutionRunning}>
+      <Trigger asChild disabled={isAnalysisRunning || isExecutionRunning}>
         <button
           className={cn(
             'group flex justify-center items-center gap-[12px] rounded-[8px] border border-gray-500 px-[16px] py-[10px] text-gray-300 text-[16px] w-full leading-[23px] hover:border-gray-300 transition duration-200 hover:text-gray-300 disabled:hover:border-gray-500',

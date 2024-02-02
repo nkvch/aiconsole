@@ -38,7 +38,6 @@ const Autocomplete = <T extends { id: string; name: string }>({
   const [highlightedOptionId, setHighlightedOptionId] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const listEndRef = useRef<HTMLDivElement>(null);
-  const isChatLoading = useChatStore((state) => state.isChatLoading);
   const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
 
@@ -120,7 +119,7 @@ const Autocomplete = <T extends { id: string; name: string }>({
         onKeyDown={handleKeyDown}
         placeholder="Start writing to add..."
         className="bg-transparent py-2 focus:outline-none border-gray-400 text-white w-full placeholder:text-gray-400 placeholder:text-[15px]"
-        disabled={isChatLoading || isAnalysisRunning || isExecutionRunning}
+        disabled={isAnalysisRunning || isExecutionRunning}
       />
       {inputValue && (
         <ul className="absolute max-h-[164px] overflow-auto w-3/4 left-1/2 -translate-x-1/2 rounded border-1 border-gray-800">
