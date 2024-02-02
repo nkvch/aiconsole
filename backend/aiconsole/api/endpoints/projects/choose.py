@@ -52,4 +52,4 @@ async def switch_project_endpoint(
     try:
         await project_directory.switch_or_save_project(params.directory, background_tasks)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(object=e))
+        raise HTTPException(status_code=404, detail={"message": str(object=e), "display": False})
