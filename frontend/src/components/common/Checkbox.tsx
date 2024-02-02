@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useChatStore } from '@/store/editables/chat/useChatStore';
 import * as ReactCheckbox from '@radix-ui/react-checkbox';
 import { Check } from 'lucide-react';
 import { FC } from 'react';
@@ -22,13 +21,12 @@ import { FC } from 'react';
 type CheckboxProps = {
   checked: boolean;
   id: string;
-  disabled?: boolean;
   onChange: (checked: boolean) => void;
+  disabled?: boolean;
 };
 
-const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange }) => {
+const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange, disabled }) => {
   const handleCheckedChange = (isChecked: ReactCheckbox.CheckedState) => onChange(isChecked === true);
-  const isChatLoading = useChatStore((state) => state.isChatLoading);
 
   return (
     <ReactCheckbox.Root
@@ -36,7 +34,7 @@ const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange }) => {
       checked={checked}
       id={id}
       onCheckedChange={handleCheckedChange}
-      disabled={isChatLoading}
+      disabled={disabled}
     >
       <ReactCheckbox.Indicator>
         <Check />
