@@ -95,6 +95,7 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
           setIsCurrentProjectFetching(false);
           reloadProjects();
           resetFetching();
+          openModal(ProjectModalMode.LOCATE, path, name);
         });
     }
   };
