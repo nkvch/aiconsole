@@ -43,7 +43,7 @@ export const API_HOOKS: Hooks = {
 
       showToast({
         title: 'Error',
-        message: `${res.detail || error.message}`,
+        message: message,
         variant: 'error',
       });
 
