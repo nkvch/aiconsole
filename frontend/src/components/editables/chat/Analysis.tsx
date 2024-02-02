@@ -5,13 +5,13 @@ import { XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export const AnalysisClosed = ({ group, onClick }: { group: AICMessageGroup; onClick: () => void }) => {
-  const onClick2 = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick();
   };
 
   return group.analysis || group.task ? (
-    <img onClick={onClick2} src={`favicon.svg`} className="h-[18px] w-[18px] filter cursor-pointer mt-2" />
+    <img onClick={handleClick} src={`favicon.svg`} className="h-[18px] w-[18px] filter cursor-pointer mt-2" />
   ) : (
     <></>
   );
@@ -26,7 +26,7 @@ export const AnalysisOpened = ({
   onClick: () => void;
   isOpen: boolean;
 }) => {
-  const onClick2 = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick();
   };
@@ -40,31 +40,37 @@ export const AnalysisOpened = ({
 
   return (
     <div
-      onClick={onClick2}
       className={cn(
-        'flex flex-col text-grayPurple-300 rounded-[20px] w-full text-[14px] border border-grayPurple-600 cursor-pointer analysis-gradient max-w-[700px] transition-all duration-300 px-[30px] py-0',
+        'flex flex-col text-grayPurple-300 rounded-[20px] w-full text-[14px] border border-grayPurple-600 analysis-gradient max-w-[700px] transition-all duration-300 px-[30px] py-0',
         {
-          'opacity-100 max-h-max p-[30px]': isLoaded && isOpen,
-          'opacity-0 max-h-[0]': !isLoaded || !isOpen,
+          'opacity-100 max-h-max p-[30px] h-auto': isLoaded && isOpen,
+          'opacity-0 max-h-[0] h-0 cursor-default': !isLoaded || !isOpen,
         },
       )}
     >
       <div
         className={cn('flex justify-between transition-opacity duration-150"', {
-          'ease-in opacity-100 ': isLoaded && isOpen,
-          'ease-out opacity-0': !isLoaded || !isOpen,
+          'ease-in opacity-100 max-h-max': isLoaded && isOpen,
+          'ease-out opacity-0 max-h-[0]': !isLoaded || !isOpen,
         })}
       >
         <div className="flex gap-[10px] items-center">
           <img src={`favicon.svg`} className="h-[18px] w-[18px] filter" />
           AI Analysis process
         </div>
-        <Icon icon={XIcon} className="text-gray-400" />
+        <Icon
+          icon={XIcon}
+          className={cn('text-gray-400 cursor-pointer', {
+            'ease-in opacity-100 max-h-max': isLoaded && isOpen,
+            'ease-out opacity-0 max-h-[0]': !isLoaded || !isOpen,
+          })}
+          onClick={handleClick}
+        />
       </div>
       <div
-        className={cn('mt-[20px] transition-opacity duration-150', {
-          'ease-in opacity-100 ': isLoaded && isOpen,
-          'ease-out opacity-0': !isLoaded || !isOpen,
+        className={cn('transition-opacity duration-150', {
+          'ease-in opacity-100 max-h-max mt-[20px]': isLoaded && isOpen,
+          'ease-out opacity-0 max-h-[0] mt-[0px]': !isLoaded || !isOpen,
         })}
       >
         {group.analysis}{' '}
