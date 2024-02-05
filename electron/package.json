@@ -17,6 +17,7 @@
     "dev": "npm run prepare-all && npx electron-forge start",
     "package": "npm run prepare-all && npx electron-forge package",
     "make": "npm run prepare-all && electron-forge make",
+    "make:local": "npm run prepare-all && electron-forge make -- --nosign",
     "tag-publish": "npm run prepare-all && npx electron-forge publish",
     "publish": "npm run propagate-version && npm run prepare-all && npx electron-forge publish"
   },

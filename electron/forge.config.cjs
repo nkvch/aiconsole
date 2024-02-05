@@ -3,6 +3,8 @@ const path = require('path');
 const { version } = require('./package.json');
 const GitHub = require('@electron-forge/publisher-github').default;
 
+const skipSign = !!process.argv.find((arg) => arg.startsWith('--nosign'));
+
 class CustomGitHubPublisher extends GitHub {
   async publish(options) {
     // Modify the artifacts to include the renamed file
@@ -36,12 +38,16 @@ module.exports = {
     icon: './assets/icon',
     extraResource: ['python'],
     osxSign: {},
-    osxNotarize: {
-      tool: 'notarytool',
-      appleId: process.env.APPLE_ID,
-      appleIdPassword: process.env.APPLE_ID_PASSWORD,
-      teamId: process.env.APPLE_TEAM_ID,
-    },
+    ...(skipSign
+      ? {}
+      : {
+          osxNotarize: {
+            tool: 'notarytool',
+            appleId: process.env.APPLE_ID,
+            appleIdPassword: process.env.APPLE_ID_PASSWORD,
+            teamId: process.env.APPLE_TEAM_ID,
+          },
+        }),
   },
   rebuildConfig: {},
   makers: [
