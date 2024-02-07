@@ -26,11 +26,7 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
-
-from aiconsole.core.assets.users.users import User
-
 from aiconsole.core.chat.chat_mutations import DeleteMessageGroupMutation
-
 from aiconsole.core.chat.execution_modes.analysis.director import director_analyse
 from aiconsole.core.chat.execution_modes.execution_mode import (
     AcceptCodeContext,
@@ -44,6 +40,7 @@ from aiconsole.core.chat.types import AICMessageGroup
 from aiconsole.core.project import project
 
 _log = logging.getLogger(__name__)
+
 
 async def render_materials_from_message_group(
     message_group: AICMessageGroup, context: ProcessChatContext, agent: Agent
