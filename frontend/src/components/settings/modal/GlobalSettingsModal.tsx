@@ -125,7 +125,7 @@ export const GlobalSettingsModal = () => {
             <TopGradient />
             <div className="flex justify-between items-center px-[20px] py-[7px] relative z-10 border-gray-600 border-b h-[80px] min-h-[80px]">
               <img src="favicon.png" className="shadows-lg h-[36px] w-[36px]" alt="Logo" />
-              <h3 className="text-gray-400 text-[15px] leading-[24px]">AIConsole settings</h3>
+              <h3 className="text-gray-400 text-[15px] leading-[24px]">Finquill settings</h3>
               <Button variant="secondary" onClick={handleModalClose} small>
                 <Icon icon={X} />
                 Close

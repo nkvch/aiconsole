@@ -134,7 +134,7 @@ export function Home() {
                   <div className="px-[60px] text-white ">
                     <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto m-4" alt="Logo" />
                     <h1 className="mb-[50px] font-black text-center">
-                      Welcome to <span className=" text-primary">AIConsole!</span>
+                      Welcome to <span className=" text-primary">Finquill!</span>
                     </h1>
                     <div className="px-4 pb-[30px] text-center opacity-75 text-gray-400">Recent projects:</div>
                   </div>

@@ -30,7 +30,7 @@ export function RecentProjectsEmpty({ openAiApiKey, isApiKeyValid }: RecentProje
       <div className="my-[180px]">
         <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto " alt="Logo" />
         <h1 className="text-center font-black text-white">
-          Welcome to <span className=" text-primary">AIConsole</span>
+          Welcome to <span className=" text-primary">Finquill</span>
         </h1>
 
         {isApiKeySet ? (
