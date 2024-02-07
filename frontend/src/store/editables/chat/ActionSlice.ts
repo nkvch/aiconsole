@@ -75,7 +75,7 @@ export const createActionSlice: StateCreator<ChatStore, [], [], ActionSlice> = (
     }
   },
   analysis: {
-    actor_id: undefined,
+    agent_id: undefined,
     relevant_material_ids: undefined,
     next_step: undefined,
     thinking_process: undefined,
