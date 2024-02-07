@@ -285,9 +285,9 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
           <CounterItem icon={ScanText} count={materials_dynamic_note_count} />
           <CounterItem icon={Blocks} count={materials_python_api_count} />
           <div className="flex items-center text-[15px] text-gray-300">
-            <ActorAvatar agentId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
+            <ActorAvatar agentId={agents.actor_ids[0] || '1'} type="extraSmall" className="mb-0" />
             <ActorAvatar
-              agentId={agents.agent_ids[1] || '2'}
+              agentId={agents.actor_ids[1] || '2'}
               type="extraSmall"
               className="relative -left-[12px] mb-0"
             />

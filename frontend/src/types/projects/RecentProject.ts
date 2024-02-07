@@ -20,7 +20,7 @@ export type RecentProject = {
   recent_chats: string[];
   incorrect_path: boolean;
   stats: {
-    agents: { count: number; agent_ids: string[] };
+    agents: { count: number; actor_ids: string[] };
     chats_count: number;
     materials_dynamic_note_count: number;
     materials_note_count: number;

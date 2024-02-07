@@ -45,7 +45,7 @@ class Settings:
         self._default_settings = SettingsData(
             user_profile=UserProfile(
                 display_name="User",
-                profile_picture=open(get_core_preinstalled_assets_directory() / "avatars" / "user.jpg", "rb").read(),
+                profile_picture=open(get_core_preinstalled_assets_directory() / "avatars" / "1.jpg", "rb").read(),
             ),
         )
 
