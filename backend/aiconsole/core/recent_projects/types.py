@@ -21,7 +21,7 @@ from aiconsole.utils.serializable_path import SerializablePath
 
 class RecentProjectStatsAgent(BaseModel):
     count: int
-    actor_ids: list[str]
+    agent_ids: list[str]
 
 
 class RecentProjectStats(BaseModel):
