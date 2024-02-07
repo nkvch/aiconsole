@@ -25,6 +25,8 @@ declare global {
       getFileManagerName: () => string;
       onBackendExit: (callback: () => void) => void;
       disposeBackendExitListener: () => void;
+      registerBeforeUnloadListener: (shouldConfirm: boolean) => void;
+      disposeBeforeUnloadListener: () => void;
     };
   }
 }

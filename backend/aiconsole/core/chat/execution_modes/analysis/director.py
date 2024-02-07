@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.execution_modes.analysis.create_agents_str import (
     create_agents_str,
@@ -26,12 +25,7 @@ from aiconsole.core.chat.execution_modes.analysis.gpt_analysis_function_step imp
 )
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
 
-
-async def director_analyse(chat_mutator: ChatMutator):
-    return await gpt_analysis_function_step(
-        chat_mutator=chat_mutator,
-        gpt_mode=ANALYSIS_GPT_MODE,
-        initial_system_prompt=f"""
+INITIAL_SYSTEM_PROMPT = """
 You are a director of a multiple AI Agents, doing everything to help the user.
 You have multiple AI Agents at your disposal, each with their own unique capabilities.
 Your job is to delegate tasks to the agents, and make sure that the user gets the best experience possible.
@@ -42,31 +36,39 @@ If an agent struggles with completing a task, experiment with giving him differe
 If there is no meaningful next step, don't select an agent!
 Your agents can only do things immediatelly, don't ask them to do something in the future.
 Don't write or repeat any code, you don't know how to code.
-Materials are special files that contain instructions for agents, you can choose which materials a given agent will have available, they can only use a limited number due to token limitations.
+Materials are special files that contain instructions for agents
+You can choose which materials a given agent will have available.
+Agents can only use a limited number due to token limitations.
 
 # Agents
-You have the following agents available to handle the next step of this conversation, it can be one of the following ids (if next step is for user to respond, it should be 'user'):
-{create_agents_str()}
-
+The following agents available to handle the next step of this conversation, it must be one of the following ids
+(if next step is for user to respond, it must be 'user'):
+{agents}
 
 # Materials
-A list of ids of materials that are needed to execute the task, make sure that the agent has a prioritised list of those materials to look at, agents are not able to read all of them nor change your choice:
-{create_materials_str()}
+A list of materials ids, needed to execute the task, make sure that the agent has a prioritised list of those materials
+to look at, agents are not able to read all of them nor change your choice:
+{materials}
+""".strip()
 
-""".strip(),
-        last_system_prompt=f"""
+LAST_SYSTEM_PROMPT = """
 Your job is analyse the situation in the chat.
 
 1. As part of the thinking_process:
-What happened in the last few messages in the conversation? who wrote last? and who should now respond, the user or an agent? If an agent: establish a full plan to bring value to the user.
-2. Establish next_action:
-If it's agent's turn: briefly describe what the next, atomic, simple step of this conversation is, it can be both an action by a single agent or waiting for user response.
-4. Establish who should handle the next step, it can be one of the following ids:
-* user - if the next step is for the user to respond
-{create_agents_str()}
+    - What happened in the last few messages in the conversation?
+    - Who wrote last? and who should now respond, the user or an agent?
+        If an agent: establish a full plan to bring value to the user.
 
-5. Figure out and provide a list of ids of materials that are needed to execute the task, choose among the following ids:
-{create_materials_str()}
+2. Establish next_action:
+    If it's agent's turn: briefly describe what the next, atomic, simple step of this conversation is.
+    It can be both an action by a single agent or waiting for user response.
+
+3. Establish who must handle the next step, it can be one of the following ids:
+* user - if the next step is for the user to respond
+{agents}
+
+4. Figure out and provide a list of materials ids that are needed to execute the task, choose among the following ids:
+{materials}
 
 Questions to ask yourself:
 - Is there a next step phrased as a next step, and a task for a given agent?
@@ -77,17 +79,46 @@ Questions to ask yourself:
 - Have your agent already tried to do this task? If so, maybe the user needs to respond?
 - Is there a better agent for this task?
 - Is there a better way to describe the task?
-- Is there anything that that might be a next task do that the user might find valuable? Are you trying to figure out how to help without troubling the user.
-- Has an agent made an error in the last messages of the current conversation? If so maybe try to correct it with a different task, different agent or a different set of materials?
+- Is there anything that that might be a next task do that the user might find valuable?
+- Are you trying to figure out how to help without troubling the user.
+- Has an agent made an error in the last messages of the current conversation?
+    If so maybe try to correct it with a different task, different agent or a different set of materials?
 - If you are stuck you may always ask one agent to provide an expert critique of the current situation.
 - Is the next step and agent correlated and choosen apropriatelly?
 - If the next step is on the user, make sure that is_users_turn is True
-- Does the solution contain a task for an agent? or is it an answer to the user? it should always be phrased as a task, and the answer should be given by the agent, not the director.
+- Does the solution contain a task for an agent? or is it an answer to the user? it should always be phrased as a task,
+    and the answer should be given by the agent, not the director.
 - Is the next step atomic?
 - Is the next step the next logical step in this conversation?
-- The next step should be either a single action for a single agent or a waiting for user response. If it's the latter, the agent selected should be the 'user'.
+- The next step should be either a single action for a single agent or a waiting for user response. If it's the latter,
+    the agent selected should be the 'user'.
 
 Now analyse the chat.
-""".strip(),
+""".strip()
+
+
+async def director_analyse(chat_mutator: ChatMutator, message_group_id: str):
+    initial_system_prompt = INITIAL_SYSTEM_PROMPT.format(
+        agents=create_agents_str(agent_id=chat_mutator.chat.chat_options.agent_id),
+        materials=create_materials_str(
+            materials_ids=chat_mutator.chat.chat_options.materials_ids,
+            let_ai_add_extra_materials=chat_mutator.chat.chat_options.let_ai_add_extra_materials,
+        ),
+    )
+
+    last_system_prompt = LAST_SYSTEM_PROMPT.format(
+        agents=create_agents_str(agent_id=chat_mutator.chat.chat_options.agent_id),
+        materials=create_materials_str(
+            materials_ids=chat_mutator.chat.chat_options.materials_ids,
+            let_ai_add_extra_materials=chat_mutator.chat.chat_options.let_ai_add_extra_materials,
+        ),
+    )
+
+    return await gpt_analysis_function_step(
+        message_group_id=message_group_id,
+        chat_mutator=chat_mutator,
+        gpt_mode=ANALYSIS_GPT_MODE,
+        initial_system_prompt=initial_system_prompt,
+        last_system_prompt=last_system_prompt,
         force_call=True,
     )

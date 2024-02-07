@@ -40,13 +40,17 @@ def check_key(key: str) -> bool:
     if key in cached_good_keys:
         return True
 
-    client = OpenAI(api_key=key)
-    models = client.models.list()
-    available_models = [model.id for model in models]
+    try:
+        client = OpenAI(api_key=key)
+        models = client.models.list()
+        available_models = [model.id for model in models]
 
-    good = set(MODELS_TO_CHECK_WHILE_VERIFYING_KEY).issubset(set(available_models))
+        good = set(MODELS_TO_CHECK_WHILE_VERIFYING_KEY).issubset(set(available_models))
 
-    if good:
-        cached_good_keys.add(key)
+        if good:
+            cached_good_keys.add(key)
+    except Exception as e:
+        _log.exception(f"Error while checking the key: {e}")
+        good = False
 
     return good

@@ -18,7 +18,8 @@ import logging
 from typing import AsyncGenerator
 
 import litellm  # type: ignore
-from litellm.caching import Cache  # type: ignore
+
+# from litellm.caching import Cache  # type: ignore
 from openai import AuthenticationError
 
 from aiconsole.api.websockets.connection_manager import connection_manager
@@ -32,7 +33,8 @@ from .types import CLEAR_STR, CLEAR_STR_TYPE, GPTChoice, GPTResponse, GPTRespons
 _log = logging.getLogger(__name__)
 
 
-litellm.cache = Cache(type="local")
+# litellm.cache = Cache(type="local")
+litellm.disable_cache()
 litellm.set_verbose = False
 
 
@@ -70,11 +72,11 @@ class GPTExecutor:
             try:
                 _log.info("Executing GPT request:", request_dict)
                 self.request = request_dict
-                response = await litellm.acompletion(**request_dict, stream=True, caching=True, ttl=60 * 60 * 24)
+                response = await litellm.acompletion(**request_dict, stream=True)  # caching=True, ttl=60 * 60 * 24
 
                 self.partial_response = GPTPartialResponse()
 
-                async for chunk in response:  # type: ignore
+                async for chunk in response:
                     self.partial_response.apply_chunk(chunk)
                     yield chunk
                     await asyncio.sleep(0)

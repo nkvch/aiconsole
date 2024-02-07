@@ -22,7 +22,7 @@ const getTitle = (status: AssetStatus, isAgentChosen: boolean, assetType: AssetT
     case 'forced':
       return 'User enforced';
     case 'enabled':
-      return isAgentChosen && assetType === 'agent' ? 'Inactive' : 'AI choice';
+      return isAgentChosen && assetType === 'agent' ? 'Disabled' : 'Enabled';
     case 'disabled':
       return 'Disabled';
   }

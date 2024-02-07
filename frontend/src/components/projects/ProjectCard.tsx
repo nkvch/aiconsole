@@ -70,6 +70,8 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
   const isProjectSwitchFetching = useProjectStore((state) => state.isProjectSwitchFetching);
   const [isCurrentProjectFetching, setIsCurrentProjectFetching] = useState(false);
   const projectModalMode = useProjectFileManagerStore((state) => state.projectModalMode);
+  const reloadProjects = useRecentProjectsStore((state) => state.getRecentProjects);
+  const resetFetching = useProjectStore((state) => state.resetProjectSwitchFetching);
   const openModal = useProjectFileManagerStore((state) => state.openModal);
 
   const { chats_count, materials_dynamic_note_count, materials_note_count, materials_python_api_count, agents } =
@@ -84,11 +86,19 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
     if (isFocused || isProjectSwitchFetching) return;
 
     if (!isEditing && !isFocused && event.button === 0) {
-      chooseProject(path);
-      // set timeout to prevent flickering
-      setTimeout(() => {
-        setIsCurrentProjectFetching(true);
-      }, 0);
+      chooseProject(path)
+        .then(() =>
+          // set timeout to prevent flickering
+          setTimeout(() => {
+            setIsCurrentProjectFetching(true);
+          }, 0),
+        )
+        .catch(() => {
+          setIsCurrentProjectFetching(false);
+          reloadProjects();
+          resetFetching();
+          openModal(ProjectModalMode.LOCATE, path, name);
+        });
     }
   };
 

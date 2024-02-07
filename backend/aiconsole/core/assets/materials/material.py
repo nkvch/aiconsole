@@ -47,6 +47,9 @@ class Material(Asset):
     content_type: MaterialContentType = MaterialContentType.STATIC_TEXT
     content: str = ""
 
+    def __hash__(self):
+        return hash(self.id + self.version + self.name + self.usage + self.content_type + self.content)
+
     @property
     def inlined_content(self):
         # if starts with file:// then load the file, take into account file://./relative paths

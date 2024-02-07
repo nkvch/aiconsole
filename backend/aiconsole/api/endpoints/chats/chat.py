@@ -13,10 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from fastapi import APIRouter, Response, status
 from send2trash import send2trash
 
+from aiconsole.core.chat.load_chat_history import load_chat_history
+from aiconsole.core.chat.save_chat_history import save_chat_history
 from aiconsole.core.project.paths import get_history_directory
 
 router = APIRouter()
@@ -41,3 +42,12 @@ async def delete_history(chat_id: str):
 @router.get("/{chat_id}/path")
 async def get_history_path(chat_id: str):
     return {"path": str(get_history_directory() / f"{chat_id}.json")}
+
+
+@router.patch("/{chat_id}")
+async def chat_options(chat_id: str, chat_odj: dict):
+    chat = await load_chat_history(id=chat_id)
+    if chat_odj.get("name"):
+        chat.name = str(chat_odj.get("name"))
+        save_chat_history(chat, scope="name")
+    return Response(status_code=status.HTTP_200_OK)

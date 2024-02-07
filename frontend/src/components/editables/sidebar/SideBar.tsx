@@ -39,7 +39,7 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
 
   return (
     <div
-      className={`min-w-[336px] w-[336px] h-full  bg-gray-900 py-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
+      className={`min-w-[336px] w-[336px] h-full  bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
     >
       <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
         <Tabs.List className="mb-[15px] px-5">

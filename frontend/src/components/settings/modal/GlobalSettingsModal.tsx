@@ -26,9 +26,7 @@ import { Button } from '../../common/Button';
 import { Icon } from '../../common/icons/Icon';
 import GlobalSettingsApiSection from './sections/GlobalSettingsApiSection';
 import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
-import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
-import { Settings } from '@/types/settings/Settings';
 import { UnsavedSettingsDialog } from '@/components/common/UnsavedSettingsDialog';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
@@ -213,18 +211,7 @@ export const GlobalSettingsModal = () => {
                 Close
               </Button>
             </div>
-            <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-center gap-5">
-
-              <GlobalSettingsUserSection
-                username={usernameFormValue}
-                setUsername={setUsernameFormValue}
-                image={profilePictureFormValue}
-                setImage={handleSetAvatarImage}
-              />
-
-              <GlobalSettingsApiSection apiKey={openai_api_key} setApiKey={setApiKeyValue} />
-              <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
-
+            <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-self-start gap-5 overflow-y-auto px-5 pt-3 mt-3">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <GlobalSettingsUserSection
                   username={usernameFormValue}
@@ -236,7 +223,7 @@ export const GlobalSettingsModal = () => {
                 />
                 <GlobalSettingsApiSection control={control} />
                 <GlobalSettingsCodeSection control={control} onChange={handleSetAutorun} />
-                <div className="flex items-center justify-end gap-[10px] mt-[60px]">
+                <div className="flex items-center justify-end gap-[10px] mt-[30px] mb-6">
                   <Button variant="secondary" bold onClick={handleModalClose}>
                     Cancel
                   </Button>

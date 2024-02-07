@@ -21,14 +21,13 @@ from aiconsole.core.chat.types import Chat
 from aiconsole.core.project.paths import get_history_directory
 
 
-def save_chat_history(chat: Chat):
+def save_chat_history(chat: Chat, scope: str = "default"):
     history_directory = get_history_directory()
     file_path = history_directory / f"{chat.id}.json"
 
     new_content = chat.model_dump(exclude={"id", "last_modified"})
 
-    if len(chat.message_groups) == 0:
-        # delete instead
+    if len(chat.message_groups) == 0 and chat.chat_options.is_default():
         if os.path.exists(file_path):
             os.remove(file_path)
     else:
@@ -41,6 +40,17 @@ def save_chat_history(chat: Chat):
                 if old_content == new_content:
                     return  # contents are the same, no need to write to file
 
+            if scope == "chat_options":
+                old_content["chat_options"] = new_content["chat_options"]
+                new_content = old_content
+            elif scope == "message_groups":
+                old_content["message_groups"] = new_content["message_groups"]
+                new_content = old_content
+            elif scope == "name":
+                old_content["name"] = new_content["name"]
+                old_content["title_edited"] = True
+                new_content = old_content
+
         # write new content to file
         with open(file_path, "w", encoding="utf8", errors="replace") as f:
-            json.dump(new_content, f, indent=4)
+            json.dump(new_content, f)

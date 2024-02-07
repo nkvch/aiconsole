@@ -136,7 +136,6 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
           {folded && <Icon icon={ChevronDown} width={20} height={20} className="flex-shrink-0" />}
         </div>
       </div>
-
       {!folded && (
         <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0">
           <div className="flex flex-row w-full">

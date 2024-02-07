@@ -34,7 +34,7 @@ import { useAssetChanged } from '../../../utils/editables/useAssetChanged';
 import { ContextMenu } from '../../common/ContextMenu';
 import { EditorHeader } from '../EditorHeader';
 import { AgentForm } from './AgentForm';
-import { AssetInfoBar, RestoreButton } from './AssetInfoBar';
+import { AssetInfoBar } from './AssetInfoBar';
 import { MaterialForm } from './MaterialForm';
 import { ErrorObject, checkErrors } from './TextInput';
 import { useAssetEditor } from './useAssetEditor';
@@ -92,6 +92,28 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
       setNewPath('');
     }
   }, [newPath, isAssetChanged, wasAssetUpdate, navigate]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent | CloseEvent) => {
+      if (isAssetChanged) {
+        e.preventDefault();
+      }
+    };
+
+    if (window.electron) {
+      window.electron.registerBeforeUnloadListener(isAssetChanged);
+    } else {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      if (window.electron) {
+        window.electron.disposeBeforeUnloadListener();
+      } else {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      }
+    };
+  }, [isAssetChanged]);
 
   useEffect(() => {
     setItem(isAssetChanged);
@@ -154,8 +176,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
           message: `The ${assetType} has been successfully saved.`,
           variant: 'success',
         });
-      }
-      else {
+      } else {
         await EditablesAPI.updateEditableObject(editableObjectType, asset);
         showToast({
           title: 'Overwritten',
@@ -282,7 +303,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
             <p className={cn('text-[15px]', { 'font-bold': isSystemAsset })}>
               {assetSourceLabel()} {hasCore ? <span className="text-gray-300">(overwritten)</span> : null}
             </p>
-            {isProjectAsset ? <RestoreButton onRevert={revertAsset} /> : null}
+            {/* {isProjectAsset ? <RestoreButton onRevert={revertAsset} /> : null} */}
           </div>
         </EditorHeader>
       </ContextMenu>
@@ -311,6 +332,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
                     avatarData={avatarData}
                     setAvatarData={setAvatarData}
                     setIsAvatarOverwritten={setIsAvatarOverwritten}
+                    onRevert={revertAsset}
                   />
                 )}
                 <div className="flex items-center justify-between w-full gap-[10px]">

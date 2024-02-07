@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name":"CLI test",
-      "type":"python",
+      "type":"debugpy",
       "request":"launch",
       "program":"${workspaceFolder}/backend/aiconsole_toolkit/cli.py",
       "console":"integratedTerminal",
@@ -15,7 +15,7 @@
 
     {
       "name": "Run isolated test",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "tests.isolated",
       "console": "integratedTerminal",
@@ -24,10 +24,10 @@
 
     {
       "name": "AIConsole",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "aiconsole.init",
-      "justMyCode": true,
+      "justMyCode": false,
       "cwd": "${workspaceFolder}/backend",
       "args": []
     }

@@ -18,13 +18,19 @@ import asyncio
 import logging
 from typing import cast
 
+from aiconsole.api.websockets.connection_manager import connection_manager
+from aiconsole.api.websockets.server_messages import NotificationServerMessage
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
+
 from aiconsole.core.assets.users.users import User
+
+from aiconsole.core.chat.chat_mutations import DeleteMessageGroupMutation
+
 from aiconsole.core.chat.execution_modes.analysis.director import director_analyse
 from aiconsole.core.chat.execution_modes.execution_mode import (
     AcceptCodeContext,
@@ -84,7 +90,21 @@ async def execution_mode_process(
 ):
     _log.debug("execution_mode_director")
 
-    analysis = await director_analyse(context.chat_mutator)
+    # if there are no messages in message groups, stop processing
+    if not any(group.messages for group in context.chat_mutator.chat.message_groups):
+        # Send an error notification and delete the current message group
+        _log.error("No messages in message groups")
+
+        await connection_manager().send_to_chat(
+            message=NotificationServerMessage(title="Error", message="No messages to respond to"),
+            chat_id=context.chat_mutator.chat.id,
+        )
+
+        await context.chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=context.message_group_id))
+
+        return
+
+    analysis = await director_analyse(context.chat_mutator, context.message_group_id)
 
     if analysis.agent.id != "user" and analysis.next_step:
         content_context = ContentEvaluationContext(
@@ -99,6 +119,7 @@ async def execution_mode_process(
         ]
 
         context = ProcessChatContext(
+            message_group_id=context.message_group_id,
             chat_mutator=context.chat_mutator,
             agent=analysis.agent,
             materials=analysis.relevant_materials,

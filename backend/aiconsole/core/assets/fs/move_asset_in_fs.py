@@ -33,3 +33,11 @@ async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> N
 
     # Move (rename) the file
     old_file_path.rename(new_file_path)
+
+    # Move (rename) the avatar file
+    extensions = [".jpeg", ".jpg", ".png", ".gif", ".SVG"]
+    for extension in extensions:
+        old_file_path = get_project_assets_directory(asset_type) / f"{old_id}{extension}"
+        new_file_path = get_project_assets_directory(asset_type) / f"{new_id}{extension}"
+        if old_file_path.exists():
+            old_file_path.rename(new_file_path)

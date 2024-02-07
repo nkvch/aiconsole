@@ -16,7 +16,6 @@
 import logging
 from dataclasses import dataclass
 from typing import cast
-from uuid import uuid4
 
 from aiconsole.consts import DIRECTOR_MIN_TOKENS, DIRECTOR_PREFERRED_TOKENS
 from aiconsole.core.assets.agents.agent import Agent
@@ -118,6 +117,7 @@ class AnalysisResult:
 
 
 async def gpt_analysis_function_step(
+    message_group_id: str,
     chat_mutator: ChatMutator,
     gpt_mode: GPTMode,
     initial_system_prompt: str,
@@ -125,6 +125,7 @@ async def gpt_analysis_function_step(
     force_call: bool,
 ) -> AnalysisResult:
     gpt_executor = GPTExecutor()
+
 
     # Create a new message group for analysis
     message_group_id = str(uuid4())
@@ -142,10 +143,28 @@ async def gpt_analysis_function_step(
     )
 
     # Pick from forced or enabled agents if no agent is forced
-    possible_agent_choices = agents_to_choose_from()
+    if chat_mutator.chat.chat_options.agent_id:
+        agent_id = chat_mutator.chat.chat_options.agent_id
+        possible_agent_choices = [agent for agent in agents_to_choose_from(all=True) if agent.id == agent_id]
+    else:
+        possible_agent_choices = agents_to_choose_from()
 
     if len(possible_agent_choices) == 0:
         raise ValueError("No active agents")
+
+    available_materials = []
+    forced_materials = []
+    if chat_mutator.chat.chat_options.materials_ids:
+        for material in project.get_project_materials()._assets.values():
+            if material[0].id in chat_mutator.chat.chat_options.materials_ids:
+                forced_materials.append(material[0])
+
+    if chat_mutator.chat.chat_options.let_ai_add_extra_materials:
+        available_materials = [
+            *forced_materials,
+            *project.get_project_materials().assets_with_status(AssetStatus.FORCED),
+            *project.get_project_materials().assets_with_status(AssetStatus.ENABLED),
+        ]
 
     plan_class = create_plan_class(
         [
@@ -159,7 +178,8 @@ async def gpt_analysis_function_step(
                 override=False,
             ),
             *possible_agent_choices,
-        ]
+        ],
+        available_materials,
     )
 
     request = GPTRequest(
@@ -284,7 +304,7 @@ async def gpt_analysis_function_step(
         await chat_mutator.mutate(
             SetMaterialsIdsMessageGroupMutation(
                 message_group_id=message_group_id,
-                materials_ids=[material.id for material in relevant_materials],
+                materials_ids=[material.id for material in set(relevant_materials).union(forced_materials)],
             )
         )
 

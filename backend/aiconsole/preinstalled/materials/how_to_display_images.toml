@@ -5,11 +5,16 @@ usage_examples = []
 default_status = "enabled"
 content_type = "static_text"
 content = """
-When asked to display images, display them by outputing: ![image info](./pictures/image.png) in plain text, no function call required for displaying.
+When asked to display images, display them by outputing: ![IMAGE_INFO](PATH) in plain text, no function call required for displaying.
+Example: ![image info](./pictures/image.png)
+
+User will immediately see the image.
 
 Don't use IPython.display or mathplotlib to display images.
 
 Display multiple images in one line.
 
 Usual types of images: png, jpg, jpeg, gif.
+
+Do not eddit the path. Do not add . to the begginig of the path.
 """

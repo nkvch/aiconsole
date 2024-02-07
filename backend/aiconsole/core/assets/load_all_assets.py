@@ -3,8 +3,9 @@ from pathlib import Path
 
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
+from aiconsole.core.assets.assets import Assets
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
-from aiconsole.core.assets.models import Asset, AssetLocation, AssetType
+from aiconsole.core.assets.models import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
     get_project_assets_directory,
@@ -32,6 +33,11 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
         for id in ids:
             try:
                 asset = await load_asset_from_fs(asset_type, id, location)
+
+                # Legacy support (for v. prior to 0.2.11)
+                if Assets.get_status(asset.type, asset.id) == AssetStatus.FORCED:
+                    Assets.set_status(asset.type, asset.id, AssetStatus.ENABLED)
+
                 if id not in _assets:
                     _assets[id] = []
                 _assets[id].append(asset)

@@ -25,6 +25,7 @@ import { useChatStore } from '@/store/editables/chat/useChatStore';
 
 export function MessageGroup({ group }: { group: AICMessageGroup }) {
   const [isAnalysisManuallyOpen, setIsAnalysisManuallyOpen] = useState<boolean | undefined>(undefined);
+  const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
 
   const lockId = useChatStore((state) => state.chat?.lock_id);
 
@@ -50,8 +51,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
             <MessageComponent key={message.id} message={message} group={group} />
           ))}
         </div>
-
-        {group.messages.length === 0 && (
+        {!isBeingProcessed && group.messages.length === 0 && (
           <MessageControls
             hideControls={!!lockId}
             onRemoveClick={() => {

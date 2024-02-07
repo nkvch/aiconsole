@@ -48,6 +48,10 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
 from aiconsole.core.assets.models import AssetLocation
+from aiconsole.core.chat.chat_mutations import CreateMessageGroupMutation
+from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
+    agents_to_choose_from,
+)
 from aiconsole.core.chat.execution_modes.execution_mode import (
     AcceptCodeContext,
     ProcessChatContext,
@@ -287,20 +291,64 @@ class IncomingMessageHandler:
 
             agent = self._director_agent
 
+            if (
+                chat_mutator.chat.chat_options.agent_id
+                and not chat_mutator.chat.chat_options.let_ai_add_extra_materials
+            ):
+                for _agent in agents_to_choose_from(all=True):
+                    if _agent.id == chat_mutator.chat.chat_options.agent_id:
+                        agent = _agent
+
+                role = "assistant"
+            else:
+                role = "system"
+
+            # Create a new message group for analysis
+            message_group_id = str(uuid4())
+
+            if chat_mutator.chat.chat_options.materials_ids:
+                materials_ids = chat_mutator.chat.chat_options.materials_ids
+            else:
+                materials_ids = []
+
+            await chat_mutator.mutate(
+                CreateMessageGroupMutation(
+                    message_group_id=message_group_id,
+                    agent_id=agent.id,
+                    username="",
+                    email="",
+                    role=role,
+                    materials_ids=materials_ids,
+                    analysis="",
+                    task="",
+                )
+            )
+
+            if materials_ids:
+                materials = [_m for _m in project.get_project_materials().all_assets() if _m.id in materials_ids]
+                materials_and_rmats = await self._render_materials_from_message_group(
+                    chat_mutator.chat.message_groups[-1], chat_mutator.chat, agent, init=True
+                )
+                render_materials = materials_and_rmats.rendered_materials
+            else:
+                materials = []
+                render_materials = []
+
             execution_mode = await import_and_validate_execution_mode(agent)
             await execution_mode.process_chat(
                 ProcessChatContext(
+                    message_group_id=message_group_id,
                     chat_mutator=chat_mutator,
                     agent=agent,
-                    materials=[],
-                    rendered_materials=[],
+                    materials=materials,  # type: ignore
+                    rendered_materials=render_materials,
                 )
             )
         finally:
             await release_lock(chat_id=message.chat_id, request_id=message.request_id)
 
     async def _render_materials_from_message_group(
-        self, message_group: AICMessageGroup, chat: Chat, agent: Agent
+        self, message_group: AICMessageGroup, chat: Chat, agent: Agent, init: bool = False
     ) -> MaterialsAndRenderedMaterials:
         relevant_materials_ids = message_group.materials_ids
 
@@ -316,13 +364,17 @@ class IncomingMessageHandler:
             relevant_materials=relevant_materials,
         )
 
-        rendered_materials = await asyncio.gather(
-            *[
-                material.render(content_context)
-                for material in relevant_materials
-                if material.type == "rendered_material"
-            ]
-        )
+        # rendered_materials = await asyncio.gather(
+        #     *[
+        #         material.render(content_context)
+        #         for material in relevant_materials
+        #         if init or material.type == "rendered_material"
+        #     ]
+        # )
+        rendered_materials = []
+        for material in relevant_materials:
+            rendered_material = await material.render(content_context)
+            rendered_materials.append(rendered_material)
 
         return MaterialsAndRenderedMaterials(materials=relevant_materials, rendered_materials=rendered_materials)
 

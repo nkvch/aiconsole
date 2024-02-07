@@ -64,7 +64,7 @@ async def acquire_lock(chat_id: str, request_id: str, skip_mutating_clients: boo
 async def release_lock(chat_id: str, request_id: str) -> None:
     if chat_id in chats and chats[chat_id].lock_id == request_id:
         chats[chat_id].lock_id = None
-        save_chat_history(chats[chat_id])
+        save_chat_history(chats[chat_id], scope="message_groups")
         del chats[chat_id]
         lock_events[chat_id].set()
 

@@ -55,6 +55,7 @@ const InlineEditableObjectName = ({
       setInputText(editableObject.name); // Reset the input text to the current object name
       setIsEditing(false); // Exit editing mode
     } else if (event.key === 'Enter') {
+      console.log('Enter');
       handleRename(); // Commit the change
     }
   };

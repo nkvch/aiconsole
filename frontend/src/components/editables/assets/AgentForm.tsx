@@ -33,6 +33,7 @@ interface AgentFormProps {
   setIsAvatarOverwritten: React.Dispatch<React.SetStateAction<boolean>>;
   errors?: ErrorObject;
   setErrors?: React.Dispatch<React.SetStateAction<ErrorObject>>;
+  onRevert: () => void;
 }
 
 // TODO: all commented lines are ready UI - integrate it with backend when ready
@@ -43,6 +44,7 @@ export const AgentForm = ({
   avatarData,
   setAvatarData,
   setIsAvatarOverwritten,
+  onRevert,
 }: AgentFormProps) => {
   const [executionMode, setExecutionMode] = useState('');
   const [customExecutionMode, setCustomExecutionMode] = useState('');
@@ -83,7 +85,7 @@ export const AgentForm = ({
     // new Date is used to refresh image url
     const userAgentAvatarUrl = `${getBaseURL()}/api/agents/${agent.id}/image?time=${new Date()}`;
     setAvatarUrl(userAgentAvatarUrl);
-  }, [getBaseURL, avatarData]);
+  }, [getBaseURL, avatarData, onRevert]);
 
   return (
     <>

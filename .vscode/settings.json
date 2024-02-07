@@ -2,8 +2,7 @@
   "python.analysis.typeCheckingMode": "basic",
   "flake8.cwd": "${workspaceFolder}",
   "flake8.args": [
-    "--max-line-length",
-    "119",
+    "--ignore=E501, W503",
   ],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,

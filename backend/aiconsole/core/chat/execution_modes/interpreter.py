@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import logging
 import traceback
 from datetime import datetime
@@ -33,8 +32,11 @@ from aiconsole.core.chat.chat_mutations import (
     AppendToOutputToolCallMutation,
     CreateMessageMutation,
     CreateToolCallMutation,
+    SetCodeToolCallMutation,
     SetContentMessageMutation,
+    SetHeadlineToolCallMutation,
     SetIsExecutingToolCallMutation,
+    SetIsStreamingMessageMutation,
     SetIsStreamingToolCallMutation,
     SetLanguageToolCallMutation,
     SetOutputToolCallMutation,
@@ -84,9 +86,7 @@ class python(CodeTask):
 
     code: str = Field(
         ...,
-        description="Python code to execute. Code must be formated. The begging of the code MUST be marked with "
-        "# START and end of the code with # END. "
-        "It will be executed in the statefull Jupyter notebook environment.",
+        description="Python code to execute. It will be executed in the statefull Jupyter notebook environment. Always show result to the user.",
         json_schema_extra={"type": "string"},
     )
 
@@ -103,7 +103,7 @@ async def _execution_mode_process(
     context: ProcessChatContext,
 ):
     # Assumes an existing message group that was created for us
-    message_group = context.chat_mutator.chat.message_groups[-1]
+    last_message_group = context.chat_mutator.chat.message_groups[-1]
 
     system_message = create_full_prompt_with_materials(
         intro=get_agent_system_message(context.agent),
@@ -112,9 +112,9 @@ async def _execution_mode_process(
 
     executor = GPTExecutor()
 
-    await _generate_response(message_group, context, system_message, executor)
+    await _generate_response(last_message_group, context, system_message, executor, last_message_group)
 
-    last_message = context.chat_mutator.chat.message_groups[-1].messages[-1]
+    last_message = last_message_group.messages[-1]
 
     if last_message.tool_calls:
         # Run all code in the last message
@@ -191,11 +191,12 @@ async def _generate_response(
     context: ProcessChatContext,
     system_message: str,
     executor: GPTExecutor,
+    last_message_group: AICMessageGroup | None = None,
 ):
     tools_requiring_closing_parenthesis: list[str] = []
     message_id = str(uuid4())
     # Load the messages from the chat in GPTRequestMessage format
-    messages = [message for message in convert_messages(context.chat_mutator.chat)]
+    messages = [message for message in convert_messages(context.chat_mutator.chat, last_message_group)]
 
     await context.chat_mutator.mutate(
         CreateMessageMutation(
@@ -207,26 +208,30 @@ async def _generate_response(
     )
 
     try:
-        async for chunk_or_clear in aiter(
-            executor.execute(
-                GPTRequest(
-                    system_message=system_message,
-                    gpt_mode=context.agent.gpt_mode,
-                    messages=messages,
-                    tools=[
-                        ToolDefinition(
-                            type="function",
-                            function=ToolFunctionDefinition(**python.openai_schema()),
-                        ),
-                        ToolDefinition(
-                            type="function",
-                            function=ToolFunctionDefinition(**applescript.openai_schema()),
-                        ),
-                    ],
-                    min_tokens=250,
-                    preferred_tokens=2000,
-                    temperature=0.2,
-                )
+        await context.chat_mutator.mutate(
+            SetIsStreamingMessageMutation(
+                message_id=message_id,
+                is_streaming=True,
+            )
+        )
+        async for chunk_or_clear in executor.execute(
+            GPTRequest(
+                system_message=system_message,
+                gpt_mode=context.agent.gpt_mode,
+                messages=messages,
+                tools=[
+                    ToolDefinition(
+                        type="function",
+                        function=ToolFunctionDefinition(**python.openai_schema()),
+                    ),
+                    ToolDefinition(
+                        type="function",
+                        function=ToolFunctionDefinition(**applescript.openai_schema()),
+                    ),
+                ],
+                min_tokens=250,
+                preferred_tokens=2000,
+                temperature=0.2,
             )
         ):
             # What is this?
@@ -271,6 +276,12 @@ async def _generate_response(
                     is_streaming=False,
                 )
             )
+        await context.chat_mutator.mutate(
+            SetIsStreamingMessageMutation(
+                message_id=message_id,
+                is_streaming=False,
+            )
+        )
         _log.debug(f"tools_requiring_closing_parenthesis: {tools_requiring_closing_parenthesis}")
 
 
@@ -319,26 +330,27 @@ async def _send_code(tool_calls, context, tools_requiring_closing_parenthesis, m
             )
         )
 
-        if tool_call.type == "function":
-            function_call = tool_call.function
-
-            async def send_language_if_needed(lang: LanguageStr):
-                if tool_call_data.language is None:
-                    await context.chat_mutator.mutate(
-                        SetLanguageToolCallMutation(
-                            tool_call_id=tool_call.id,
-                            language=lang,
-                        )
+        async def send_language_if_needed(lang: LanguageStr):
+            if tool_call_data.language is None:
+                await context.chat_mutator.mutate(
+                    SetLanguageToolCallMutation(
+                        tool_call_id=tool_call.id,
+                        language=lang,
                     )
+                )
 
-            async def send_code_delta(code_delta: str = "", headline_delta: str = ""):
-                if code_delta:
-                    await context.chat_mutator.mutate(
-                        AppendToCodeToolCallMutation(
-                            tool_call_id=tool_call.id,
-                            code_delta=code_delta,
-                        )
+        async def send_headline_delta_for_headline(headline: str):
+            if not headline.startswith(tool_call_data.headline):
+                _log.warning(f"Reseting headline to: {headline}")
+                await context.chat_mutator.mutate(
+                    SetHeadlineToolCallMutation(
+                        tool_call_id=tool_call.id,
+                        headline=headline,
                     )
+                )
+            else:
+                start_index = len(tool_call_data.headline)
+                headline_delta = headline[start_index:]
 
                 if headline_delta:
                     await context.chat_mutator.mutate(
@@ -348,11 +360,29 @@ async def _send_code(tool_calls, context, tools_requiring_closing_parenthesis, m
                         )
                     )
 
-            async def send_code_and_language_if_needed(code, language: LanguageStr = "python", reduce=0):
-                await send_language_if_needed(language)
-                start_index = len(tool_call_data.code) - reduce
+        async def send_code_delta_for_code(code: str):
+            if not code.startswith(tool_call_data.code):
+                _log.warning(f"Reseting code to: {code}")
+                await context.chat_mutator.mutate(
+                    SetCodeToolCallMutation(
+                        tool_call_id=tool_call.id,
+                        code=code,
+                    )
+                )
+            else:
+                start_index = len(tool_call_data.code)
                 code_delta = code[start_index:]
-                await send_code_delta(code_delta)
+
+                if code_delta:
+                    await context.chat_mutator.mutate(
+                        AppendToCodeToolCallMutation(
+                            tool_call_id=tool_call.id,
+                            code_delta=code_delta,
+                        )
+                    )
+
+        if tool_call.type == "function":
+            function_call = tool_call.function
 
             if not function_call.arguments:
                 continue
@@ -361,70 +391,48 @@ async def _send_code(tool_calls, context, tools_requiring_closing_parenthesis, m
                 python.__name__,
                 applescript.__name__,
             ]:
-                arguments_str = function_call.arguments
+                # Languge is in the name of the function call
+
                 languages = language_map.keys()
 
                 if tool_call_data.language is None and function_call.name in languages:
-                    # Languge is in the name of the function call
                     await send_language_if_needed(cast(LanguageStr, function_call.name))
 
-                # This can now be both a string and a json object
-                try:
-                    arguments = json.loads(arguments_str)
-                    _log.debug(f"arguments: {arguments}")
-                    # [1] this code block executes only once, after full json is received
-                    code = arguments.get("code")
-                    headline = arguments.get("headline")
+                code = None
+                headline = None
 
-                    if code:
-                        await send_code_and_language_if_needed(code)
+                if function_call.arguments_dict:
+                    code = function_call.arguments_dict.get("code", None)
+                    headline = function_call.arguments_dict.get("headline", None)
+                else:
+                    # Sometimes we don't have a dict, but it's still a json string
 
-                    if headline:
-                        start_index = len(tool_call_data.headline)
-                        headline_delta = headline[start_index:]
-                        tool_call_data.headline = headline
-                        await send_code_delta(headline_delta=headline_delta)
-                    # [1] END
+                    if not function_call.arguments.startswith("{"):
+                        code = function_call.arguments
 
-                except json.JSONDecodeError:
-                    # The code to run is recived in chunks, so we need to send the code in chunks as well
-                    # try exept is here as hack. Json is not valid until the last chunk is received
-                    # so this code will execute for every chunk except the last one
-                    if arguments_str:
-                        start_marker = "# START"
-                        end_marker = "# END"
-
-                        # Fixing code returned by GPT
-                        changed_str = arguments_str.replace("\\\\", "\\")
-                        changed_str = changed_str.replace("\\n", "\n")
-                        changed_str = changed_str.replace("\\\n", "\n")
-
-                        start_index = changed_str.find(start_marker)
-                        if start_index != -1:
-                            start_index += len(start_marker)
-                        else:
-                            continue
-
-                        end_index = changed_str.find(end_marker)
-                        if end_index == -1:
-                            end_index = len(changed_str)
-
-                        # Send code by lines
-                        arguments_str = changed_str.rpartition("\n")[0]
-
-                        # GPT randomly inserts newlines, tabs, spaces in the beginnig.
-                        code = arguments_str[start_index:end_index].lstrip()
-                        await send_code_and_language_if_needed(code)
-            else:
-                if tool_call_data.language is None:
+                if code:
                     await send_language_if_needed("python")
-                    _log.info(f"function_call: {function_call}")
-                try:
-                    if json.loads(function_call.arguments):
-                        code = f"{function_call.name}(**{function_call.arguments})"
-                        await send_code_and_language_if_needed(code)
-                except json.JSONDecodeError:
-                    pass
+                    await send_code_delta_for_code(code)
+
+                if headline:
+                    await send_headline_delta_for_headline(headline)
+            else:
+                # We have a direct function call, without specifying the language
+
+                await send_language_if_needed("python")
+
+                if function_call.arguments_dict:
+                    # ok we have a dict, those are probably arguments and the name of the function call is the name of the function
+
+                    arguments_materialised = [
+                        f"{key}={repr(value)}" for key, value in function_call.arguments_dict.items()
+                    ]
+                    code = f"{function_call.name}({', '.join(arguments_materialised)})"
+
+                    await send_code_delta_for_code(code)
+                else:
+                    # We have a string in the arguments, thats probably the code
+                    await send_code_delta_for_code(function_call.arguments)
 
 
 async def _execution_mode_accept_code(
@@ -438,6 +446,7 @@ async def _execution_mode_accept_code(
     tool_call = tool_call_location.tool_call
 
     process_chat_context = ProcessChatContext(
+        message_group_id=tool_call_location.message_group.id,
         chat_mutator=context.chat_mutator,
         agent=context.agent,
         materials=context.materials,
@@ -446,14 +455,18 @@ async def _execution_mode_accept_code(
 
     await _run_code(process_chat_context, tool_call_id=tool_call.id)
 
-    # if all tools have finished running, continue operation with the same agent
-    finished_running_code = all(
-        (not tool_call.is_executing) and (tool_call.output is not None)
-        for tool_call in tool_call_location.message.tool_calls
-    )
+    # if is in last message and all tools have finished running, resume operation with the same agent
+    if (
+        tool_call_location.message_group.id == context.chat_mutator.chat.message_groups[-1].id
+        and tool_call_location.message.id == context.chat_mutator.chat.message_groups[-1].messages[-1].id
+    ):
+        finished_running_code = all(
+            (not tool_call.is_executing) and (tool_call.output is not None)
+            for tool_call in tool_call_location.message.tool_calls
+        )
 
-    if finished_running_code:
-        await _execution_mode_process(process_chat_context)  # Resume operation with the same agent
+        if finished_running_code:
+            await _execution_mode_process(process_chat_context)
 
 
 execution_mode = ExecutionMode(

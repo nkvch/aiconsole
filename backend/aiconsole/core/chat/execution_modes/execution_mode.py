@@ -11,6 +11,7 @@ from aiconsole.core.chat.chat_mutator import ChatMutator
 
 @dataclass
 class ProcessChatContext:
+    message_group_id: str
     chat_mutator: ChatMutator
     agent: Agent
     materials: list[Material]

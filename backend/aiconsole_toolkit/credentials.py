@@ -18,14 +18,14 @@
 import json
 import os
 
-from aiconsole.core.project.paths import get_credentials_directory
-
 
 class MissingCredentialException(Exception):
     pass
 
 
 def save_credential(module: str, credential: str, value: str):
+    from aiconsole.core.project.paths import get_credentials_directory
+
     # Specify the path for the credential file
     file_path = get_credentials_directory() / (module + ".json")
 
@@ -48,6 +48,8 @@ def save_credential(module: str, credential: str, value: str):
 
 
 def load_credentials(module: str, credentials: list[str]) -> dict[str, str]:
+    from aiconsole.core.project.paths import get_credentials_directory
+
     result = {}
 
     for credential in credentials:

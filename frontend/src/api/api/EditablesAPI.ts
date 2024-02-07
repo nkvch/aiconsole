@@ -142,10 +142,11 @@ async function updateEditableObject(
   if (!originalId) {
     originalId = editableObject.id;
   }
+  console.log('fetchEditableObject', editableObjectType, editableObject, originalId);
 
-  if (editableObjectType === 'chat') {
-    throw new Error('Chat cannot be updated');
-  }
+  // if (editableObjectType === 'chat') {
+  //   throw new Error('Chat cannot be updated');
+  // }
 
   return ky.patch(`${getBaseURL()}/api/${editableObjectType}s/${originalId}`, {
     json: { ...editableObject },

@@ -202,7 +202,7 @@ export function ChatPage() {
   };
 
   const getActionButton = () => {
-    if (hasAnyCommandInput || chat.message_groups.length === 0) {
+    if (hasAnyCommandInput) {
       return {
         label: 'Send',
         icon: SendRotated,
@@ -253,7 +253,7 @@ export function ChatPage() {
       </ContextMenu>
 
       <div className="flex-grow overflow-auto">
-        <div className="flex w-full h-full flex-col justify-between downlight">
+        <div className="flex w-full h-full flex-col justify-between">
           {!isProjectLoading && !loadingMessages ? ( // This is needed because of https://github.com/compulim/react-scroll-to-bottom/issues/61#issuecomment-1608456508
             <ScrollToBottom
               className="h-full overflow-y-auto flex flex-col"

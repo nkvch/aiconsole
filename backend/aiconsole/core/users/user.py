@@ -20,6 +20,25 @@ class MissingFileName(Exception):
 class UserProfileService:
     def get_profile(self, email: str | None = None) -> UserProfile:
         user_profile = settings().unified_settings.user_profile
+
+        if not user_profile.avatar_url:
+            user_profile.avatar_url = self._get_default_avatar()
+        if email:
+            if email == user_profile.email and user_profile.avatar_url:
+                return user_profile
+
+            gravatar_profile = gravatar_client().get_profile(email)
+            if gravatar_profile:
+                return self._create_user_profile_from_gravatar(email, gravatar_profile)
+
+            if email != user_profile.email:
+                return UserProfile(
+                    username=email or DEFAULT_USERNAME,
+                    email=email,
+                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
+                    gravatar=False,
+                )
+
         return user_profile or UserProfile(
             display_name=user_profile.display_name or DEFAULT_USERNAME, profile_picture=user_profile.profile_picture
         )

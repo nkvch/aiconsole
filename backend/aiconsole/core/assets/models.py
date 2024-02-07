@@ -38,7 +38,7 @@ class AssetType(str, Enum):
 class AssetStatus(str, Enum):
     DISABLED = "disabled"
     ENABLED = "enabled"
-    FORCED = "forced"
+    FORCED = "forced"  # Legacy support (for v. prior to 0.2.11)
 
 
 class Asset(EditableObject):

@@ -18,14 +18,10 @@ import random
 
 from pydantic import Field
 
-from aiconsole.core.assets.models import AssetStatus
 from aiconsole.core.gpt.function_calls import OpenAISchema
-from aiconsole.core.project import project
 
 
-def create_plan_class(available_agents):
-    enabled_materials = project.get_project_materials().assets_with_status(AssetStatus.ENABLED)
-
+def create_plan_class(available_agents, available_materials):
     class Plan(OpenAISchema):
 
         """
@@ -38,7 +34,8 @@ def create_plan_class(available_agents):
         )
 
         next_step: str = Field(
-            description="A short actionable description of the next single atomic task to move this conversation forward.",
+            description="A short actionable description of the next single atomic task to move this conversation "
+            "forward.",
             json_schema_extra={"type": "string"},
         )
 
@@ -58,7 +55,7 @@ def create_plan_class(available_agents):
             description="Chosen material ids relevant for the task",
             json_schema_extra={
                 "items": {
-                    "enum": [k.id for k in random.sample(enabled_materials, len(enabled_materials))],
+                    "enum": [k.id for k in random.sample(available_materials, len(available_materials))],
                     "type": "string",
                 }
             },

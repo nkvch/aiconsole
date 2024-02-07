@@ -20,7 +20,12 @@ import { Hooks } from 'ky';
 import { useToastsStore } from '@/store/common/useToastsStore';
 
 type ErrorResponse = {
-  detail?: string;
+  detail:
+    | {
+        message: string;
+        display?: boolean;
+      }
+    | string;
 };
 
 export const API_HOOKS: Hooks = {
@@ -28,12 +33,20 @@ export const API_HOOKS: Hooks = {
     async (error) => {
       const res = (await error.response.json()) as ErrorResponse;
       const showToast = useToastsStore.getState().showToast;
-      console.error(res.detail || error.message);
+      const message =
+        typeof res.detail === 'object' && res.detail !== null ? res.detail.message : res.detail || error.message;
+      console.error(message);
+
+      if (typeof res.detail === 'object' && !res.detail.display) {
+        return error;
+      }
+
       showToast({
         title: 'Error',
-        message: `${res.detail || error.message}`,
+        message: message,
         variant: 'error',
       });
+
       return error;
     },
   ],
