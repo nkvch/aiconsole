@@ -36,7 +36,7 @@ import { useProjectStore } from '../../store/projects/useProjectStore';
 import { ContextMenu, ContextMenuRef } from '../common/ContextMenu';
 import Tooltip from '../common/Tooltip';
 import { Icon } from '../common/icons/Icon';
-import { AgentAvatar } from '../editables/chat/AgentAvatar';
+import { ActorAvatar } from '../editables/chat/ActorAvatar';
 import { Spinner } from '../editables/chat/Spinner';
 
 const MAX_CHATS_TO_DISPLAY = 3;
@@ -283,9 +283,10 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
           <CounterItem icon={ScanText} count={materials_dynamic_note_count} />
           <CounterItem icon={Blocks} count={materials_python_api_count} />
           <div className="flex items-center text-[15px] text-gray-300">
-            <AgentAvatar agentId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
-            <AgentAvatar
-              agentId={agents.agent_ids[1] || '2'}
+            <ActorAvatar actorType="agent" actorId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
+            <ActorAvatar
+              actorType="agent"
+              actorId={agents.agent_ids[1] || '2'}
               type="extraSmall"
               className="relative -left-[12px] mb-0"
             />

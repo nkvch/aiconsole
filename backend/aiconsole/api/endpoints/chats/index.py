@@ -36,7 +36,7 @@ async def get_history_headlines():
 
             if chat:
                 headlines.append(
-                    ChatHeadline(id=chat_id, name=chat.name, last_modified=chat.last_modified).model_dump()
+                    ChatHeadline(id=chat_id, name=chat.name, last_modified=chat.last_modified).model_dump(exclude_none=True)
                 )
 
         except Exception as e:

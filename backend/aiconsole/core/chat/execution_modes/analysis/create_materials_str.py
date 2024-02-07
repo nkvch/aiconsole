@@ -16,7 +16,7 @@
 
 import random
 
-from aiconsole.core.assets.models import AssetStatus
+from aiconsole.core.assets.types import AssetStatus
 from aiconsole.core.project import project
 
 

@@ -5,7 +5,7 @@ from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
-from aiconsole.core.assets.models import Asset, AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
     get_project_assets_directory,

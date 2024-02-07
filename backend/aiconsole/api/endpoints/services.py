@@ -3,7 +3,7 @@ from fastapi import UploadFile
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.assets.materials.material import Material
-from aiconsole.core.assets.models import Asset, AssetType
+from aiconsole.core.assets.types import Asset, AssetType
 from aiconsole.core.project import project
 from aiconsole.core.project.paths import get_project_assets_directory
 

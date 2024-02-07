@@ -16,7 +16,7 @@
 
 import { ProjectsAPI } from '@/api/api/ProjectsAPI';
 import { useProjectStore } from '@/store/projects/useProjectStore';
-import { Settings } from '@/types/settings/Settings';
+import { Settings } from '@/types/settings/settingsTypes';
 import { create } from 'zustand';
 import { SettingsAPI } from '../../api/api/SettingsAPI';
 

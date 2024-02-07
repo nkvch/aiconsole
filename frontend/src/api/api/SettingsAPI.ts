@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Avatar, Settings } from '@/types/settings/Settings';
+import { Avatar, Settings } from '@/types/settings/settingsTypes';
 import ky from 'ky';
 import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 
@@ -25,14 +25,15 @@ const checkKey = (key: string) => {
   });
 };
 
-async function getUserAvatar(email?: string) {
+async function getUserAvatar(email?: string): Promise<Avatar> {
   const response = await ky
     .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined })
     .json<Avatar>();
-  if (!response.gravatar) {
-    response.avatar_url = `${getBaseURL()}/${response.avatar_url}`;
-  }
-  return response;
+
+  return {
+    avatar_url: `${getBaseURL()}/${response.avatar_url}`,
+    username: response.username,
+  };
 }
 
 // TODO: this is not working now - backend is not ready

@@ -83,6 +83,16 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
                                 if "language" in tool_call and tool_call["language"] == "shell":
                                     tool_call["language"] = "python"
 
+
+            # For each agent_id change it to actor_id
+            for group in data["message_groups"]:
+                if "agent_id" in group:
+                    group["actor_id"] = {
+                        "type": "user" if group["agent_id"] == "user" else "agent",
+                        "id": group["agent_id"]
+                    }
+                    del group["agent_id"]
+
             # Add "analysis" to each message group
             for group in data["message_groups"]:
                 if "analysis" not in group:

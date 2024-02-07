@@ -20,9 +20,9 @@ from typing import cast
 from aiconsole.consts import DIRECTOR_MIN_TOKENS, DIRECTOR_PREFERRED_TOKENS
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.materials.material import Material
-from aiconsole.core.assets.models import AssetLocation, AssetStatus
+from aiconsole.core.assets.types import AssetLocation, AssetStatus
 from aiconsole.core.chat.chat_mutations import (
-    SetAgentIdMessageGroupMutation,
+    SetActorIdMessageGroupMutation,
     SetAnalysisMessageGroupMutation,
     SetIsAnalysisInProgressMutation,
     SetMaterialsIdsMessageGroupMutation,
@@ -36,7 +36,7 @@ from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
 from aiconsole.core.chat.execution_modes.analysis.create_plan_class import (
     create_plan_class,
 )
-from aiconsole.core.chat.types import Chat
+from aiconsole.core.chat.types import ActorId, Chat
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
 from aiconsole.core.gpt.request import (
@@ -213,9 +213,9 @@ async def gpt_analysis_function_step(
                     if arguments_dict:
                         if "agent_id" in arguments_dict:
                             await chat_mutator.mutate(
-                                SetAgentIdMessageGroupMutation(
+                                SetActorIdMessageGroupMutation(
                                     message_group_id=message_group_id,
-                                    agent_id=arguments_dict["agent_id"],
+                                    actor_id=ActorId(type="agent", id=arguments_dict["agent_id"]),
                                 )
                             )
 
@@ -277,9 +277,9 @@ async def gpt_analysis_function_step(
 
         picked_agent = pick_agent(plan, chat_mutator.chat, possible_agent_choices)
         await chat_mutator.mutate(
-            SetAgentIdMessageGroupMutation(
+            SetActorIdMessageGroupMutation(
                 message_group_id=message_group_id,
-                agent_id=picked_agent.id,
+                actor_id=ActorId(type="agent", id=picked_agent.id),
             )
         )
 

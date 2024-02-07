@@ -34,7 +34,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { AgentAvatar } from './AgentAvatar';
+import { ActorAvatar } from './ActorAvatar';
 
 function EmptyChatAgentAvatar({ agent }: { agent: Agent }) {
   const menuItems = useEditableObjectContextMenu({ editableObjectType: 'agent', editable: agent });
@@ -55,7 +55,7 @@ function EmptyChatAgentAvatar({ agent }: { agent: Agent }) {
           },
         )}
       >
-        <AgentAvatar agentId={agent.id} type="small" className="mb-[10px] mt-[5px]" />
+        <ActorAvatar actorType="agent" actorId={agent.id} type="small" className="mb-[10px] mt-[5px]" />
         <p className="text-[15px] text-center">{agent.name}</p>
       </div>
     </ContextMenu>

@@ -157,7 +157,7 @@ export function ChatPage() {
   }, [copyId, id, editableObjectType, forceRefresh, setChat]);
 
   const isLastMessageFromUser =
-    chat?.message_groups.length && chat.message_groups[chat.message_groups.length - 1].agent_id === 'user';
+    chat?.message_groups.length && chat.message_groups[chat.message_groups.length - 1].actor_id.type === 'user';
 
   useEffect(() => {
     //if there is exactly one text area focus on it
@@ -202,7 +202,7 @@ export function ChatPage() {
   };
 
   const getActionButton = () => {
-    if (hasAnyCommandInput || chat.message_groups.length === 0) {
+    if (hasAnyCommandInput) {
       return {
         label: 'Send',
         icon: SendRotated,

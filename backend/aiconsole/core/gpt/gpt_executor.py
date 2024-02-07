@@ -66,7 +66,7 @@ class GPTExecutor:
             request_dict["tool_choice"] = request.tool_choice
 
         if request.tools:
-            request_dict["tools"] = [tool.model_dump() for tool in request.tools]
+            request_dict["tools"] = [tool.model_dump(exclude_none=True) for tool in request.tools]
 
         for attempt in range(3):
             try:
@@ -76,7 +76,7 @@ class GPTExecutor:
 
                 self.partial_response = GPTPartialResponse()
 
-                async for chunk in response:
+                async for chunk in response:  # type: ignore
                     self.partial_response.apply_chunk(chunk)
                     yield chunk
                     await asyncio.sleep(0)

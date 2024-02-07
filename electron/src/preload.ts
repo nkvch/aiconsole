@@ -48,6 +48,10 @@ contextBridge.exposeInMainWorld('electron', {
   },
   onBackendExit: (callback: () => void) => ipcRenderer.on('backend-exit', () => callback()),
   disposeBackendExitListener: () => ipcRenderer.removeAllListeners('backend-exit'),
+  registerBeforeUnloadListener: (shouldConfirm: boolean) => {
+    ipcRenderer.send('register-beforeunload-listener', shouldConfirm);
+  },
+  disposeBeforeUnloadListener: () => ipcRenderer.send('dispose-beforeunload-listener'),
   getFileManagerName: () => {
     if (process.platform === 'darwin') {
       return 'Finder';

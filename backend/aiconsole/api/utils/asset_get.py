@@ -3,7 +3,7 @@ from typing import Callable
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
-from aiconsole.core.assets.models import Asset, AssetLocation, AssetType
+from aiconsole.core.assets.types import Asset, AssetLocation, AssetType
 from aiconsole.core.project import project
 from aiconsole.utils.capitalize_first import capitalize_first
 
@@ -16,7 +16,7 @@ async def asset_get(request, asset_type: AssetType, asset_id: str, new_asset: Ca
         asset = new_asset()
         asset.defined_in = AssetLocation.PROJECT_DIR
         asset.override = False
-        return JSONResponse(asset.model_dump())
+        return JSONResponse(asset.model_dump(exclude_none=True))
     else:
         if asset_type == AssetType.AGENT:
             assets = project.get_project_agents()

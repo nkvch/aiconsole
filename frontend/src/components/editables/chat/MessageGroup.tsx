@@ -14,8 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AgentInfo } from '@/components/editables/chat/AgentInfo';
-import { UserInfo } from '@/components/editables/chat/UserInfo';
+import { ActorInfo } from '@/components/editables/chat/ActorInfo';
 import { cn } from '@/utils/common/cn';
 import { useState } from 'react';
 import { AICMessageGroup } from '../../../types/editables/chatTypes';
@@ -26,6 +25,7 @@ import { useChatStore } from '@/store/editables/chat/useChatStore';
 
 export function MessageGroup({ group }: { group: AICMessageGroup }) {
   const [isAnalysisManuallyOpen, setIsAnalysisManuallyOpen] = useState<boolean | undefined>(undefined);
+  const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
 
   const lockId = useChatStore((state) => state.chat?.lock_id);
 
@@ -39,11 +39,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
     >
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
         <div className="flex-none items-center flex flex-col max-w-[120px] ">
-          {group.role === 'user' ? (
-            <UserInfo username={group.username} />
-          ) : (
-            <AgentInfo agentId={group.agent_id} materialsIds={group.materials_ids} task={group.task} />
-          )}
+          <ActorInfo actorId={group.actor_id} materialsIds={group.materials_ids} task={group.task} />
 
           {group.messages && !isOpen && (
             <AnalysisClosed group={group} onClick={() => setIsAnalysisManuallyOpen(!isOpen)} />
@@ -55,8 +51,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
             <MessageComponent key={message.id} message={message} group={group} />
           ))}
         </div>
-
-        {group.messages.length === 0 && (
+        {!isBeingProcessed && group.messages.length === 0 && (
           <MessageControls
             hideControls={!!lockId}
             onRemoveClick={() => {

@@ -68,8 +68,8 @@ export function Home() {
     existingProject: {
       title: 'This folder already contains an AIConsole project',
       message: 'Do you want to open it instead?',
-      confirmText: undefined,
-      cancelText: undefined,
+      confirmText: 'Yes, open',
+      cancelText: 'Close',
       onConfirm: openProjectConfirmation,
       onCancel: resetProjectOpening,
     },
@@ -118,7 +118,7 @@ export function Home() {
   }, [openProjectConfirmation, projectModalMode, isProjectDirectory]);
 
   return (
-    <div className="min-h-[100vh] relative">
+    <div className="min-h-[100vh] relative overflow-x-hidden">
       <BackgroundGradient />
       <div>
         {openAiApiKey === undefined || isProjectLoading ? (

@@ -34,7 +34,7 @@ from aiconsole.core.assets.materials.material import (
     MaterialContentType,
     MaterialWithStatus,
 )
-from aiconsole.core.assets.models import AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
 
 router = APIRouter()

@@ -20,6 +20,7 @@ import { ScrollOption } from 'react-scroll-to-bottom';
 import { v4 as uuid } from 'uuid';
 import { ChatAPI } from '../../../api/api/ChatAPI';
 import { ChatStore } from './useChatStore';
+import { useSettingsStore } from '@/store/settings/useSettingsStore';
 
 export type CommandSlice = {
   commandHistory: string[];
@@ -104,9 +105,7 @@ export const createCommandSlice: StateCreator<ChatStore, [], [], CommandSlice> =
         {
           type: 'CreateMessageGroupMutation',
           message_group_id: messageGroupId,
-          agent_id: 'user',
-          username: '', //TODO: Where to get the user name from?
-          email: '', //TODO: Where to get the user email from?
+          actor_id: { type: 'user', id: useSettingsStore.getState().userEmail || 'user' },
           task: '',
           materials_ids: [],
           analysis: '',

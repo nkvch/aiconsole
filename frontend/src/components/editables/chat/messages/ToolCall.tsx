@@ -55,15 +55,6 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
   const enableAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
   const isViableForRunningCode = useChatStore((state) => state.isViableForRunningCode);
 
-  const handleAlwaysRunClick = () => {
-    enableAutoCodeExecution(true);
-    doAcceptCode(tool_call.id);
-  };
-
-  const handleRunClick = () => {
-    doAcceptCode(tool_call.id);
-  };
-
   const handleAcceptedContent = useCallback(
     (content: string) => {
       userMutateChat({
@@ -82,6 +73,15 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
       tool_call_id: tool_call.id,
     });
   }, [tool_call.id, userMutateChat]);
+
+  const handleRunClick = () => {
+    doAcceptCode(tool_call.id);
+  };
+
+  const handleAlwaysRunClick = () => {
+    enableAutoCodeExecution(true);
+    doAcceptCode(tool_call.id);
+  };
 
   //Either executing or streaming while there are still no output messages
   const shouldDisplaySpinner = tool_call.is_executing || tool_call.is_streaming;
@@ -136,7 +136,6 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
           {folded && <Icon icon={ChevronDown} width={20} height={20} className="flex-shrink-0" />}
         </div>
       </div>
-
       {!folded && (
         <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0">
           <div className="flex flex-row w-full">

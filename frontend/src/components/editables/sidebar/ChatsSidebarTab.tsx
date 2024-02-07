@@ -18,7 +18,6 @@ import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import useGroupByDate from '@/utils/editables/useGroupByDate';
 import { useEffect } from 'react';
-import ChatOptions from '../assets/ChatOptions';
 import SideBarItem from './SideBarItem';
 
 export const ChatsSidebarTab = () => {
@@ -58,9 +57,6 @@ export const ChatsSidebarTab = () => {
               ),
           )}
         </div>
-      </div>
-      <div className="max-h-[80%] overflow-y-auto">
-        <ChatOptions />
       </div>
     </div>
   );

@@ -53,14 +53,6 @@ from aiconsole.core.project import project
 
 _log = logging.getLogger(__name__)
 
-
-def agent_from_message_group(message_group: AICMessageGroup) -> Agent:
-    # Find the message group with id context.message_group_id
-    agent_id = message_group.agent_id
-    agent = cast(Agent, project.get_project_agents().get_asset(agent_id))
-    return agent
-
-
 async def render_materials_from_message_group(
     message_group: AICMessageGroup, context: ProcessChatContext, agent: Agent
 ) -> list[RenderedMaterial]:

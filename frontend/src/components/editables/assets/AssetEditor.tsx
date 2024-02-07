@@ -94,6 +94,28 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   }, [newPath, isAssetChanged, wasAssetUpdate, navigate]);
 
   useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent | CloseEvent) => {
+      if (isAssetChanged) {
+        e.preventDefault();
+      }
+    };
+
+    if (window.electron) {
+      window.electron.registerBeforeUnloadListener(isAssetChanged);
+    } else {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      if (window.electron) {
+        window.electron.disposeBeforeUnloadListener();
+      } else {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      }
+    };
+  }, [isAssetChanged]);
+
+  useEffect(() => {
     setItem(isAssetChanged);
   }, [isAssetChanged]);
 
@@ -154,8 +176,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
           message: `The ${assetType} has been successfully saved.`,
           variant: 'success',
         });
-      }
-      else {
+      } else {
         await EditablesAPI.updateEditableObject(editableObjectType, asset);
         showToast({
           title: 'Overwritten',

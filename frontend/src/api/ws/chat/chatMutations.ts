@@ -1,4 +1,5 @@
 import { GPTRoleSchema, LanguageStrSchema } from '@/types/editables/assetTypes';
+import { ActorIdSchema } from '@/types/editables/chatTypes';
 import { z } from 'zod';
 
 export const LockAcquiredMutationSchema = z.object({
@@ -18,9 +19,7 @@ export type LockReleasedMutation = z.infer<typeof LockReleasedMutationSchema>;
 export const CreateMessageGroupMutationSchema = z.object({
   type: z.literal('CreateMessageGroupMutation'),
   message_group_id: z.string(),
-  agent_id: z.string(),
-  username: z.string(),
-  email: z.string(),
+  actor_id: ActorIdSchema,
   role: GPTRoleSchema, // Replace with actual GPTRole schema
   task: z.string(),
   materials_ids: z.array(z.string()),
@@ -67,13 +66,13 @@ export const SetRoleMessageGroupMutationSchema = z.object({
 
 export type SetRoleMessageGroupMutation = z.infer<typeof SetRoleMessageGroupMutationSchema>;
 
-export const SetAgentIdMessageGroupMutationSchema = z.object({
-  type: z.literal('SetAgentIdMessageGroupMutation'),
+export const SetActorIdMessageGroupMutationSchema = z.object({
+  type: z.literal('SetActorIdMessageGroupMutation'),
   message_group_id: z.string(),
-  agent_id: z.string(),
+  actor_id: ActorIdSchema,
 });
 
-export type SetAgentIdMessageGroupMutation = z.infer<typeof SetAgentIdMessageGroupMutationSchema>;
+export type SetActorIdMessageGroupMutation = z.infer<typeof SetActorIdMessageGroupMutationSchema>;
 
 export const SetMaterialsIdsMessageGroupMutationSchema = z.object({
   type: z.literal('SetMaterialsIdsMessageGroupMutation'),
@@ -157,7 +156,7 @@ export type SetLanguageToolCallMutation = z.infer<typeof SetLanguageToolCallMuta
 export const SetOutputToolCallMutationSchema = z.object({
   type: z.literal('SetOutputToolCallMutation'),
   tool_call_id: z.string(),
-  output: z.string().optional().nullable(),
+  output: z.string().optional(),
 });
 
 export type SetOutputToolCallMutation = z.infer<typeof SetOutputToolCallMutationSchema>;
@@ -233,8 +232,8 @@ export const CreateToolCallMutationSchema = z.object({
   tool_call_id: z.string(),
   code: z.string(),
   headline: z.string(),
-  output: z.string().optional().nullable(),
-  language: LanguageStrSchema.optional().nullable(),
+  output: z.string().optional(),
+  language: LanguageStrSchema.optional(),
 });
 
 export const ChatMutationSchema = z.union([
@@ -246,7 +245,7 @@ export const ChatMutationSchema = z.union([
   SetTaskMessageGroupMutationSchema,
   AppendToTaskMessageGroupMutationSchema,
   SetRoleMessageGroupMutationSchema,
-  SetAgentIdMessageGroupMutationSchema,
+  SetActorIdMessageGroupMutationSchema,
   SetMaterialsIdsMessageGroupMutationSchema,
   AppendToMaterialsIdsMessageGroupMutationSchema,
   SetAnalysisMessageGroupMutationSchema,

@@ -70,7 +70,7 @@ const assetItems = (editableObjectType: EditableObjectType, editableObject: Edit
 
     {
       type: 'item',
-      title: 'AI Choice',
+      title: 'Enabled',
       ...statusHelper('enabled', asset, editableObjectType),
     },
 

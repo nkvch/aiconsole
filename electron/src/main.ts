@@ -14,21 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  dialog,
-  IpcMainEvent,
-  MenuItemConstructorOptions,
-  shell,
-  Notification,
-} from 'electron';
-import { ChildProcess, spawn } from 'child_process';
-import path from 'path';
-import net from 'net';
 import { initialize, trackEvent } from '@aptabase/electron/main';
+import { ChildProcess, spawn } from 'child_process';
+import { BrowserWindow, IpcMainEvent, Menu, MenuItemConstructorOptions, app, dialog, ipcMain, shell } from 'electron';
+import net from 'net';
+import path from 'path';
 
 import { windowStateTracker } from './windowStateTracker';
 
@@ -340,6 +330,43 @@ app.whenReady().then(() => {
   ipcMain.handle('open-finder', async (event, path) => {
     shell.showItemInFolder(path);
   });
+
+  ipcMain.on('register-beforeunload-listener', (event, shouldConfirm) => {
+    const window: AIConsoleWindow | undefined = windowManager.windows.find(
+      (win) => event.sender === win.browserWindow.webContents
+    );
+
+    if (!shouldConfirm) {
+      window?.browserWindow.removeAllListeners('close');
+      return;
+    }
+
+    const handleBeforeUnload = (e: Electron.IpcMainEvent) => {
+      if (!shouldConfirm) {
+        window?.browserWindow.close();
+      }
+      const choice = dialog.showMessageBoxSync(window.browserWindow, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message: 'Are you sure you want to quit?',
+      });
+
+      if (choice === 1) {
+        e.preventDefault();
+      }
+    };
+    window.browserWindow.addListener('close', handleBeforeUnload);
+  });
+
+  ipcMain.on('dispose-beforeunload-listener', (event) => {
+    const window: AIConsoleWindow | undefined = windowManager.windows.find(
+      (win) => event.sender === win.browserWindow.webContents
+    );
+
+    window.browserWindow.removeAllListeners('close');
+  });
+
   createLoaderWindow();
 
   app.on('will-quit', () => {

@@ -43,5 +43,5 @@ async def partially_update_project_settings(
 
 
 @router.get("")
-async def get_settings(settings: Settings = Depends(dependency=settings)):
-    return JSONResponse(settings.unified_settings.model_dump())
+async def get_settings(settings: Settings = Depends(settings)):
+    return JSONResponse(settings.unified_settings.model_dump(mode="json", exclude_none=True))

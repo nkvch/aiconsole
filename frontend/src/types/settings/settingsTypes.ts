@@ -27,5 +27,4 @@ export type Settings = {
 export type Avatar = {
   avatar_url: string;
   username: string;
-  gravatar: boolean;
 };

@@ -31,7 +31,7 @@ from aiconsole.api.websockets.server_messages import (
     ProjectLoadingServerMessage,
     ProjectOpenedServerMessage,
 )
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 from aiconsole.core.code_running.run_code import reset_code_interpreters
 from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     create_dedicated_venv,

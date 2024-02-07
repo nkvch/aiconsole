@@ -28,7 +28,7 @@ class BaseClientMessage(BaseModel):
 
     async def send(self, websocket: WebSocketTestSession):
         # client messages are sent via Test session which is synchronous
-        websocket.send_json({"type": self.get_type(), **self.model_dump()})
+        websocket.send_json({"type": self.get_type(), **self.model_dump(exclude_none=True)})
 
 
 # This is both an incoming and an outgoing message

@@ -6,7 +6,7 @@ from aiconsole_toolkit.settings.settings_data import SettingsData
 _log = logging.getLogger(__name__)
 
 
-def update_settings_data(settings: SettingsData, *new_settings: PartialSettingsData):
+def merge_settings_data(settings: SettingsData, *new_settings: PartialSettingsData):
     settings_data = settings.model_dump()
 
     for new_setting in new_settings:

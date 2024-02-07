@@ -22,7 +22,7 @@ import rtoml
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
-from aiconsole.core.assets.models import Asset, AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.project.paths import (
     get_core_assets_directory,

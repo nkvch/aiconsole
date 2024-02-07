@@ -40,7 +40,7 @@ class AICConnection:
         self.acquired_locks: list[AcquiredLock] = []
 
     async def send(self, msg: BaseServerMessage):
-        await self.websocket.send_json({"type": msg.get_type(), **msg.model_dump(mode="json")})
+        await self.websocket.send_json({"type": msg.get_type(), **msg.model_dump(exclude_none=True, mode="json")})
 
 
 class ConnectionManager:

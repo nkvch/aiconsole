@@ -17,7 +17,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
 
 router = APIRouter()
@@ -28,7 +28,7 @@ async def fetch_materials():
     return JSONResponse(
         [
             {
-                **material.model_dump(),
+                **material.model_dump(exclude_none=True),
                 "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
             }
             for material in project.get_project_materials().all_assets()

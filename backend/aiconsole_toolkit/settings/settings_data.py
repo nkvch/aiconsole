@@ -2,10 +2,10 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from aiconsole.core.assets.models import AssetStatus
+from aiconsole.core.assets.types import AssetStatus
 from aiconsole.core.gpt import consts
 from aiconsole.core.gpt.types import GPTModeConfig
-from aiconsole.core.users.models import UserProfile
+from aiconsole.core.users.types import UserProfile
 
 REFERENCE_TO_GLOBAL_OPENAI_KEY = "ref/openai_api_key"
 

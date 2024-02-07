@@ -104,19 +104,25 @@ def preprocess_python(code: str, materials: list[Material]):
     api_lines = [line for line in apis_str.split(newline) if line.strip()]
     code_lines = [line for line in code.split(newline) if line.strip()]
 
+    # Indentation error windows, https://github.com/10clouds/aiconsole/issues/753
+    insert_code = newline.join(("\t" + line) for line in [*api_lines, *code_lines])
+    insert_code = "\n".join(filter(bool, insert_code.split("\n")))
+
+    if not insert_code.strip():
+        insert_code = "\t'No input recieved'"
+
     code = f"""
 import traceback
 from aiconsole_toolkit.credentials import MissingCredentialException
-try:
-{newline.join(("    " + line) for line in [*api_lines, *code_lines])}
+try:\n{insert_code}
 except MissingCredentialException as e:
-    print(e)
+\tprint(e)
 except Exception:
-    traceback.print_exc()
+\ttraceback.print_exc()
 
 
 print("## end_of_execution ##")
 
 """.strip()
-
+    _log.info(code)
     return code
