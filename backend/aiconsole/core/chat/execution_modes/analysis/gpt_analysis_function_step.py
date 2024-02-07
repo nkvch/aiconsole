@@ -78,7 +78,7 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
         )
     else:
         try:
-            picked_agent = next((agent for agent in available_agents if agent.id == arguments.actor_id))
+            picked_agent = next((agent for agent in available_agents if agent.id == arguments.agent_id))
         except StopIteration:
             picked_agent = None
 
