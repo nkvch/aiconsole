@@ -26,39 +26,15 @@ import { Button } from '../../common/Button';
 import { Icon } from '../../common/icons/Icon';
 import GlobalSettingsApiSection from './sections/GlobalSettingsApiSection';
 import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
+import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
+import { Settings } from '@/types/settings/Settings';
 import { UnsavedSettingsDialog } from '@/components/common/UnsavedSettingsDialog';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
 export const GlobalSettingsModal = () => {
   const isSettingsModalVisible = useSettingsStore((state) => state.isSettingsModalVisible);
   const setSettingsModalVisibility = useSettingsStore((state) => state.setSettingsModalVisibility);
-
-
-  const [usernameFormValue, setUsernameFormValue] = useState<string | undefined>(undefined);
-  const display_name = useSettingsStore((state) => state.settings.user_profile?.display_name);
-  useEffect(() => {
-    setUsernameFormValue(display_name);
-  }, [display_name]);
-
-  const [profilePictureFormValue, setProfilePictureFormValue] = useState<string | undefined>(undefined);
-  const profile_picture = useSettingsStore((state) => state.settings.user_profile?.profile_picture);
-  useEffect(() => {
-    setProfilePictureFormValue(profile_picture);
-  }, [profile_picture]);
-
-  const [apiKeyValue, setApiKeyValue] = useState<string | undefined>(undefined);
-  const openai_api_key = useSettingsStore((state) => state.settings.openai_api_key);
-  useEffect(() => {
-    setApiKeyValue(openai_api_key || '');
-  }, [openai_api_key]);
-
-  const [isAutoRun, setIsAutoRun] = useState(false);
-  const code_autorun = useSettingsStore((state) => !!state.settings.code_autorun);
-  useEffect(() => {
-    setIsAutoRun(code_autorun);
-  }, [code_autorun]);
-
 
   const username = useSettingsStore((state) => state.username);
   const email = useSettingsStore((state) => state.userEmail);
@@ -67,70 +43,14 @@ export const GlobalSettingsModal = () => {
   const alwaysExecuteCode = useSettingsStore((state) => state.alwaysExecuteCode);
   const saveSettings = useSettingsStore((state) => state.saveSettings);
 
-
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-
-  const handleAutoRunChange = (autorun: boolean) => {
-    setIsAutoRun(autorun);
-  };
-
-  const save = async () => {
-    useSettingsStore.getState().saveSettings(
-      {
-        user_profile:
-          usernameFormValue !== display_name || profilePictureFormValue !== profile_picture
-            ? {
-                display_name: usernameFormValue !== display_name ? usernameFormValue : undefined,
-                profile_picture: profilePictureFormValue !== profile_picture ? profilePictureFormValue : undefined,
-              }
-            : undefined,
-        openai_api_key: apiKeyValue !== openai_api_key ? apiKeyValue : undefined,
-        code_autorun: isAutoRun !== code_autorun ? isAutoRun : undefined,
-      },
-      true,
-    );
-    setSettingsModalVisibility(false);
-  };
-
-  const handleSetAvatarImage = async (avatar: string) => {
-    const reader = avatar.stream().getReader();
-    const chunks = [];
-
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        break;
-      }
-
-      chunks.push(value);
-    }
-
-    const blob = new Blob(chunks, { type: avatar.type });
-
-    const reader2 = new FileReader();
-    reader2.onload = () => {
-      const base64String = reader2.result.split(',')[1];
-      setProfilePictureFormValue(base64String);
-    };
-    reader2.readAsDataURL(blob);
-  };
-
-  useEffect(() => {
-    const resetState = () => {
-      setUsernameFormValue(display_name);
-      setApiKeyValue(openai_api_key);
-      setIsAutoRun(code_autorun);
-      setProfilePictureFormValue(undefined);
-    };
-
 
   const { reset, control, setValue, formState, handleSubmit } = useForm<GlobalSettingsFormData>({
     resolver: zodResolver(GlobalSettingsFormSchema),
   });
 
   useEffect(() => {
-    // Initial form values are cached, so we need to reset with the right one in
+    // Initial form values are cached, so we need to reset with the right ones
     if (isSettingsModalVisible) {
       reset({
         user_profile: {
@@ -214,9 +134,6 @@ export const GlobalSettingsModal = () => {
             <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-self-start gap-5 overflow-y-auto px-5 pt-3 mt-3">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <GlobalSettingsUserSection
-                  username={usernameFormValue}
-                  setUsername={setUsernameFormValue}
-                  setImage={handleSetAvatarImage}
                   control={control}
                   avatarUrl={userAvatarUrl}
                   onImageSelected={handleSetAvatarImage}

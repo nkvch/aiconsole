@@ -14,37 +14,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Pencil } from 'lucide-react';
 import { useState } from 'react';
-import type { Control } from 'react-hook-form';
 import { Controller, useWatch } from 'react-hook-form';
+import type { Control } from 'react-hook-form';
+import { Pencil } from 'lucide-react';
 
 import ImageUploader from '@/components/common/ImageUploader';
 import { Icon } from '@/components/common/icons/Icon';
-
 import { TextInput } from '@/components/editables/assets/TextInput';
 import { GlobalSettingsFormData } from '@/forms/globalSettingsForm';
-import { useSettingsStore } from '@/store/settings/useSettingsStore';
 
 interface GlobalSettingsUserSectionProps {
-  username?: string;
-  setUsername: (value: string) => void;
-  image: string | undefined;
-  setImage: (avatar: string) => void;
   control: Control<GlobalSettingsFormData>;
+  onImageSelected: (avatar: File) => void;
+  avatarUrl?: string;
 }
 
-const GlobalSettingsUserSection = ({ username, setUsername, image, setImage, control }: GlobalSettingsUserSectionProps) => {
-  const userAvatar = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
-
+const GlobalSettingsUserSection = ({ onImageSelected, avatarUrl, control }: GlobalSettingsUserSectionProps) => {
   const [isEditMode, setIsEditMode] = useState(false);
-
-  const currentUsername = useSettingsStore((state) => state.settings.user_profile.display_name) || '';
-  const currentUserAvatar = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
-
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [usernameFormValue, setUsernameFormValue] = useState(username);
-  const [avagtarFormValue, setAvatarFormValue] = useState(image);
 
   const watchName = useWatch({ control, name: 'user_profile.username' });
 
@@ -52,34 +39,10 @@ const GlobalSettingsUserSection = ({ username, setUsername, image, setImage, con
 
   return (
     <div className="flex items-stretch w-full gap-[30px] bg-secondary-gradient p-5 rounded-xl mb-5 border-gray-600 border">
-      <ImageUploader currentImage={userAvatar} onUpload={setImage} />
+      <ImageUploader currentImage={avatarUrl} onUpload={onImageSelected} />
       <div className="flex flex-col justify-between">
         <div className="flex gap-2.5 flex-col">
           <span className="text-white text-[15px]">User name</span>
-  useEffect(() => {
-    if (typeof image === 'string') {
-      setAvatarFormValue(image);
-    } else {
-      setAvatarFormValue(currentUserAvatar);
-    }
-  }, [image, currentUserAvatar]);
-
-  const handleNameInputBlur = () => {
-    if (!username) {
-      setUsername(currentUsername);
-    }
-    if (!image) {
-      setImage(currentUserAvatar || '');
-    }
-    setIsEditMode(false);
-  };
-
-  return (
-    <div className="flex items-center w-full gap-[30px]">
-      <ImageUploader currentImage={avagtarFormValue} onUpload={setImage} />
-      <div className="flex flex-col justify-between h-full">
-        <div className="flex gap-2.5 text-[25px] font-black pt-[30px]">
-          <h2 className="text-gray-400">Hello, </h2>
           {isEditMode ? (
             <Controller
               name="user_profile.username"
@@ -106,7 +69,6 @@ const GlobalSettingsUserSection = ({ username, setUsername, image, setImage, con
             </div>
           )}
         </div>
-
         <div className="flex flex-col gap-2.5 w-[255px]">
           <p className="text-white text-[15px]">E-mail address</p>
           <Controller

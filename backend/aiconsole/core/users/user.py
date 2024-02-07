@@ -27,10 +27,6 @@ class UserProfileService:
             if email == user_profile.email and user_profile.avatar_url:
                 return user_profile
 
-            gravatar_profile = gravatar_client().get_profile(email)
-            if gravatar_profile:
-                return self._create_user_profile_from_gravatar(email, gravatar_profile)
-
             if email != user_profile.email:
                 return UserProfile(
                     username=email or DEFAULT_USERNAME,
