@@ -83,7 +83,7 @@ class ChatTestFramework:
                     chat_id=self._chat_id,
                     mutation=CreateMessageGroupMutation(
                         message_group_id=self._message_group_id,
-                        agent_id="user",
+                        actor_id="user",
                         username="",
                         email="",
                         role="user",

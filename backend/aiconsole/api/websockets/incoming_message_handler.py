@@ -314,7 +314,7 @@ class IncomingMessageHandler:
             await chat_mutator.mutate(
                 CreateMessageGroupMutation(
                     message_group_id=message_group_id,
-                    agent_id=agent.id,
+                    actor_id=agent.id,
                     username="",
                     email="",
                     role=role,

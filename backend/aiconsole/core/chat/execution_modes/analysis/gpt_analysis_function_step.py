@@ -232,7 +232,7 @@ async def gpt_analysis_function_step(
                             await chat_mutator.mutate(
                                 SetActorIdMessageGroupMutation(
                                     message_group_id=message_group_id,
-                                    actor_id=arguments_dict["actor_id"],
+                                    actor_id=arguments_dict["agent_id"],
                                 )
                             )
 
