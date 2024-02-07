@@ -16,7 +16,7 @@ async def asset_get(request, asset_type: AssetType, asset_id: str, new_asset: Ca
         asset = new_asset()
         asset.defined_in = AssetLocation.PROJECT_DIR
         asset.override = False
-        return JSONResponse(asset.model_dump())
+        return JSONResponse(asset.model_dump(exclude_none=True))
     else:
         if asset_type == AssetType.AGENT:
             assets = project.get_project_agents()

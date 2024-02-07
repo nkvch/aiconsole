@@ -94,7 +94,7 @@ class GPTRequest:
         self.max_tokens = min(available_tokens, preferred_tokens)
 
     def get_messages_dump(self):
-        return [message.model_dump() for message in self.all_messages]
+        return [message.model_dump(exclude_none=True) for message in self.all_messages]
 
     @property
     def all_messages(self):

@@ -35,7 +35,7 @@ router = APIRouter()
 
 @router.get("/recent")
 async def get_recent():
-    return JSONResponse([rp.model_dump() for rp in await get_recent_project()])
+    return JSONResponse([rp.model_dump(exclude_none=True) for rp in await get_recent_project()])
 
 
 @router.delete("/recent")

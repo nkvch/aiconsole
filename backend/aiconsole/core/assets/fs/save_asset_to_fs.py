@@ -59,11 +59,7 @@ async def save_asset_to_fs(asset: Asset, old_asset_id: str) -> Asset:
     with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
         # FIXME: preserve formatting and comments in the file using tomlkit
 
-        # Ignore None values in model_dump
-        model_dump = asset.model_dump()
-        for key in list(model_dump.keys()):
-            if model_dump[key] is None:
-                del model_dump[key]
+        model_dump = asset.model_dump(exclude_none=True)
 
         def make_sure_starts_and_ends_with_newline(s: str):
             if not s.startswith("\n"):

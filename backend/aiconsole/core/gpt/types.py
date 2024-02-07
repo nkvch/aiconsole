@@ -76,11 +76,6 @@ class GPTRequestTextMessage(BaseModel):
     name: str | None = None
     tool_calls: list[GPTToolCall] | None = None
 
-    def model_dump(self):
-        # Don't include None values, call to super to avoid recursion
-        return {k: v for k, v in super().model_dump().items() if v is not None}
-
-
 GPTRequestMessage = GPTRequestTextMessage | GPTRequestToolMessage
 
 

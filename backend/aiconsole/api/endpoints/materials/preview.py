@@ -60,4 +60,4 @@ async def materials_preview(material: Material):
 
     rendered_material = await material.render(content_context)
 
-    return JSONResponse(rendered_material.model_dump())
+    return JSONResponse(rendered_material.model_dump(exclude_none=True))

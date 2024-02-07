@@ -157,7 +157,7 @@ export type SetLanguageToolCallMutation = z.infer<typeof SetLanguageToolCallMuta
 export const SetOutputToolCallMutationSchema = z.object({
   type: z.literal('SetOutputToolCallMutation'),
   tool_call_id: z.string(),
-  output: z.string().optional().nullable(),
+  output: z.string().optional(),
 });
 
 export type SetOutputToolCallMutation = z.infer<typeof SetOutputToolCallMutationSchema>;
@@ -233,8 +233,8 @@ export const CreateToolCallMutationSchema = z.object({
   tool_call_id: z.string(),
   code: z.string(),
   headline: z.string(),
-  output: z.string().optional().nullable(),
-  language: LanguageStrSchema.optional().nullable(),
+  output: z.string().optional(),
+  language: LanguageStrSchema.optional(),
 });
 
 export const ChatMutationSchema = z.union([
