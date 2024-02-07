@@ -964,17 +964,6 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
-name = "libgravatar"
-version = "1.0.4"
-description = "A library that provides a Python 3 interface for the Gravatar API."
-optional = false
-python-versions = "*"
-files = [
-    {file = "libgravatar-1.0.4-py2.py3-none-any.whl", hash = "sha256:f967619b38914e0f941e53387881005e43929814571103f6bbfa2afd75045e20"},
-    {file = "libgravatar-1.0.4.tar.gz", hash = "sha256:05cf4f8dfefe995d09078cd3d747c8f04dcf17d6004fc7bb542049a55f2238d9"},
-]
-
-[[package]]
 name = "litellm"
 version = "1.21.7"
 description = "Library to easily interface with LLM API providers"
@@ -2900,4 +2889,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ca8119268a1b02f36af21cff2fcf8743277425eedcf29a84b666cf7ef2622f44"
+content-hash = "1366e8c81d8449184459db49c7aa6551983901ad2fa511e481b6c6e59772f3c7"

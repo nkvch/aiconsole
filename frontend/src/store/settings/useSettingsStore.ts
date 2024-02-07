@@ -82,6 +82,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         }),
       );
     }
+
     if (user_profile && user_profile.profile_picture) {
       set(
         produce((state: SettingsStore) => {
@@ -89,6 +90,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         }),
       );
     }
+
     if (typeof code_autorun === 'boolean') {
       set(
         produce((state: SettingsStore) => {

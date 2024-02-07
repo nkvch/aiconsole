@@ -35,12 +35,12 @@ class UserProfileService:
                 return UserProfile(
                     username=email or DEFAULT_USERNAME,
                     email=email,
-                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
-                    gravatar=False,
+                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar()
                 )
 
         return user_profile or UserProfile(
-            display_name=user_profile.display_name or DEFAULT_USERNAME, profile_picture=user_profile.profile_picture
+            display_name=user_profile.display_name or DEFAULT_USERNAME, profile_picture=user_profile.profile_picture,
+            profile_picture=self._get_default_avatar(email) if email else self._get_default_avatar()
         )
 
     def save_avatar(

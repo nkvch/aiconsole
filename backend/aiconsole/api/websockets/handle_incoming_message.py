@@ -68,6 +68,7 @@ from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
 from aiconsole.core.project import project
 from aiconsole.utils.events import internal_events
+from backend.aiconsole.core.chat import convert_agent_id_to_actor_id
 
 
 @dataclass
@@ -313,9 +314,7 @@ async def _handle_process_chat_ws_message(connection: AICConnection, json: dict)
         await chat_mutator.mutate(
             CreateMessageGroupMutation(
                 message_group_id=message_group_id,
-                actor_id=agent.id,
-                username="",
-                email="",
+                actor_id=convert_agent_id_to_actor_id(agent.id),
                 role=role,
                 materials_ids=materials_ids,
                 analysis="",
