@@ -107,7 +107,7 @@ async def get_recent_project() -> list[RecentProject]:
                     materials_dynamic_note_count=materials_count.dynamic_note,
                     materials_python_api_count=materials_count.python_api,
                     chats_count=len(chat_ids),
-                    agents=RecentProjectStatsAgent(count=agents_count.count, actor_ids=agents_count.actor_ids),
+                    agents=RecentProjectStatsAgent(count=agents_count.count, actor_ids=agents_count.agent_ids),
                 ),
             )
         )

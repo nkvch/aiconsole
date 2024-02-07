@@ -20,7 +20,7 @@ class MaterialsCounts:
 @dataclass(frozen=True, slots=True)
 class AgentsCount:
     count: int
-    actor_ids: list[str]
+    agent_ids: list[str]
 
 
 class RecentProjectsStats:
@@ -63,7 +63,7 @@ class RecentProjectsStats:
 
         ids = {*base_ids, *core_ids}
 
-        return AgentsCount(count=len(ids), actor_ids=list(ids))
+        return AgentsCount(count=len(ids), agent_ids=list(ids))
 
     def _get_asset_ids_in_path(self, dir: Path) -> set[str]:
         return set(
