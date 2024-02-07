@@ -27,14 +27,24 @@ import { GlobalSettingsFormData } from '@/forms/globalSettingsForm';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
 
 interface GlobalSettingsUserSectionProps {
-  setImage: (avatar: File) => void;
+  username?: string;
+  setUsername: (value: string) => void;
+  image: string | undefined;
+  setImage: (avatar: string) => void;
   control: Control<GlobalSettingsFormData>;
 }
 
-const GlobalSettingsUserSection = ({ setImage, control }: GlobalSettingsUserSectionProps) => {
+const GlobalSettingsUserSection = ({ username, setUsername, image, setImage, control }: GlobalSettingsUserSectionProps) => {
   const userAvatar = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
 
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const currentUsername = useSettingsStore((state) => state.settings.user_profile.display_name) || '';
+  const currentUserAvatar = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [usernameFormValue, setUsernameFormValue] = useState(username);
+  const [avagtarFormValue, setAvatarFormValue] = useState(image);
 
   const watchName = useWatch({ control, name: 'user_profile.username' });
 
@@ -46,6 +56,30 @@ const GlobalSettingsUserSection = ({ setImage, control }: GlobalSettingsUserSect
       <div className="flex flex-col justify-between">
         <div className="flex gap-2.5 flex-col">
           <span className="text-white text-[15px]">User name</span>
+  useEffect(() => {
+    if (typeof image === 'string') {
+      setAvatarFormValue(image);
+    } else {
+      setAvatarFormValue(currentUserAvatar);
+    }
+  }, [image, currentUserAvatar]);
+
+  const handleNameInputBlur = () => {
+    if (!username) {
+      setUsername(currentUsername);
+    }
+    if (!image) {
+      setImage(currentUserAvatar || '');
+    }
+    setIsEditMode(false);
+  };
+
+  return (
+    <div className="flex items-center w-full gap-[30px]">
+      <ImageUploader currentImage={avagtarFormValue} onUpload={setImage} />
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex gap-2.5 text-[25px] font-black pt-[30px]">
+          <h2 className="text-gray-400">Hello, </h2>
           {isEditMode ? (
             <Controller
               name="user_profile.username"

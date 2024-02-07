@@ -7,7 +7,7 @@ import { Icon } from './icons/Icon';
 
 interface ImageUploaderProps {
   currentImage?: string;
-  onUpload?: (file: File) => void;
+  onUpload?: (avatar: string) => void;
 }
 
 // TODO: update this component with generating ai logic and connect with backend
@@ -19,7 +19,8 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
 
   useEffect(() => {
     if (currentImage) {
-      setPreviewImage(currentImage);
+      console.log('currentImage', currentImage);
+      setPreviewImage(`${currentImage}`);
     }
   }, [currentImage]);
 
@@ -30,10 +31,9 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           setPreviewImage(reader.result);
+          onUpload?.(reader.result);
         }
       };
-      reader.readAsDataURL(file);
-      onUpload?.(file);
     }
   };
 

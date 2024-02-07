@@ -61,6 +61,7 @@ export const GlobalSettingsModal = () => {
     setIsAutoRun(code_autorun);
   }, [code_autorun]);
 
+
   const username = useSettingsStore((state) => state.username);
   const email = useSettingsStore((state) => state.userEmail);
   const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl);
@@ -76,14 +77,6 @@ export const GlobalSettingsModal = () => {
   };
 
   const save = async () => {
-    let avatarFormData: FormData | null = null;
-
-    // check if avatar was overwritten to avoid sending unnecessary requests
-    if (isAvatarOverwritten && userAvatarData) {
-      avatarFormData = new FormData();
-      avatarFormData.append('avatar', userAvatarData);
-    }
-
     useSettingsStore.getState().saveSettings(
       {
         user_profile:
@@ -97,14 +90,32 @@ export const GlobalSettingsModal = () => {
         code_autorun: isAutoRun !== code_autorun ? isAutoRun : undefined,
       },
       true,
-      avatarFormData,
     );
     setSettingsModalVisibility(false);
   };
 
-  const handleSetAvatarImage = (avatar: File) => {
-    setUserAvatarData(avatar);
-    setIsAvatarOverwritten(true);
+  const handleSetAvatarImage = async (avatar: string) => {
+    const reader = avatar.stream().getReader();
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      chunks.push(value);
+    }
+
+    const blob = new Blob(chunks, { type: avatar.type });
+
+    const reader2 = new FileReader();
+    reader2.onload = () => {
+      const base64String = reader2.result.split(',')[1];
+      setProfilePictureFormValue(base64String);
+    };
+    reader2.readAsDataURL(blob);
   };
 
   useEffect(() => {
@@ -112,8 +123,7 @@ export const GlobalSettingsModal = () => {
       setUsernameFormValue(display_name);
       setApiKeyValue(openai_api_key);
       setIsAutoRun(code_autorun);
-      setUserAvatarData(undefined);
-      setIsAvatarOverwritten(false);
+      setProfilePictureFormValue(undefined);
     };
 
 
@@ -204,6 +214,14 @@ export const GlobalSettingsModal = () => {
               </Button>
             </div>
             <div className="h-[calc(100%-100px)] max-w-[720px] mx-auto relative flex flex-col justify-center gap-5">
+
+              <GlobalSettingsUserSection
+                username={usernameFormValue}
+                setUsername={setUsernameFormValue}
+                image={profilePictureFormValue}
+                setImage={handleSetAvatarImage}
+              />
+
               <GlobalSettingsApiSection apiKey={openai_api_key} setApiKey={setApiKeyValue} />
               <GlobalSettingsCodeSection isAutoRun={isAutoRun} setIsAutoRun={handleAutoRunChange} />
 
