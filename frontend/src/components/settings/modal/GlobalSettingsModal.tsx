@@ -28,7 +28,7 @@ import GlobalSettingsApiSection from './sections/GlobalSettingsApiSection';
 import GlobalSettingsCodeSection from './sections/GlobalSettingsCodeSection';
 import GlobalSettingsUserSection from './sections/GlobalSettingsUserSection';
 import { GlobalSettingsFormData, GlobalSettingsFormSchema } from '@/forms/globalSettingsForm';
-import { Settings } from '@/types/settings/Settings';
+import { Settings } from '@/types/settings/settingsTypes';
 import { UnsavedSettingsDialog } from '@/components/common/UnsavedSettingsDialog';
 
 // TODO: implement other features from figma like api for azure, user profile and tutorial
