@@ -23,6 +23,7 @@ from aiconsole.core.settings.settings_notifications import SettingsNotifications
 from aiconsole.core.settings.settings_storage import SettingsStorage
 from aiconsole.core.settings.utils.merge_settings_data import merge_settings_data
 from aiconsole.core.users.types import UserProfile
+from aiconsole.core.settings.utils.update_settings_data import merge_settings_data
 from aiconsole.utils.events import internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 from aiconsole_toolkit.settings.settings_data import SettingsData
@@ -79,6 +80,7 @@ class Settings:
     def unified_settings(self) -> SettingsData:
         if not self._storage or not self._settings_notifications:
             raise ValueError("Settings not configured")
+
 
         return merge_settings_data(
             self._default_settings, self._storage.global_settings, self._storage.project_settings
