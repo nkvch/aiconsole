@@ -21,7 +21,6 @@ import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { Icon } from '@/components/common/icons/Icon';
 import { useClickOutside } from '@/utils/common/useClickOutside';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
-
 import { Agent, Material } from '@/types/editables/assetTypes';
 import { ActorAvatar } from '../chat/ActorAvatar';
 
