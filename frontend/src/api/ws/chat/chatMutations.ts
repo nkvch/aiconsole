@@ -1,4 +1,5 @@
 import { GPTRoleSchema, LanguageStrSchema } from '@/types/editables/assetTypes';
+import { ActorIdSchema } from '@/types/editables/chatTypes';
 import { z } from 'zod';
 
 export const LockAcquiredMutationSchema = z.object({
@@ -18,9 +19,7 @@ export type LockReleasedMutation = z.infer<typeof LockReleasedMutationSchema>;
 export const CreateMessageGroupMutationSchema = z.object({
   type: z.literal('CreateMessageGroupMutation'),
   message_group_id: z.string(),
-  actor_id: z.string(),
-  username: z.string(),
-  email: z.string(),
+  actor_id: ActorIdSchema,
   role: GPTRoleSchema, // Replace with actual GPTRole schema
   task: z.string(),
   materials_ids: z.array(z.string()),
@@ -70,7 +69,7 @@ export type SetRoleMessageGroupMutation = z.infer<typeof SetRoleMessageGroupMuta
 export const SetActorIdMessageGroupMutationSchema = z.object({
   type: z.literal('SetActorIdMessageGroupMutation'),
   message_group_id: z.string(),
-  actor_id: z.string(),
+  actor_id: ActorIdSchema,
 });
 
 export type SetActorIdMessageGroupMutation = z.infer<typeof SetActorIdMessageGroupMutationSchema>;

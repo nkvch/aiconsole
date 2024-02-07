@@ -16,13 +16,18 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_serializer
 
 from aiconsole.core.assets.types import EditableObject
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.gpt.types import GPTRole
+
+
+class ActorId(BaseModel):
+    type: Literal["user"] | Literal["agent"]
+    id: str
 
 
 class AICToolCall(BaseModel):
@@ -47,7 +52,7 @@ class AICMessage(BaseModel):
 
 class AICMessageGroup(BaseModel):
     id: str
-    actor_id: str
+    actor_id: ActorId
     role: GPTRole
     analysis: str
     task: str

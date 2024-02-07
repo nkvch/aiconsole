@@ -25,6 +25,8 @@ import { ActorAvatar } from './ActorAvatar';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { cn } from '@/utils/common/cn';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { ActorId } from '@/types/editables/chatTypes';
+import { useSettingsStore } from '@/store/settings/useSettingsStore';
 
 function AgentInfoMaterialLink({
   materialId,
@@ -63,12 +65,10 @@ export function ActorInfo({
   actorId,
   materialsIds,
   task,
-  username,
 }: {
-  actorId: string;
+  actorId: ActorId;
   materialsIds: string[];
   task?: string;
-  username?: string | null;
 }) {
   const triggerRef = useRef<ContextMenuRef>(null);
 
@@ -76,14 +76,14 @@ export function ActorInfo({
   const isAnalysisRunning = useChatStore((state) => state.chat?.is_analysis_in_progress);
   const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
   const agents = useEditablesStore((state) => state.agents) || [];
-  const agent = agents.find((m) => m.id === actorId);
+  const agent = agents.find((m) => m.id === actorId.id);
   const userMenuItems = useUserContextMenu();
 
   const editableMenuItems = useEditableObjectContextMenu({
     editableObjectType: 'agent',
     editable: agent || {
-      id: actorId,
-      name: actorId,
+      id: actorId.id,
+      name: actorId.id,
     },
   });
 
@@ -93,42 +93,43 @@ export function ActorInfo({
     }
   }, [agent]);
 
-  if (actorId === 'user') {
+  if (actorId.type === 'user') {
+    const display_name = useSettingsStore.getState().settings.user_profile.display_name;
     const menuItems = userMenuItems;
 
     return (
       <ContextMenu options={menuItems} ref={triggerRef}>
         <Link to={''} className="flex-none items-center flex flex-col">
-          <ActorAvatar actorType="user" title={`${username}`} type="small" />
+          <ActorAvatar actorType="user" title={`${display_name}`} type="small" />
           <div
             className="text-[15px] w-32 text-center text-gray-300 max-w-[120px] truncate overflow-ellipsis overflow-hidden whitespace-nowrap"
-            title={`${username}`}
+            title={`${display_name}`}
           >
-            {username}
+            {display_name}
           </div>
         </Link>
       </ContextMenu>
     );
   } else {
     const openContext = (event: MouseEvent) => {
-      if (triggerRef.current && actorId === 'user') {
+      if (triggerRef.current && actorId.type === 'user') {
         triggerRef?.current.handleTriggerClick(event);
       }
     };
 
-    const menuItems = actorId !== 'user' ? editableMenuItems : userMenuItems;
+    const menuItems = actorId.type === 'agent' ? editableMenuItems : userMenuItems;
 
     return (
       <>
         <ContextMenu options={menuItems} ref={triggerRef}>
           <Link
-            to={actorId != 'user' ? `/agents/${actorId}` : ''}
+            to={actorId.type === 'agent' ? `/agents/${actorId}` : ''}
             onClick={openContext}
             className="flex-none items-center flex flex-col"
           >
             <ActorAvatar
               actorType="agent"
-              actorId={actorId}
+              actorId={actorId.id}
               title={`${agent?.name || actorId}${task ? ` tasked with:\n${task}` : ``}`}
               type="small"
             />

@@ -60,7 +60,7 @@ from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode impo
     import_and_validate_execution_mode,
 )
 from aiconsole.core.chat.locking import DefaultChatMutator, acquire_lock, release_lock
-from aiconsole.core.chat.types import AICMessageGroup, Chat
+from aiconsole.core.chat.types import ActorId, AICMessageGroup, Chat
 from aiconsole.core.code_running.run_code import reset_code_interpreters
 from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     WaitForEnvEvent,
@@ -68,13 +68,13 @@ from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
 from aiconsole.core.project import project
 from aiconsole.utils.events import internal_events
-from backend.aiconsole.core.chat import convert_agent_id_to_actor_id
 
 
 @dataclass
 class MaterialsAndRenderedMaterials:
     materials: list[Material]
     rendered_materials: list[RenderedMaterial]
+
 
 _log = logging.getLogger(__name__)
 
@@ -92,6 +92,7 @@ _director_agent = Agent(
 )
 
 _running_tasks: dict[str, dict[str, asyncio.Task]] = defaultdict(dict)
+
 
 async def handle_incoming_message(connection: AICConnection, json: dict):
     message_type = json["type"]
@@ -116,6 +117,7 @@ async def handle_incoming_message(connection: AICConnection, json: dict):
     _running_tasks[json["chat_id"]][task_id] = task
     task.add_done_callback(_get_done_callback(json["chat_id"], task_id))
 
+
 async def _handle_acquire_lock_ws_message(connection: AICConnection, json: dict):
     message: AcquireLockClientMessage | None = None
     try:
@@ -131,9 +133,7 @@ async def _handle_acquire_lock_ws_message(connection: AICConnection, json: dict)
 
         _log.info(f"Acquired lock {message.request_id} {connection.acquired_locks}")
         await connection.send(
-            ResponseServerMessage(
-                request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False
-            )
+            ResponseServerMessage(request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False)
         )
     except Exception:
         if message is not None:
@@ -145,6 +145,7 @@ async def _handle_acquire_lock_ws_message(connection: AICConnection, json: dict)
                 )
             )
 
+
 async def _handle_release_lock_ws_message(connection: AICConnection, json: dict):
     message = ReleaseLockClientMessage(**json)
     await release_lock(chat_id=message.chat_id, request_id=message.request_id)
@@ -155,6 +156,7 @@ async def _handle_release_lock_ws_message(connection: AICConnection, json: dict)
         connection.acquired_locks.remove(lock_data)
     else:
         _log.error(f"Lock {lock_data} not found in {connection.acquired_locks}")
+
 
 async def _handle_open_chat_ws_message(connection: AICConnection, json: dict):
     message = OpenChatClientMessage(**json)
@@ -170,9 +172,7 @@ async def _handle_open_chat_ws_message(connection: AICConnection, json: dict):
         connection.open_chats_ids.add(message.chat_id)
 
         await connection.send(
-            ResponseServerMessage(
-                request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False
-            )
+            ResponseServerMessage(request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False)
         )
 
         await connection.send(
@@ -191,6 +191,7 @@ async def _handle_open_chat_ws_message(connection: AICConnection, json: dict):
     finally:
         await release_lock(chat_id=message.chat_id, request_id=temporary_request_id)
 
+
 async def _handle_stop_chat_ws_message(connection: AICConnection, json: dict):
     message: StopChatClientMessage | None = None
     try:
@@ -199,9 +200,7 @@ async def _handle_stop_chat_ws_message(connection: AICConnection, json: dict):
         for task in _running_tasks[message.chat_id].values():
             task.cancel()
         await connection.send(
-            ResponseServerMessage(
-                request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False
-            )
+            ResponseServerMessage(request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False)
         )
     except Exception:
         if message is not None:
@@ -213,15 +212,18 @@ async def _handle_stop_chat_ws_message(connection: AICConnection, json: dict):
                 )
             )
 
+
 async def _handle_close_chat_ws_message(connection: AICConnection, json: dict):
     message = CloseChatClientMessage(**json)
     connection.open_chats_ids.discard(message.chat_id)
+
 
 async def _handle_init_chat_mutation_ws_message(connection: AICConnection | None, json: dict):
     message = InitChatMutationClientMessage(**json)
     mutator = DefaultChatMutator(chat_id=message.chat_id, request_id=message.request_id, connection=connection)
 
     await mutator.mutate(message.mutation)
+
 
 async def _handle_accept_code_ws_message(connection: AICConnection, json: dict):
     message = AcceptCodeClientMessage(**json)
@@ -262,9 +264,7 @@ async def _handle_accept_code_ws_message(connection: AICConnection, json: dict):
 
         execution_mode = await import_and_validate_execution_mode(agent)
 
-        mats = await _render_materials_from_message_group(
-            tool_call_location.message_group, chat_mutator.chat, agent
-        )
+        mats = await _render_materials_from_message_group(tool_call_location.message_group, chat_mutator.chat, agent)
 
         await execution_mode.accept_code(
             AcceptCodeContext(
@@ -277,6 +277,7 @@ async def _handle_accept_code_ws_message(connection: AICConnection, json: dict):
         )
     finally:
         await release_lock(chat_id=message.chat_id, request_id=message.request_id)
+
 
 async def _handle_process_chat_ws_message(connection: AICConnection, json: dict):
     message = ProcessChatClientMessage(**json)
@@ -291,10 +292,7 @@ async def _handle_process_chat_ws_message(connection: AICConnection, json: dict)
 
         agent = _director_agent
 
-        if (
-            chat_mutator.chat.chat_options.agent_id
-            and not chat_mutator.chat.chat_options.let_ai_add_extra_materials
-        ):
+        if chat_mutator.chat.chat_options.agent_id and not chat_mutator.chat.chat_options.let_ai_add_extra_materials:
             for _agent in agents_to_choose_from(all=True):
                 if _agent.id == chat_mutator.chat.chat_options.agent_id:
                     agent = _agent
@@ -314,7 +312,7 @@ async def _handle_process_chat_ws_message(connection: AICConnection, json: dict)
         await chat_mutator.mutate(
             CreateMessageGroupMutation(
                 message_group_id=message_group_id,
-                actor_id=convert_agent_id_to_actor_id(agent.id),
+                actor_id=ActorId(type="agent", id=agent.id),
                 role=role,
                 materials_ids=materials_ids,
                 analysis="",
@@ -344,6 +342,7 @@ async def _handle_process_chat_ws_message(connection: AICConnection, json: dict)
         )
     finally:
         await release_lock(chat_id=message.chat_id, request_id=message.request_id)
+
 
 async def _render_materials_from_message_group(
     message_group: AICMessageGroup, chat: Chat, agent: Agent, init: bool = False
@@ -375,6 +374,7 @@ async def _render_materials_from_message_group(
         rendered_materials.append(rendered_material)
 
     return MaterialsAndRenderedMaterials(materials=relevant_materials, rendered_materials=rendered_materials)
+
 
 def _get_done_callback(chat_id: str, task_id: str) -> Callable:
     def remove_running_task(_: Any) -> None:

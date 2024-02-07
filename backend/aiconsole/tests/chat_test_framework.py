@@ -25,7 +25,7 @@ from aiconsole.core.chat.chat_mutations import (
     CreateMessageMutation,
 )
 from aiconsole.core.chat.load_chat_history import load_chat_history
-from aiconsole.core.chat.types import AICMessage
+from aiconsole.core.chat.types import ActorId, AICMessage
 from aiconsole.core.settings.fs.settings_file_storage import SettingsFileStorage
 from aiconsole.core.settings.settings import settings
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
@@ -83,9 +83,7 @@ class ChatTestFramework:
                     chat_id=self._chat_id,
                     mutation=CreateMessageGroupMutation(
                         message_group_id=self._message_group_id,
-                        actor_id="user",
-                        username="",
-                        email="",
+                        actor_id=ActorId(type="user", id="user"),
                         role="user",
                         task="",
                         materials_ids=[],

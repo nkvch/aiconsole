@@ -21,7 +21,7 @@ from aiconsole.api.websockets.connection_manager import (
     ConnectionManager,
     connection_manager,
 )
-from backend.aiconsole.api.websockets.handle_incoming_message import handle_incoming_message
+from aiconsole.api.websockets.handle_incoming_message import handle_incoming_message
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.project import project
 

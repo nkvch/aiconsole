@@ -37,7 +37,7 @@ from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
 from aiconsole.core.chat.execution_modes.analysis.create_plan_class import (
     create_plan_class,
 )
-from aiconsole.core.chat.types import Chat
+from aiconsole.core.chat.types import ActorId, Chat
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
 from aiconsole.core.gpt.request import (
@@ -297,7 +297,7 @@ async def gpt_analysis_function_step(
         await chat_mutator.mutate(
             SetActorIdMessageGroupMutation(
                 message_group_id=message_group_id,
-                actor_id=picked_agent.id,
+                actor_id=ActorId(type="agent", id=picked_agent.id),
             )
         )
 

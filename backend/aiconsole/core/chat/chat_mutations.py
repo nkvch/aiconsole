@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.gpt.types import GPTRole
+from aiconsole.core.chat.types import ActorId
 
 
 class LockAcquiredMutation(BaseModel):
@@ -19,9 +20,7 @@ class LockReleasedMutation(BaseModel):
 class CreateMessageGroupMutation(BaseModel):
     type: Literal["CreateMessageGroupMutation"] = "CreateMessageGroupMutation"
     message_group_id: str
-    actor_id: str
-    username: str
-    email: str
+    actor_id: ActorId
     role: GPTRole
     task: str
     materials_ids: list[str]
@@ -59,7 +58,7 @@ class SetRoleMessageGroupMutation(BaseModel):
 class SetActorIdMessageGroupMutation(BaseModel):
     type: Literal["SetActorIdMessageGroupMutation"] = "SetActorIdMessageGroupMutation"
     message_group_id: str
-    actor_id: str
+    actor_id: ActorId
 
 
 class SetMaterialsIdsMessageGroupMutation(BaseModel):

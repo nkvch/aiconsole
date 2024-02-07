@@ -46,7 +46,7 @@ def convert_message(group: AICMessageGroup, message: AICMessage) -> list[GPTRequ
         GPTRequestTextMessage(
             role=group.role,
             content=message.content,
-            name=group.actor_id if group.actor_id != "user" else None,
+            name=group.actor_id.id if group.actor_id.type == "agent" else None,
             tool_calls=tool_calls or None,
         )
     ]

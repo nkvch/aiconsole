@@ -21,11 +21,18 @@ export const AICMessageSchema = z.object({
   is_streaming: z.boolean(),
 });
 
+export const ActorIdSchema = z.object({
+  type: z.enum(['user', 'agent']),
+  id: z.string(),
+});
+
+export type ActorId = z.infer<typeof ActorIdSchema>;
+
 export type AICMessage = z.infer<typeof AICMessageSchema>;
 
 export const AICMessageGroupSchema = z.object({
   id: z.string(),
-  actor_id: z.string(),
+  actor_id: ActorIdSchema,
   role: GPTRoleSchema,
   task: z.string(),
   materials_ids: z.array(z.string()),

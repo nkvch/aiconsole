@@ -17,6 +17,16 @@
 import { z } from 'zod';
 import { AssetStatusSchema } from '../editables/assetTypes';
 
+export type Settings = {
+  code_autorun?: boolean;
+  openai_api_key?: string;
+  user_profile?: {
+    username?: string;
+    email?: string;
+    avatar_url?: string;
+  };
+};
+
 const GPTModeConfigSchema = z.object({
   max_tokens: z.number(),
   encoding: z.enum(['gpt-4', 'gpt-3.5-turbo']),

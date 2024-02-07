@@ -105,9 +105,7 @@ export const createCommandSlice: StateCreator<ChatStore, [], [], CommandSlice> =
         {
           type: 'CreateMessageGroupMutation',
           message_group_id: messageGroupId,
-          actor_id: `user/${useSettingsStore.getState().settings?.user_id}`,
-          username: '', //TODO: Where to get the user name from?
-          email: '', //TODO: Where to get the user email from?
+          actor_id: { type: 'user', id: useSettingsStore.getState().settings.user_id || 'user' },
           task: '',
           materials_ids: [],
           analysis: '',
