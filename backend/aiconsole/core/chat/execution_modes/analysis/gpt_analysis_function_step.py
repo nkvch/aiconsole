@@ -51,7 +51,6 @@ from aiconsole.core.gpt.types import (
     GPTRequestTextMessage,
 )
 from aiconsole.core.project import project
-from backend.aiconsole.core.chat.convert_agent_id_to_actor_id import convert_agent_id_to_actor_id
 
 _log = logging.getLogger(__name__)
 
@@ -233,7 +232,7 @@ async def gpt_analysis_function_step(
                             await chat_mutator.mutate(
                                 SetActorIdMessageGroupMutation(
                                     message_group_id=message_group_id,
-                                    actor_id=convert_agent_id_to_actor_id(arguments_dict["agent_id"]),
+                                    actor_id=ActorId(type="agent", id=arguments_dict["agent_id"]),
                                 )
                             )
 
