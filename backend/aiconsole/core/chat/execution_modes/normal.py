@@ -27,7 +27,6 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
-from aiconsole.core.assets.users.users import User
 from aiconsole.core.chat.chat_mutations import (
     AppendToContentMessageMutation,
     CreateMessageMutation,
