@@ -151,7 +151,7 @@ class ChatTestFramework:
         chat = await load_chat_history(id=self._chat_id, project_path=Path(self._project_path))
         automator_message_group_messages = None
         for message_group in chat.message_groups:
-            if message_group.agent_id == agent_id:
+            if message_group.actor_id == agent_id:
                 automator_message_group_messages = message_group.messages
                 break
 

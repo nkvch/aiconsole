@@ -87,6 +87,7 @@ def _handle_SetMessageGroupRoleMutation(chat, mutation: SetRoleMessageGroupMutat
 
 def _handle_SetMessageGroupAgentIdMutation(chat, mutation: SetActorIdMessageGroupMutation) -> None:
     message_group = _get_message_group(chat, mutation.message_group_id)
+
     message_group.actor_id = mutation.actor_id
 
     if mutation.actor_id == "user":

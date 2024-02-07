@@ -48,6 +48,7 @@ _log = logging.getLogger(__name__)
 
 def agent_from_message_group(message_group: AICMessageGroup) -> Agent | User:
     # Find the message group with id context.message_group_id
+
     actor_id = message_group.actor_id
 
     if actor_id.startswith("agent/"):
