@@ -45,23 +45,6 @@ from aiconsole.core.project import project
 
 _log = logging.getLogger(__name__)
 
-
-def agent_from_message_group(message_group: AICMessageGroup) -> Agent | User:
-    # Find the message group with id context.message_group_id
-
-    actor_id = message_group.actor_id
-
-    if actor_id.startswith("agent/"):
-        agent = cast(Agent, project.get_project_agents().get_asset(actor_id))
-        return agent
-
-    if actor_id.startswith("user/"):
-        user = cast(User, project.get_project_users().get_asset(actor_id))
-        return user
-
-    raise Exception(f"Unknown actor_id: {actor_id}")
-
-
 async def render_materials_from_message_group(
     message_group: AICMessageGroup, context: ProcessChatContext, agent: Agent
 ) -> list[RenderedMaterial]:

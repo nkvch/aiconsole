@@ -66,6 +66,7 @@ from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     WaitForEnvEvent,
 )
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
+from aiconsole.core.gpt.types import GPTRole
 from aiconsole.core.project import project
 from aiconsole.utils.events import internal_events
 
@@ -292,6 +293,7 @@ async def _handle_process_chat_ws_message(connection: AICConnection, json: dict)
 
         agent = _director_agent
 
+        role: GPTRole
         if chat_mutator.chat.chat_options.agent_id and not chat_mutator.chat.chat_options.let_ai_add_extra_materials:
             for _agent in agents_to_choose_from(all=True):
                 if _agent.id == chat_mutator.chat.chat_options.agent_id:

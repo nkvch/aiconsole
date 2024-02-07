@@ -84,7 +84,6 @@ export const useAPIStore = create<APIStore>((set, get) => ({
     if (!port) {
       throw new Error('Port is not set');
     }
-
     return `localhost:${port}`;
   },
   port: undefined,
