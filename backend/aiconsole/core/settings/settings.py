@@ -23,7 +23,6 @@ from aiconsole.core.settings.settings_notifications import SettingsNotifications
 from aiconsole.core.settings.settings_storage import SettingsStorage
 from aiconsole.core.settings.utils.merge_settings_data import merge_settings_data
 from aiconsole.core.users.types import UserProfile
-from aiconsole.core.settings.utils.update_settings_data import merge_settings_data
 from aiconsole.utils.events import internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 from aiconsole_toolkit.settings.settings_data import SettingsData

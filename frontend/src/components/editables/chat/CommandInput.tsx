@@ -24,7 +24,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import ChatOptions from '../assets/ChatOptions';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
-import { AgentAvatar } from './AgentAvatar';
+import { ActorAvatar } from './ActorAvatar';
 import { useDebounceCallback } from '@mantine/hooks';
 import { ChatAPI } from '@/api/api/ChatAPI';
 import { Material } from '@/types/editables/assetTypes';
@@ -198,7 +198,13 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
               {selectedAgentId && (
                 <div className="w-full flex jusify-between items-center">
                   <div className="flex items-center gap-3 w-full">
-                    <AgentAvatar agentId={selectedAgentId} title="test" type="extraSmall" className="!mb-0 !mt-0" />
+                    <ActorAvatar
+                      actorType="agent"
+                      actorId={selectedAgentId}
+                      title="test"
+                      type="extraSmall"
+                      className="!mb-0 !mt-0"
+                    />
                     <p className="text-[15px]">
                       Talking to <span className="text-white">{getAgent(selectedAgentId)?.name}</span>
                     </p>

@@ -23,7 +23,7 @@ import { useClickOutside } from '@/utils/common/useClickOutside';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
 
 import { Agent, Material } from '@/types/editables/assetTypes';
-import { AgentAvatar } from '../chat/AgentAvatar';
+import { ActorAvatar } from '../chat/ActorAvatar';
 
 type ChatOptionsProps = {
   onSelectAgentId: (id: string) => void;
@@ -106,7 +106,13 @@ const ChatOptions = ({ onSelectAgentId, handleMaterialSelect, materialsOptions }
                   )}
                   onClick={() => onSelectAgentId(option.id)}
                 >
-                  <AgentAvatar agentId={option.id} title={option.name} type="extraSmall" className="!mb-0 !mt-0" />
+                  <ActorAvatar
+                    actorType="agent"
+                    actorId={option.id}
+                    title={option.name}
+                    type="extraSmall"
+                    className="!mb-0 !mt-0"
+                  />
                   <h4 className="text-white ml-[4px] text-[15px]">{option.name}</h4>
                   <span className="text-sm truncate text-gray-400">{option.usage}</span>
                 </li>

@@ -108,7 +108,8 @@ export function ActorInfo({
           className="flex-none items-center flex flex-col"
         >
           <ActorAvatar
-            agentId={actorId}
+            actorType="agent"
+            actorId={actorId}
             title={`${agent?.name || actorId}${task ? ` tasked with:\n${task}` : ``}`}
             type="small"
           />

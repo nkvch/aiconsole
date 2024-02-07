@@ -2,54 +2,40 @@ import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
 import { useAPIStore } from '@/store/useAPIStore';
 import { cn } from '@/utils/common/cn';
-import { useState } from 'react';
 
 interface ActorAvatarProps {
-  agentId: string;
+  actorId?: string;
   title?: string;
   type: 'large' | 'small' | 'extraSmall';
   className?: string;
+  actorType: 'agent' | 'user';
 }
 
-export function ActorAvatar({ agentId, title, type, className }: ActorAvatarProps) {
-  const agent = useAssetStore((state) => state.getAsset('agent', agentId));
+export function ActorAvatar({ actorId, title, type, className, actorType }: ActorAvatarProps) {
   const getBaseURL = useAPIStore((state) => state.getBaseURL);
+  const agent = useAssetStore((state) => state.getAsset('agent', actorId || ''));
+  const userAvatarUrl = useSettingsStore((state) => state.settings.user_profile.profile_picture) || undefined;
 
-  return (
-    <img
-      title={title}
-      src={`${getBaseURL()}/api/agents/${agentId}/image`}
-      className={cn(className, 'rounded-full mb-[10px] mt-[5px] border border-slate-800', {
-        'w-20 h-20 ': type === 'large',
-        'w-16 h-16': type === 'small',
-        'w-6 h-6': type === 'extraSmall',
-        'border-[2px] border-agent shadow-agent': agent?.status === 'forced',
-        'shadow-md': agent?.status !== 'forced',
-      })}
-    />
-  );
-}
+  let src: string | undefined = '';
 
-interface UserAvatarProps {
-  title?: string;
-  type: 'large' | 'small' | 'extraSmall';
-  className?: string;
-}
+  if (actorType === 'agent') {
+    src = `${getBaseURL()}/api/agents/${actorId}/image?time=${new Date()}`;
+    className = cn(className, 'rounded-full mb-[10px] mt-[5px] border border-slate-800', {
+      'w-20 h-20 ': type === 'large',
+      'w-16 h-16': type === 'small',
+      'w-6 h-6': type === 'extraSmall',
+      'border-[2px] border-agent shadow-agent': agent?.status === 'forced',
+      'shadow-md': agent?.status !== 'forced',
+      hidden: !actorId,
+    });
+  } else if (actorType === 'user') {
+    src = userAvatarUrl;
+    className = cn(className, 'rounded-full mb-[10px] mt-[5px] border border-slate-800', {
+      'w-20 h-20 ': type === 'large',
+      'w-16 h-16': type === 'small',
+      'w-6 h-6': type === 'extraSmall',
+    });
+  }
 
-export function UserAvatar({ title, type, className }: UserAvatarProps) {
-  const userAvatarUrl = useSettingsStore((state) => state.userAvatarUrl) || undefined;
-  const [avatarURL, setAvatarURL] = useState('');
-  const getBaseURL = useAPIStore((state) => state.getBaseURL);
-
-  return (
-    <img
-      title={title}
-      src={userAvatarUrl}
-      className={cn(className, 'rounded-full mb-[10px] mt-[5px] border border-slate-800', {
-        'w-20 h-20 ': type === 'large',
-        'w-16 h-16': type === 'small',
-        'w-6 h-6': type === 'extraSmall',
-      })}
-    />
-  );
+  return <img title={title} src={src} className={className} />;
 }

@@ -18,7 +18,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useUserContextMenu } from '@/utils/common/useUserContextMenu';
-import { UserAvatar } from './UserAvatar';
+import { ActorAvatar } from './ActorAvatar';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 
 export function UserInfo({ username }: { username?: string | null }) {
@@ -31,7 +31,7 @@ export function UserInfo({ username }: { username?: string | null }) {
   return (
     <ContextMenu options={menuItems} ref={triggerRef}>
       <Link to={''} className="flex-none items-center flex flex-col">
-        <UserAvatar title={`${username}`} type="small" />
+        <ActorAvatar actorType="user" title={`${username}`} type="small" />
         <div
           className="text-[15px] w-32 text-center text-gray-300 max-w-[120px] truncate overflow-ellipsis overflow-hidden whitespace-nowrap"
           title={`${username}`}
