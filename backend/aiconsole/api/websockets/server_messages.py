@@ -17,7 +17,7 @@ import os
 
 from pydantic import BaseModel
 
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 from aiconsole.core.chat.chat_mutations import ChatMutation
 from aiconsole.core.chat.types import Chat
 

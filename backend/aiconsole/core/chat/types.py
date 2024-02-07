@@ -20,7 +20,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_serializer
 
-from aiconsole.core.assets.models import EditableObject
+from aiconsole.core.assets.types import EditableObject
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.gpt.types import GPTRole
 

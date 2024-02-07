@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
 from aiconsole.core.assets.assets import Assets
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 
 
 async def asset_status_change(asset_type: AssetType, asset_id: str, body: StatusChangePostBody):

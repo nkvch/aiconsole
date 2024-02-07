@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aiconsole.core.assets.models import Asset, AssetStatus, AssetType
+from aiconsole.core.assets.types import Asset, AssetStatus, AssetType
 from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 
 

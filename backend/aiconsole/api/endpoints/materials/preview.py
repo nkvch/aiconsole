@@ -24,7 +24,7 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
 )
 from aiconsole.core.assets.materials.material import Material
-from aiconsole.core.assets.models import AssetLocation
+from aiconsole.core.assets.types import AssetLocation
 from aiconsole.core.chat.types import Chat
 from aiconsole.core.gpt.consts import SPEED_GPT_MODE
 

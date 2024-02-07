@@ -6,7 +6,11 @@ from typing import BinaryIO
 
 from aiconsole.consts import AICONSOLE_USER_CONFIG_DIR
 from aiconsole.core.settings.settings import settings
-from aiconsole.core.users.types import DEFAULT_USERNAME, PartialUserProfile, UserProfile
+from aiconsole.core.users.types import (
+    DEFAULT_USERNAME,
+    PartialUserProfile,
+    UserProfile,
+)
 from aiconsole.utils.resource_to_path import resource_to_path
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 

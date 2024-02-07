@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 
-from aiconsole.core.assets.models import AssetStatus
+from aiconsole.core.assets.types import AssetStatus
 from aiconsole.core.gpt.types import GPTModeConfig
 from aiconsole.core.users.types import PartialUserProfile
 

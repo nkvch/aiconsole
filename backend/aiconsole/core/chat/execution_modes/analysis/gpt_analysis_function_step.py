@@ -20,7 +20,7 @@ from typing import cast
 from aiconsole.consts import DIRECTOR_MIN_TOKENS, DIRECTOR_PREFERRED_TOKENS
 from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.materials.material import Material
-from aiconsole.core.assets.models import AssetLocation, AssetStatus
+from aiconsole.core.assets.types import AssetLocation, AssetStatus
 from aiconsole.core.chat.chat_mutations import (
     CreateMessageGroupMutation,
     SetActorIdMessageGroupMutation,

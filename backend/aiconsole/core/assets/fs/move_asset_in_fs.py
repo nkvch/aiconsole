@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
 
 

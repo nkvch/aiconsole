@@ -47,7 +47,7 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
-from aiconsole.core.assets.models import AssetLocation
+from aiconsole.core.assets.types import AssetLocation
 from aiconsole.core.chat.chat_mutations import CreateMessageGroupMutation
 from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
     agents_to_choose_from,

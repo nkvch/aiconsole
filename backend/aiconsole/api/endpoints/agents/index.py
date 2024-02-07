@@ -17,7 +17,7 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from aiconsole.core.assets.models import AssetType
+from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
 
 router = APIRouter()

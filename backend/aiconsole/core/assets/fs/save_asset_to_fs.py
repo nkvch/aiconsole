@@ -22,10 +22,9 @@ from aiconsole.core.assets.agents.agent import Agent
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
-from aiconsole.core.assets.models import Asset
 from aiconsole.core.assets.users.users import User
 from aiconsole.core.project.paths import get_project_assets_directory
-
+from aiconsole.core.assets.types import Asset
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
     get_project_assets_directory,
