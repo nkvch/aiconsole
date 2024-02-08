@@ -144,8 +144,8 @@ export const TextInput = forwardRef<HTMLElement, TextInputProps>(
           })}
         >
           {label ? (
-            <div className="text-white text-[15px] flex items-center gap-[30px] ">
-              <label htmlFor={label} className="min-w-max">
+            <div className="text-white text-[15px] flex items-center gap-[30px]">
+              <label htmlFor={label} className="w-max">
                 {label}
               </label>
               {labelChildren}
