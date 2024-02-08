@@ -124,9 +124,9 @@ export function Home() {
         {openAiApiKey === undefined || isProjectLoading ? (
           <>{/* the request is in progress - don't render anything to avoid flickering */}</>
         ) : (
-          <div className="h-screen max-h-screen overflow-hidden flex flex-col">
+          <>
             {recentProjects.length > 0 && openAiApiKey && isApiKeyValid ? (
-              <>
+              <div className="h-screen max-h-screen overflow-hidden flex flex-col">
                 <TopBar>
                   <HomeTopBarElements />
                 </TopBar>
@@ -155,12 +155,13 @@ export function Home() {
                     ))}
                   </div>
                 </div>
-              </>
-            ) : (
-              <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
-            )}
-          </div>
+              </div>
+            ) : null}
+          </>
         )}
+        {!recentProjects.length || !openAiApiKey || !isApiKeyValid ? (
+          <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
+        ) : null}
       </div>
       {currentAlertDialogConfig && (
         <AlertDialog
