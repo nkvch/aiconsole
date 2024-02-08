@@ -157,12 +157,11 @@ export function Home() {
                 </div>
               </>
             ) : null}
-
-            {!recentProjects.length || !openAiApiKey || !isApiKeyValid ? (
-              <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
-            ) : null}
           </div>
         )}
+        {!recentProjects.length || !openAiApiKey || !isApiKeyValid ? (
+          <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
+        ) : null}
       </div>
       {currentAlertDialogConfig && (
         <AlertDialog
