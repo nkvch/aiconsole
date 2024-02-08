@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { ElementRef, ReactNode, forwardRef } from 'react';
 import { Icon } from './icons/Icon';
+import { useWebSocketStore } from '@/api/ws/useWebSocketStore';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const toasts = useToastsStore((state) => state.toasts);
@@ -29,6 +30,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     removeToast(toastId);
   };
 
+  const isDisconnected = useWebSocketStore((state) => !state.ws);
+
   return (
     <ReactToast.Provider>
       {children}
@@ -36,6 +39,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map(({ id, title, message, variant }) => {
           return <Toast key={id} title={title} message={message} variant={variant} onClose={() => onToastClose(id)} />;
         })}
+        {isDisconnected && (
+          <Toast
+            key={'disconnected'}
+            title={'Disconnected'}
+            message={'Unable to connect to the AIConsole backend.'}
+            variant={'error'}
+          />
+        )}
       </AnimatePresence>
 
       <ReactToast.Viewport className="max-sm:top-20 fixed top-4 right-4 flex flex-col-reverse gap-3 z-50" />
@@ -55,7 +66,7 @@ const getStyles = (variant: ToastVariant) => {
 };
 
 type ToastProps = ToastMessage & {
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 const Toast = forwardRef<ElementRef<typeof ReactToast.Root>, ToastProps>(
@@ -103,9 +114,11 @@ const Toast = forwardRef<ElementRef<typeof ReactToast.Root>, ToastProps>(
                 {message}
               </ReactToast.Description>
             </div>
-            <ReactToast.Close className=" text-gray-300 transition hover:text-gray-200 w-5 h-5">
-              <Icon icon={X} width={16} height={16} className="w-4 h-4" />
-            </ReactToast.Close>
+            {onClose && (
+              <ReactToast.Close className=" text-gray-300 transition hover:text-gray-200 w-5 h-5">
+                <Icon icon={X} width={16} height={16} className="w-4 h-4" />
+              </ReactToast.Close>
+            )}
           </div>
         </motion.li>
       </ReactToast.Root>

@@ -44,9 +44,11 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
                                 "role": message["role"] if "role" in message else "",
                                 "task": message["task"] if "task" in message and message["task"] else "",
                                 "agent_id": message["agent_id"] if "agent_id" in message else "",
-                                "materials_ids": message["materials_ids"]
-                                if "materials_ids" in message and message["materials_ids"]
-                                else [],
+                                "materials_ids": (
+                                    message["materials_ids"]
+                                    if "materials_ids" in message and message["materials_ids"]
+                                    else []
+                                ),
                                 "messages": [
                                     {
                                         "id": message["id"] if "id" in message else uuid.uuid4().hex,
@@ -83,13 +85,12 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
                                 if "language" in tool_call and tool_call["language"] == "shell":
                                     tool_call["language"] = "python"
 
-
             # For each agent_id change it to actor_id
             for group in data["message_groups"]:
                 if "agent_id" in group:
                     group["actor_id"] = {
                         "type": "user" if group["agent_id"] == "user" else "agent",
-                        "id": group["agent_id"]
+                        "id": group["agent_id"],
                     }
                     del group["agent_id"]
 

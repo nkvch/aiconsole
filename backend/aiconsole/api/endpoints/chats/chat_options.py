@@ -12,7 +12,6 @@ router = APIRouter()
 class PatchChatOptions(BaseModel):
     agent_id: Optional[str] = None
     materials_ids: Optional[list[str]] = None
-    let_ai_add_extra_materials: Optional[bool] = None
 
 
 @router.patch("/{chat_id}/chat_options")

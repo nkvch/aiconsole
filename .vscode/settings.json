@@ -1,7 +1,7 @@
 {
   "python.analysis.typeCheckingMode": "basic",
   "flake8.cwd": "${workspaceFolder}",
-  "flake8.args": ["--ignore=E501, W503"],
+  "flake8.args": ["--ignore=E501, W503, E203"],
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "eslint.format.enable": true,

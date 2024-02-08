@@ -53,6 +53,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
   const materialsIds = chosenMaterials.map((material) => material.id);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const chatOptionsInputRef = useRef<HTMLInputElement>(null);
 
   const handleSendMessage = useCallback(
     async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -68,6 +69,10 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
       setCommand(e.target.value);
       const mentionMatch = e.target.value.match(/@(\s*)$/);
       setShowChatOptions(!!mentionMatch);
+
+      setTimeout(() => {
+        chatOptionsInputRef?.current?.focus();
+      }, 0);
     },
     [setCommand],
   );
@@ -91,9 +96,19 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
         } else if (e.key === 'ArrowDown' && caretAtEnd) {
           promptDown();
         }
+
+        if (e.key === 'Backspace' && caretAtStart) {
+          if (chosenMaterials.length > 0) {
+            const newChosenMaterials = [...chosenMaterials];
+            newChosenMaterials.pop();
+            setChosenMaterials(newChosenMaterials);
+          } else {
+            setSelectedAgentId('');
+          }
+        }
       }
     },
-    [handleSendMessage, promptDown, promptUp],
+    [handleSendMessage, promptDown, promptUp, chosenMaterials, setSelectedAgentId, setChosenMaterials],
   );
 
   // auto focus this text area on changes to chatId
@@ -133,7 +148,6 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
         ChatAPI.patchChatOptions(chat?.id, {
           agent_id: selectedAgentId,
           materials_ids: materialsIds,
-          let_ai_add_extra_materials: false,
         });
 
         setChat({
@@ -141,7 +155,6 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
           chat_options: {
             agent_id: selectedAgentId,
             materials_ids: materialsIds,
-            let_ai_add_extra_materials: false,
           },
         });
       }
@@ -150,9 +163,21 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
     }
   }, 500);
 
+  const removeLastAt = () => {
+    if (command.endsWith('@')) {
+      const newCommand = command.slice(0, -1);
+      setCommand(newCommand);
+    }
+  };
+
   const onSelectAgentId = (id: string) => {
     setSelectedAgentId(id);
     debounceChatUpdate();
+    setShowChatOptions(false);
+    removeLastAt();
+    setTimeout(() => {
+      textAreaRef?.current?.focus();
+    }, 0);
   };
 
   const removeAgentId = () => {
@@ -165,6 +190,11 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
     const filteredOptions = materialsOptions.filter(({ id }) => id !== material.id);
     setMaterialsOptions(filteredOptions);
     debounceChatUpdate();
+    setShowChatOptions(false);
+    removeLastAt();
+    setTimeout(() => {
+      textAreaRef?.current?.focus();
+    }, 0);
   };
 
   const removeSelectedMaterial = (id: string) => () => {
@@ -175,12 +205,8 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   };
 
   const handleFocus = useCallback(() => {
-    if (command.endsWith('@')) {
-      const newCommand = command.slice(0, -1);
-      setCommand(newCommand);
-    }
     setShowChatOptions(false);
-  }, [command, setCommand]);
+  }, []);
 
   return (
     <div className={cn(className, 'flex w-full flex-col px-4 py-[20px]  bg-gray-900 z-50 ')}>
@@ -189,7 +215,10 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
           <ChatOptions
             onSelectAgentId={onSelectAgentId}
             handleMaterialSelect={handleMaterialSelect}
+            setShowChatOptions={setShowChatOptions}
             materialsOptions={materialsOptions}
+            inputRef={chatOptionsInputRef}
+            textAreaRef={textAreaRef}
           />
         )}
         <div className="w-full max-h-[200px] overflow-y-auto border border-gray-500 bg-gray-800 hover:bg-gray-600 focus-within:bg-gray-600 focus-within:border-gray-400 transition duration-100 rounded-[8px] flex flex-col flex-grow resize-none">
@@ -238,12 +267,12 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
 
           <TextareaAutosize
             ref={textAreaRef}
-            className="w-full bg-transparent text-[15px] text-white resize-none overflow-hidden px-[20px] py-[12px] placeholder:text-gray-400 hover:placeholder:text-gray-300 focus:outline-none"
+            className="w-full bg-transparent text-[15px] text-white resize-none overflow-y-auto px-[20px] py-[12px] placeholder:text-gray-400 hover:placeholder:text-gray-300 focus:outline-none"
             value={command}
             onChange={handleChange}
             onFocus={handleFocus}
             onKeyDown={handleKeyDown}
-            placeholder={`Type "@" to select a specific agent and materials`}
+            placeholder={`Type "@" to select a specific agent or materials`}
             rows={1}
           />
         </div>

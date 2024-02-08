@@ -16,7 +16,7 @@
 
 import { ActorInfo } from '@/components/editables/chat/ActorInfo';
 import { cn } from '@/utils/common/cn';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AICMessageGroup } from '../../../types/editables/chatTypes';
 import { AnalysisClosed, AnalysisOpened } from './Analysis';
 import { MessageComponent } from './messages/MessageComponent';
@@ -26,10 +26,20 @@ import { useChatStore } from '@/store/editables/chat/useChatStore';
 export function MessageGroup({ group }: { group: AICMessageGroup }) {
   const [isAnalysisManuallyOpen, setIsAnalysisManuallyOpen] = useState<boolean | undefined>(undefined);
   const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
+  const [actorId, setActorId] = useState(group.actor_id);
 
   const lockId = useChatStore((state) => state.chat?.lock_id);
 
   const isOpen = isAnalysisManuallyOpen === undefined ? group.messages.length === 0 : isAnalysisManuallyOpen;
+
+  useEffect(() => {
+    if (group.actor_id.id !== 'director') {
+      const timeoutId = setTimeout(() => setActorId(group.actor_id), 300);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setActorId(group.actor_id);
+    }
+  }, [group.actor_id]);
 
   return (
     <div
@@ -39,7 +49,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
     >
       <div className="container flex mx-auto gap-[92px] max-w-[1104px]">
         <div className="flex-none items-center flex flex-col max-w-[120px] ">
-          <ActorInfo actorId={group.actor_id} materialsIds={group.materials_ids} task={group.task} />
+          <ActorInfo actorId={actorId} materialsIds={group.materials_ids} task={group.task} />
 
           {group.messages && !isOpen && (
             <AnalysisClosed group={group} onClick={() => setIsAnalysisManuallyOpen(!isOpen)} />

@@ -33,18 +33,21 @@
 #
 
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Protocol
 
 from aiconsole.core.assets.materials.material import Material
 
 
-class BaseCodeInterpreter:
+class BaseCodeInterpreter(Protocol):
     """
     .run is a generator that yields a dict with attributes: active_line, output
     """
 
-    async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
-        yield "Not implemented"
+    async def initialize(self):  # fmt: off
+        ...
 
-    def terminate(self):
-        pass
+    async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:  # fmt: off
+        ...
+
+    def terminate(self) -> None:  # fmt: off
+        ...

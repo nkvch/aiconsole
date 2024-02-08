@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import logging
+from typing import Set
 
 from openai import OpenAI
 
@@ -32,7 +33,7 @@ MODELS_TO_CHECK_WHILE_VERIFYING_KEY = [
     GPT_MODE_SPEED_MODEL,
 ]
 
-cached_good_keys = set()
+cached_good_keys: Set[str] = set()
 
 
 # Verify the OpenAI key has access to the required models

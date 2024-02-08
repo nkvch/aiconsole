@@ -53,6 +53,7 @@ from aiconsole.core.project import project
 
 _log = logging.getLogger(__name__)
 
+
 async def render_materials_from_message_group(
     message_group: AICMessageGroup, context: ProcessChatContext, agent: Agent
 ) -> list[RenderedMaterial]:

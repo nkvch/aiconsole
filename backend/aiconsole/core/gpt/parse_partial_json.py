@@ -1,3 +1,4 @@
+import ast
 import json
 
 
@@ -38,4 +39,9 @@ def parse_partial_json(s: str) -> dict | None:
     try:
         return json.loads("".join(completed_string))
     except json.JSONDecodeError:
-        return None
+        if '"code": """' not in s:
+            return None
+        try:
+            return ast.literal_eval("".join(completed_string))
+        except Exception:
+            return None

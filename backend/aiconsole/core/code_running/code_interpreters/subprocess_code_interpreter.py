@@ -51,7 +51,6 @@ from aiconsole.utils.events import internal_events
 from aiconsole_toolkit.env import (
     get_current_project_venv_bin_path,
     get_current_project_venv_path,
-    get_current_project_venv_python_path,
 )
 
 from .base_code_interpreter import BaseCodeInterpreter
@@ -65,6 +64,9 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
         self.process = None
         self.output_queue: "queue.Queue[str]" = queue.Queue()
         self.done = threading.Event()
+
+    async def initialize(self):
+        pass
 
     def detect_end_of_execution(self, line):
         return None

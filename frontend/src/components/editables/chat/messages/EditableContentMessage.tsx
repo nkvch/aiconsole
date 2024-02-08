@@ -77,7 +77,7 @@ export function EditableContentMessage({
             focused={isEditing}
             maxHeight="400px"
             minHeight="400px"
-            onBlur={handleSaveClick}
+            onBlur={() => setIsEditing(false)}
           />
         </div>
       ) : (

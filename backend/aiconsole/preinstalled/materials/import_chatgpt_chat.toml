@@ -1,0 +1,4 @@
+name = "Import ChatGPT Chat"
+usage = "When you have a ChatGPT link"
+content_type = "api"
+content = "file://./import_chatgpt_chat.py"

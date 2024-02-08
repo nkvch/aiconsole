@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
 import traceback
 from datetime import datetime
@@ -59,6 +58,7 @@ from aiconsole.core.gpt.create_full_prompt_with_materials import (
 )
 from aiconsole.core.gpt.function_calls import OpenAISchema
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
+from aiconsole.core.gpt.partial import GPTPartialToolsCall
 from aiconsole.core.gpt.request import (
     GPTRequest,
     ToolDefinition,
@@ -157,7 +157,7 @@ async def _run_code(context: ProcessChatContext, tool_call_id):
             context.rendered_materials
 
             assert tool_call.language is not None
-            async for token in get_code_interpreter(tool_call.language, context.chat_mutator.chat.id).run(
+            async for token in (await get_code_interpreter(tool_call.language, context.chat_mutator.chat.id)).run(
                 tool_call.code, context.materials
             ):
                 await context.chat_mutator.mutate(
@@ -285,7 +285,9 @@ async def _generate_response(
         _log.debug(f"tools_requiring_closing_parenthesis: {tools_requiring_closing_parenthesis}")
 
 
-async def _send_code(tool_calls, context, tools_requiring_closing_parenthesis, message_id):
+async def _send_code(
+    tool_calls: list[GPTPartialToolsCall], context: ProcessChatContext, tools_requiring_closing_parenthesis, message_id
+):
     for index, tool_call in enumerate(tool_calls):
         # All tool calls with lower indexes are finished
         prev_tool = tool_calls[index - 1] if index > 0 else None

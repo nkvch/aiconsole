@@ -76,6 +76,7 @@ class GPTRequestTextMessage(BaseModel):
     name: str | None = None
     tool_calls: list[GPTToolCall] | None = None
 
+
 GPTRequestMessage = GPTRequestTextMessage | GPTRequestToolMessage
 
 

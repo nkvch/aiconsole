@@ -34,11 +34,8 @@
 
 from typing import Type
 
-from aiconsole.core.code_running.code_interpreters.base_code_interpreter import (
-    BaseCodeInterpreter,
-)
-from aiconsole.core.code_running.code_interpreters.language import LanguageStr
-
+from .base_code_interpreter import BaseCodeInterpreter
+from .language import LanguageStr
 from .languages.applescript import AppleScript
 from .languages.python import Python
 

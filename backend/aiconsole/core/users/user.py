@@ -6,11 +6,7 @@ from typing import BinaryIO
 
 from aiconsole.consts import AICONSOLE_USER_CONFIG_DIR
 from aiconsole.core.settings.settings import settings
-from aiconsole.core.users.types import (
-    DEFAULT_USERNAME,
-    PartialUserProfile,
-    UserProfile,
-)
+from aiconsole.core.users.types import DEFAULT_USERNAME, PartialUserProfile, UserProfile
 from aiconsole.utils.resource_to_path import resource_to_path
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 
@@ -34,13 +30,13 @@ class UserProfileService:
                 return UserProfile(
                     username=email or DEFAULT_USERNAME,
                     email=email,
-                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar()
+                    avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
                 )
 
         return user_profile or UserProfile(
             username=email or DEFAULT_USERNAME,
             email=email,
-            avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar()
+            avatar_url=self._get_default_avatar(email) if email else self._get_default_avatar(),
         )
 
     def save_avatar(

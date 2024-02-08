@@ -77,7 +77,7 @@ def documentation_from_code(material: "Material", source: str):
         final_doc = f"""
 {docstring + newline + newline if docstring else ''}
 
-## Variables and Functions Available When Executing Python Code
+## Variables and Functions Available When Executing Python Code, you have the below functions available and can use them without import.
 
 {(newline + newline).join(function_list)}
 """.strip()

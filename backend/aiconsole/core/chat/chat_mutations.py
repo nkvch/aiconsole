@@ -2,9 +2,9 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from aiconsole.core.chat.types import ActorId
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
 from aiconsole.core.gpt.types import GPTRole
-from aiconsole.core.chat.types import ActorId
 
 
 class LockAcquiredMutation(BaseModel):

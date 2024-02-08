@@ -13,10 +13,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  dialog,
+  IpcMainEvent,
+  MenuItemConstructorOptions,
+  shell,
+  Notification,
+} from 'electron';
 import { initialize, trackEvent } from '@aptabase/electron/main';
 import { ChildProcess, spawn } from 'child_process';
-import { BrowserWindow, IpcMainEvent, Menu, MenuItemConstructorOptions, app, dialog, ipcMain, shell } from 'electron';
 import net from 'net';
 import path from 'path';
 

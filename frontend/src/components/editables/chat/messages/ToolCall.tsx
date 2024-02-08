@@ -76,11 +76,12 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
 
   const handleRunClick = () => {
     doAcceptCode(tool_call.id);
+    tool_call.output = '';
   };
 
   const handleAlwaysRunClick = () => {
     enableAutoCodeExecution(true);
-    doAcceptCode(tool_call.id);
+    handleRunClick();
   };
 
   //Either executing or streaming while there are still no output messages
@@ -137,7 +138,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
         </div>
       </div>
       {!folded && (
-        <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0">
+        <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0 min-h-[196px]">
           <div className="flex flex-row w-full">
             <div className="flex-grow overflow-auto">
               <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
@@ -155,7 +156,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
                   className="overflow-scroll flex-grow rounded-md !m-0"
                 />
               </EditableContentMessage>
-              {isViableForRunningCode(tool_call.id) && !tool_call.is_streaming && !chat?.lock_id && tool_call.code && (
+              {isViableForRunningCode(tool_call.id) && !tool_call.is_streaming && !chat?.lock_id && (
                 <div className="flex gap-4 pt-2 mt-2">
                   <Button variant="status" statusColor="green" small onClick={handleRunClick}>
                     <Icon icon={Play} />

@@ -24,7 +24,7 @@ from aiconsole.core.code_running.code_interpreters.language_map import language_
 code_interpreters: dict[str, dict[str, BaseCodeInterpreter]] = {}
 
 
-def get_code_interpreter(language_raw: str, chat_id: str) -> BaseCodeInterpreter:
+async def get_code_interpreter(language_raw: str, chat_id: str) -> BaseCodeInterpreter:
     language_raw = language_raw.lower()
 
     if language_raw not in language_map:
@@ -36,6 +36,7 @@ def get_code_interpreter(language_raw: str, chat_id: str) -> BaseCodeInterpreter
         code_interpreters[chat_id] = {}
     if language not in code_interpreters[chat_id]:
         code_interpreters[chat_id][language] = language_map[language]()
+        await code_interpreters[chat_id][language].initialize()
     return code_interpreters[chat_id][language]
 
 

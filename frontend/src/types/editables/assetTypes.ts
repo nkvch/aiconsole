@@ -73,6 +73,7 @@ export const AssetSchema = EditableObjectSchema.extend({
   status: AssetStatusSchema,
   default_status: AssetStatusSchema,
   override: z.boolean(),
+  type: z.enum(['material', 'agent', 'chat']),
 });
 
 export type Asset = z.infer<typeof AssetSchema>;
