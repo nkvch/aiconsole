@@ -228,6 +228,7 @@ export type SetIsStreamingMessageMutation = z.infer<typeof SetIsStreamingMessage
 
 export const CreateToolCallMutationSchema = z.object({
   type: z.literal('CreateToolCallMutation'),
+  tool_type: z.enum(['function', 'ui']),
   message_id: z.string(),
   tool_call_id: z.string(),
   code: z.string(),

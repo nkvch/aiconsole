@@ -40,7 +40,6 @@ from aiconsole.core.chat.types import (
     AICToolCallLocation,
     Chat,
 )
-from aiconsole.core.settings.settings import settings
 
 _log = logging.getLogger(__name__)
 
@@ -156,6 +155,7 @@ def _handle_CreateToolCallMutation(chat, mutation: CreateToolCallMutation) -> No
     message = _get_message_location(chat, mutation.message_id).message
     tool_call = AICToolCall(
         id=mutation.tool_call_id,
+        type=mutation.tool_type,
         language=mutation.language,
         code=mutation.code,
         headline=mutation.headline,

@@ -13,7 +13,7 @@ export const CodeEditorLabelContent = ({ showPreview, onClick }: CodeEditorLabel
     classNames={cn(
       'ml-auto text-[15px] leading-[24px] justify-start px-[10px] w-[120px] hover:border-gray-300 hover:text-gray-300 hover:bg-transparent focus:border-gray-300 focus:text-gray-300 focus:bg-transparent',
       {
-        'flex-row-reverse': !showPreview,
+        'flex-row-reverse': showPreview,
       },
     )}
     small
@@ -22,8 +22,8 @@ export const CodeEditorLabelContent = ({ showPreview, onClick }: CodeEditorLabel
     onClick={onClick}
   >
     <div className="bg-gray-600 h-[34px] w-[34px] flex items-center justify-center rounded-[20px]">
-      <Icon icon={showPreview ? Code2 : Fullscreen} className="!w-[24px] !h-[24px]" />
+      <Icon icon={showPreview ? Fullscreen : Code2} className="!w-[24px] !h-[24px]" />
     </div>
-    {showPreview ? 'Code' : 'Preview'}
+    {showPreview ? 'Preview' : 'Code'}
   </Button>
 );

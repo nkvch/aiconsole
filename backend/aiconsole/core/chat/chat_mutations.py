@@ -121,6 +121,7 @@ class SetIsStreamingMessageMutation(BaseModel):
 
 class CreateToolCallMutation(BaseModel):
     type: Literal["CreateToolCallMutation"] = "CreateToolCallMutation"
+    tool_type: Literal["function", "ui"]
     message_id: str
     tool_call_id: str
     code: str

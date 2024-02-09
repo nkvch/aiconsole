@@ -1,11 +1,11 @@
-import React, { ReactNode } from 'react';
+import React, { ReactElement } from 'react';
 
 // APIs to be injected
 const apis = {
   React,
 };
 
-export const createSandbox = (code: string): (() => ReactNode) | null => {
+export const createSandbox = (code: string): ReactElement | null => {
   const frame = document.createElement('iframe');
   document.body.appendChild(frame);
   const F = frame.contentWindow?.window.Function;
@@ -16,7 +16,9 @@ export const createSandbox = (code: string): (() => ReactNode) | null => {
 
   const sandboxedCode = new F(...Object.keys(apis), code);
 
-  document.body.removeChild(frame);
+  //TODO: document.body.removeChild(frame);
 
-  return sandboxedCode(...Object.values(apis));
+  const R = sandboxedCode(...Object.values(apis));
+
+  return <R />;
 };

@@ -35,6 +35,7 @@ class ActorId(BaseModel):
 
 class AICToolCall(BaseModel):
     id: str
+    type: Literal["function", "ui"]
     language: LanguageStr | None = None
     code: str
     headline: str

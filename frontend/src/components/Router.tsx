@@ -36,7 +36,7 @@ import { ChatPage } from './editables/chat/ChatPage';
 import SideBar from './editables/sidebar/SideBar';
 import { Home } from './projects/Home';
 import { GlobalSettingsModal } from './settings/modal/GlobalSettingsModal';
-import { UI } from './editables/Ui';
+import { UI } from './editables/ui/Ui';
 
 function Project() {
   const isProjectOpen = useProjectStore((state) => state.isProjectOpen);
@@ -118,7 +118,7 @@ export function Router() {
             </Route>
             <Route path="/" element={<Project />}>
               <Route path="chats/:id" element={<ChatPage />} />
-              <Route path="uigen" element={<UI />} />
+              <Route path="genui" element={<UI />} />
               <Route path="chats/*" element={<Navigate to={`/chats/${uuid()}`} />} />
               <Route path="materials/:id" element={<AssetEditor assetType={'material'} />} />
               <Route path="materials/*" element={<></>} />

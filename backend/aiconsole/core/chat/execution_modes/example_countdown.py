@@ -78,6 +78,7 @@ async def execution_mode_process(
     await context.chat_mutator.mutate(
         CreateToolCallMutation(
             tool_call_id=tool_call_id,
+            tool_type="function",
             message_id=message_id,
             code=code,
             headline="",

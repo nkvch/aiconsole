@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useCallback, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 
 import { Icon } from '@/components/common/icons/Icon';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
@@ -37,6 +37,9 @@ import { Button } from '../../../common/Button';
 import { Spinner } from '../Spinner';
 import { EditableContentMessage } from './EditableContentMessage';
 import { ToolOutput } from './ToolOutput';
+import { transpileCode } from '@/utils/transpilation/transpileCode';
+import { createSandbox } from '@/utils/transpilation/createSandbox';
+import { MessageControls } from './MessageControls';
 
 interface MessageProps {
   group: AICMessageGroup;
@@ -54,6 +57,8 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
   const doAcceptCode = useChatStore((state) => state.doAcceptCode);
   const enableAutoCodeExecution = useSettingsStore((state) => state.setAutoCodeExecution);
   const isViableForRunningCode = useChatStore((state) => state.isViableForRunningCode);
+
+  const [uiResult, setUIResult] = useState<ReactNode | null>(null);
 
   const handleAcceptedContent = useCallback(
     (content: string) => {
@@ -74,9 +79,19 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
     });
   }, [tool_call.id, userMutateChat]);
 
-  const handleRunClick = () => {
-    doAcceptCode(tool_call.id);
-    tool_call.output = '';
+  const renderUIResult = async () => {
+    const finalCode = await transpileCode(tool_call.code);
+    const sandbox = createSandbox(finalCode);
+    setUIResult(sandbox);
+  };
+
+  const handleRunClick = async () => {
+    if (tool_call.type === 'function') {
+      doAcceptCode(tool_call.id);
+      tool_call.output = '';
+    } else {
+      await renderUIResult();
+    }
   };
 
   const handleAlwaysRunClick = () => {
@@ -115,15 +130,22 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
             'border-b-2 border-gray-600 rounded-b-none': !folded,
           },
         )}
-        onClick={() => setFolded((folded) => !folded)}
+        onClick={async () => {
+          if (folded && alwaysExecuteCode && isViableForRunningCode(tool_call.id)) {
+            await renderUIResult();
+          } else {
+            setUIResult(null);
+          }
+          setFolded((folded) => !folded);
+        }}
       >
         <div className="flex flex-row gap-2 items-center ">
           <div className="flex-grow flex flex-row gap-3 items-center">
             {shouldDisplaySpinner && <Spinner width={20} height={20} />}
-            {!shouldDisplaySpinner && !isError && tool_call.output == undefined && (
+            {!shouldDisplaySpinner && !isError && !(tool_call.output != undefined || tool_call.type == 'ui') && (
               <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success flex-shrink-0" />
             )}
-            {!shouldDisplaySpinner && !isError && tool_call.output != undefined && (
+            {!shouldDisplaySpinner && !isError && (tool_call.output != undefined || tool_call.type == 'ui') && (
               <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success flex-shrink-0" />
             )}
             {!shouldDisplaySpinner && isError && (
@@ -140,38 +162,60 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
       {!folded && (
         <div className="px-[30px] pr-[14px] py-[15px] border-2 border-gray-600 border-t-0 min-h-[196px]">
           <div className="flex flex-row w-full">
-            <div className="flex-grow overflow-auto">
-              <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
-              <EditableContentMessage
-                initialContent={tool_call.code}
-                language={tool_call.language}
-                handleAcceptedContent={handleAcceptedContent}
-                handleRemoveClick={handleRemoveClick}
-                className="mt-2"
-              >
-                <SyntaxHighlighter
-                  style={customVs2015}
-                  children={tool_call.code}
-                  language={tool_call.language}
-                  className="overflow-scroll flex-grow rounded-md !m-0"
-                />
-              </EditableContentMessage>
-              {isViableForRunningCode(tool_call.id) && !tool_call.is_streaming && !chat?.lock_id && (
-                <div className="flex gap-4 pt-2 mt-2">
-                  <Button variant="status" statusColor="green" small onClick={handleRunClick}>
-                    <Icon icon={Play} />
-                    Run
-                  </Button>
+            {uiResult ? (
+              <div className="flex-grow overflow-auto">
+                <div className={cn('flex flex-row items-start overflow-auto', 'mt-2')}>
+                  <div className="flex-grow overflow-auto ">{uiResult}</div>
 
-                  {!alwaysExecuteCode && (
-                    <Button onClick={handleAlwaysRunClick} variant="status" statusColor="purple" small>
-                      <Icon icon={Infinity} />
-                      Always Run
-                    </Button>
-                  )}
+                  <div
+                    className={cn('flex flex-none gap-4 px-4 self-start', {
+                      'min-w-[100px] ml-[92px]': false,
+                    })}
+                  >
+                    <MessageControls
+                      isEditing={true}
+                      hideControls={false}
+                      onCancelClick={() => {
+                        setUIResult(null);
+                      }}
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex-grow overflow-auto">
+                <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
+                <EditableContentMessage
+                  initialContent={tool_call.code}
+                  language={tool_call.language}
+                  handleAcceptedContent={handleAcceptedContent}
+                  handleRemoveClick={handleRemoveClick}
+                  className="mt-2"
+                >
+                  <SyntaxHighlighter
+                    style={customVs2015}
+                    children={tool_call.code}
+                    language={tool_call.language}
+                    className="overflow-scroll flex-grow rounded-md !m-0"
+                  />
+                </EditableContentMessage>
+                {isViableForRunningCode(tool_call.id) && !tool_call.is_streaming && !chat?.lock_id && (
+                  <div className="flex gap-4 pt-2 mt-2">
+                    <Button variant="status" statusColor="green" small onClick={handleRunClick}>
+                      <Icon icon={Play} />
+                      Run
+                    </Button>
+
+                    {!alwaysExecuteCode && (
+                      <Button onClick={handleAlwaysRunClick} variant="status" statusColor="purple" small>
+                        <Icon icon={Infinity} />
+                        Always Run
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div>

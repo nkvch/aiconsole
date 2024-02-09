@@ -21,6 +21,7 @@ from aiconsole.api.endpoints import (
     chats,
     check_key,
     commands_history,
+    genui,
     image,
     materials,
     ping,
@@ -33,6 +34,7 @@ from aiconsole.api.endpoints import (
 app_router = APIRouter()
 
 app_router.include_router(ping.router)
+app_router.include_router(genui.router)
 app_router.include_router(image.router)
 app_router.include_router(check_key.router)
 app_router.include_router(profile.router, tags=["Profile"])
