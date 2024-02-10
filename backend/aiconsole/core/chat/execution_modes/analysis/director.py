@@ -58,6 +58,8 @@ Your job is analyse the situation in the chat.
     - What happened in the last few messages in the conversation?
     - Who wrote last? and who should now respond, the user or an agent?
         If an agent: establish a full plan to bring value to the user.
+    - Be brief, and to the point, make this step short and actionable.
+    - Use one or two short sentences if possible.
 
 2. Establish next_action:
     If it's agent's turn: briefly describe what the next, atomic, simple step of this conversation is.

@@ -121,35 +121,36 @@ async def execution_mode_process(
             )
         )
 
-        # Repeat the process for the next step
+        if not analysis.is_final_step:
+            # Repeat the process for the next step
 
-        message_group_id = str(uuid4())
+            message_group_id = str(uuid4())
 
-        if context.chat_mutator.chat.chat_options.materials_ids:
-            materials_ids = context.chat_mutator.chat.chat_options.materials_ids
-        else:
-            materials_ids = []
+            if context.chat_mutator.chat.chat_options.materials_ids:
+                materials_ids = context.chat_mutator.chat.chat_options.materials_ids
+            else:
+                materials_ids = []
 
-        await context.chat_mutator.mutate(
-            CreateMessageGroupMutation(
-                message_group_id=message_group_id,
-                actor_id=ActorId(type="agent", id=context.agent.id),
-                role="assistant",
-                materials_ids=materials_ids,
-                analysis="",
-                task="",
+            await context.chat_mutator.mutate(
+                CreateMessageGroupMutation(
+                    message_group_id=message_group_id,
+                    actor_id=ActorId(type="agent", id=context.agent.id),
+                    role="assistant",
+                    materials_ids=materials_ids,
+                    analysis="",
+                    task="",
+                )
             )
-        )
 
-        await execution_mode_process(
-            ProcessChatContext(
-                message_group_id=message_group_id,
-                chat_mutator=context.chat_mutator,
-                agent=context.agent,
-                materials=[],
-                rendered_materials=[],
+            await execution_mode_process(
+                ProcessChatContext(
+                    message_group_id=message_group_id,
+                    chat_mutator=context.chat_mutator,
+                    agent=context.agent,
+                    materials=[],
+                    rendered_materials=[],
+                )
             )
-        )
     else:
         # Delete the current message group
         await context.chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=context.message_group_id))
