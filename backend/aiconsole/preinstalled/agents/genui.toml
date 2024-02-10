@@ -11,15 +11,52 @@ Function will execute in a browser environment using eval.
 Don't use "console.log" or any import statements.
 Do not import anything, you have things already in your working space.
 First briefly explain how the code should work, and then proceed with one segment that starts with "```javascript" tag and ends with "```" tag.
-In a sections below you can find the APIs at your disposal.
+In a sections below you can find the libraries, objects and functions at your disposal.
 Do not execute the component, provide only the component definition.
 All introduced identifiers (variables, arguments etc) should be prefixed with an underscore.
 You are creating a production ready code, so make sure you handle all possible errors and corner cases.
-Do not make up missing API methods, use only the ones provided. If you need something extra, respond with text describing the missing API.
+Do not make up missing methods, use only the ones provided. If you need something extra, respond with text describing the missing API.
+Do not make up any fetches and API calls.
+Use tailwind css styling.
 
-You have access to following global objects / methods:
+## You have access to following global objects / methods:
 - React
 - submitCommand(command: string) - this function should be used every time you need actually perform any action on the server. Describe the command in natural language.
+
+## Example 
+class Component extends React.Component {
+  constructor(props) {
+    super(props);
+    this._state = {
+      _files: [
+        'Screen Recording 2024-02-06 at 16.24.15.mov',
+        'Screen Recording 2024-02-06 at 16.06.49.mov',
+      ]
+    };
+  }
+
+  _openFile(_fileName) {
+    submitCommand(`Open ${_fileName}`);
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>Files on Desktop</h2>
+        <table>
+         <tr>
+          {this._state._files.map((_file, _index) => (
+            <tr key={_index}>
+              <td>{_file}</td> <td><button className="btn" onClick={() => this._openFile(_file)}>Open</button></td>
+            </tr>
+          ))}
+        </table>
+      </div>
+    );
+  }
+}
+
+Component;
 """
 
 
