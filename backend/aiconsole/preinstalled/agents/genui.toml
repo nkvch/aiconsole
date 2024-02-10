@@ -21,7 +21,8 @@ Use tailwind css styling.
 
 ## You have access to following global objects / methods:
 - React
-- submitCommand(command: string) - this function should be used every time you need actually perform any action on the server. Describe the command in natural language.
+- async function submitCommand(command: string): Promise<void> - this function should be used every time you need actually perform any action on the server. Describe the command in natural language.
+- async function fetchCommand(command: string, columns: string[]): Promise<object[]> - fetches the data specified by the command in the parameter, columns contains information on what should be the fields of each of the returned rows.
 
 ## Example 
 class Component extends React.Component {

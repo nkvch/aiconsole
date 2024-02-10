@@ -55,7 +55,7 @@ export const UI = () => {
   return (
     <FormGroup className="flex flex-col w-full gap-[20px]">
       <CodeInput
-        value={showPreview ? <div className="p-4">{result}</div> : code}
+        value={showPreview ? result : code}
         labelContent={
           <CodeEditorLabelContent
             showPreview={showPreview}
@@ -69,8 +69,23 @@ export const UI = () => {
         onChange={handleCodeChange}
         label="Component"
         readOnly={showPreview}
+        className="flex justify-center items-center"
       />
       {!!error && <div className="text-danger flex text-xs">Error: {error}</div>}
+
+      <div className="flex flex-row gap-4">
+        <Button onClick={handleSubmitPrompt} variant="secondary">
+          Save
+        </Button>
+
+        <Button onClick={handleSubmitPrompt} variant="secondary">
+          Undo
+        </Button>
+
+        <Button onClick={handleSubmitPrompt} variant="secondary">
+          Redo
+        </Button>
+      </div>
 
       <CodeInput value={prompt} codeLanguage="markdown" onChange={handlePromptChange} label="Prompt" />
       <Button onClick={handleSubmitPrompt} variant="secondary">
