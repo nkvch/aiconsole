@@ -34,7 +34,6 @@ function Component() {
   // useEffect to update the current time every second
   React.useEffect(() => {
     // Timer to update current time
-    
     const _timer = setInterval(() => {
       _setCurrentTime(new Date());
     }, 1000);

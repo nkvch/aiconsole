@@ -93,7 +93,7 @@ class python(CodeTask):
 
 class applescript(CodeTask):
     """
-    This function executes the given code on the user's system using the local environment and returns the output.
+    This function executes the given code on the user's system using the local environment and returns the output. Only use this if it can not be done in Python.
     """
 
     code: str = Field(..., json_schema_extra={"type": "string"})

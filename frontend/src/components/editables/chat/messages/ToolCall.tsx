@@ -131,7 +131,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
           },
         )}
         onClick={async () => {
-          if (folded && alwaysExecuteCode && isViableForRunningCode(tool_call.id)) {
+          if (folded && alwaysExecuteCode && isViableForRunningCode(tool_call.id) && !shouldDisplaySpinner) {
             await renderUIResult();
           } else {
             setUIResult(null);
@@ -165,7 +165,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
             {uiResult ? (
               <div className="flex-grow overflow-auto">
                 <div className={cn('flex flex-row items-start overflow-auto', 'mt-2')}>
-                  <div className="flex-grow overflow-auto ">{uiResult}</div>
+                  <div className="flex-grow overflow-auto prose">{uiResult}</div>
 
                   <div
                     className={cn('flex flex-none gap-4 px-4 self-start', {
