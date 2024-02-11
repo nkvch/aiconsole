@@ -13,16 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from aiconsole.core.assets.types import Asset, AssetStatus, AssetType
+from aiconsole.core.assets.types import Asset, AssetStatus
 from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 
 
 class Agent(Asset):
-    type: AssetType = AssetType.AGENT
-    system: str
-
-    gpt_mode: GPTMode = QUALITY_GPT_MODE
+    system: str  # system prompt
+    gpt_mode: GPTMode = QUALITY_GPT_MODE  # model, can be LLaMA, Gemini
     execution_mode: str = "aiconsole.core.chat.execution_modes.normal:execution_mode"
 
 

@@ -45,7 +45,6 @@ class Asset(EditableObject):
     usage: str
     usage_examples: list[str]
     defined_in: AssetLocation
-    type: AssetType
     default_status: AssetStatus = AssetStatus.ENABLED
     status: AssetStatus = AssetStatus.ENABLED
     override: bool

@@ -17,11 +17,14 @@ import traceback
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
+from pydantic import AnyUrl, FileUrl
+
 from aiconsole.core.assets.materials.documentation_from_code import (
     documentation_from_code,
 )
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
-from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
+from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus
+from aiconsole.core.assets.utils.copy_file_content import copy_file_content
 
 if TYPE_CHECKING:
     from aiconsole.core.assets.materials.content_evaluation_context import (
@@ -36,7 +39,6 @@ class MaterialContentType(str, Enum):
 
 
 class Material(Asset):
-    type: AssetType = AssetType.MATERIAL
     id: str
     name: str
     version: str = "0.0.1"
@@ -45,41 +47,17 @@ class Material(Asset):
 
     # Content, either static or dynamic
     content_type: MaterialContentType = MaterialContentType.STATIC_TEXT
-    content: str = ""
+    content: str | AnyUrl = ""
 
     def __hash__(self):
-        return hash(self.id + self.version + self.name + self.usage + self.content_type + self.content)
+        return hash(self.id + self.version + self.name + self.usage + self.content_type + str(self.content))
 
     @property
     def inlined_content(self):
-        # if starts with file:// then load the file, take into account file://./relative paths
-        if self.content.startswith("file://"):
-            content_file = self.content[len("file://") :]
-
-            from aiconsole.core.project.paths import (
-                get_core_assets_directory,
-                get_project_assets_directory,
-            )
-
-            project_dir_path = get_project_assets_directory(self.type)
-            core_resource_path = get_core_assets_directory(self.type)
-            # TODO: content_file path is relative. If material is default, only .toml file is copied to project
-            #  directory, so content_file is not found. If material is in project, then content_file is found.
-            # if self.defined_in == AssetLocation.PROJECT_DIR:
-            #     base_search_path = project_dir_path
-            # else:
-            #     base_search_path = core_resource_path
-
-            # This is a workaround for now, but it should be fixed in the future
-            if (project_dir_path / content_file).exists():
-                base_search_path = project_dir_path
-            else:
-                base_search_path = core_resource_path
-
-            with open(base_search_path / content_file, "r", encoding="utf8", errors="replace") as file:
-                return file.read()
-
-        return self.content
+        # if starts with file:// then load the file, takes into account file://./relative paths for core and project
+        if isinstance(self.content, FileUrl):
+            copy_file_content(self.content)
+        return str(self.content)
 
     async def render(self, context: "ContentEvaluationContext"):
         header = f"# {self.name}\n\n"
@@ -87,34 +65,37 @@ class Material(Asset):
         inline_content = self.inlined_content
 
         try:
-            if self.content_type == MaterialContentType.DYNAMIC_TEXT:
-                # Try compiling the python code and run it
-                source_code = compile(inline_content, "<string>", "exec")
-                local_vars: dict[str, Any] = {}
-                exec(source_code, local_vars)
-                # currently, getting the python object from another interpreter is quite limited, and
-                # using the dedicated local_vars is the easiest way (otherwise we would need to pickle
-                # the object and send it to the other interpreter or use stdin/stdout)
-                content_func = local_vars.get("content")
-                if callable(content_func):
+            match self.content_type:
+                case MaterialContentType.DYNAMIC_TEXT:
+                    # Try compiling the python code and run it
+                    source_code = compile(inline_content, "<string>", "exec")
+                    local_vars: dict[str, Any] = {}
+                    exec(source_code, local_vars)
+                    # currently, getting the python object from another interpreter is quite limited, and
+                    # using the dedicated local_vars is the easiest way (otherwise we would need to pickle
+                    # the object and send it to the other interpreter or use stdin/stdout)
+                    content_func = local_vars.get("content")
+                    if callable(content_func):
+                        return RenderedMaterial(
+                            id=self.id,
+                            content=header + await content_func(context),
+                            error="",
+                        )
+                    return RenderedMaterial(id=self.id, content="", error="No callable content function found!")
+                case MaterialContentType.STATIC_TEXT:
+                    return RenderedMaterial(id=self.id, content=header + inline_content, error="")
+                case MaterialContentType.API:
                     return RenderedMaterial(
                         id=self.id,
-                        content=header + await content_func(context),
+                        content=header + documentation_from_code(self, inline_content)(context),
                         error="",
                     )
-                return RenderedMaterial(id=self.id, content="", error="No callable content function found!")
-            elif self.content_type == MaterialContentType.STATIC_TEXT:
-                return RenderedMaterial(id=self.id, content=header + inline_content, error="")
-            elif self.content_type == MaterialContentType.API:
-                return RenderedMaterial(
-                    id=self.id,
-                    content=header + documentation_from_code(self, inline_content)(context),
-                    error="",
-                )
+                case _:
+                    return RenderedMaterial(
+                        id=self.id, content="", error="Unmatched content type!"
+                    )
         except Exception:
             return RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
-
-        raise ValueError("Material has no content")
 
 
 class MaterialWithStatus(Material):
