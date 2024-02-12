@@ -164,23 +164,26 @@ async def _handle_open_chat_ws_message(connection: AICConnection, json: dict):
     temporary_request_id = str(uuid4())
 
     try:
+        connection.open_chats_ids.add(message.chat_id)
+
         chat = await acquire_lock(
             chat_id=message.chat_id,
             request_id=temporary_request_id,
             skip_mutating_clients=True,  # Skip because they do not yet have the chat
         )
 
-        connection.open_chats_ids.add(message.chat_id)
-
-        await connection.send(
-            ResponseServerMessage(request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False)
-        )
-
-        await connection.send(
-            ChatOpenedServerMessage(
-                chat=chat,
+        if message.chat_id in connection.open_chats_ids:
+            await connection.send(
+                ResponseServerMessage(
+                    request_id=message.request_id, payload={"chat_id": message.chat_id}, is_error=False
+                )
             )
-        )
+
+            await connection.send(
+                ChatOpenedServerMessage(
+                    chat=chat,
+                )
+            )
     except Exception:
         await connection.send(
             ResponseServerMessage(

@@ -2,6 +2,7 @@ import ast
 import json
 
 
+# TODO: https://github.com/10clouds/aiconsole/issues/785 detect if the given field is complieted
 def parse_partial_json(s: str) -> dict | None:
     try:
         return json.loads(s)

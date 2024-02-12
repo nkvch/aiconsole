@@ -57,7 +57,7 @@ DEBUG_MODE = True
 
 class Python(BaseCodeInterpreter):
     async def initialize(self):
-        self.km = KernelManager(kernel_name="python3")
+        self.km = KernelManager(kernel_name="python3", env=self.get_environment_variables())
         self.km.start_kernel()
         self.kc = self.km.client()
         self.kc.start_channels()

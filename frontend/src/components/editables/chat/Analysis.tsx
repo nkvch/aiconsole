@@ -11,7 +11,9 @@ export const AnalysisClosed = ({ group, onClick }: { group: AICMessageGroup; onC
   };
 
   return group.analysis || group.task ? (
-    <img onClick={handleClick} src={`favicon.svg`} className="h-[18px] w-[18px] filter cursor-pointer mt-2" />
+    <div className="rounded-[8px] w-full cursor-pointer mt-2" onClick={handleClick}>
+      <img src={`favicon.svg`} className="h-[18px] w-[18px] filter mx-auto" />
+    </div>
   ) : (
     <></>
   );

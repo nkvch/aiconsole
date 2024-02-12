@@ -113,6 +113,7 @@ class AnalysisResult:
     agent: Agent
     relevant_materials: list[Material]
     next_step: str
+    is_final_step: bool
 
 
 async def gpt_analysis_function_step(
@@ -211,7 +212,8 @@ async def gpt_analysis_function_step(
                     arguments_dict = function_call.arguments_dict
 
                     if arguments_dict:
-                        if "agent_id" in arguments_dict:
+                        # Current fix for https://github.com/10clouds/aiconsole/issues/785
+                        if "agent_id" in arguments_dict and "relevant_material_ids" in arguments_dict:
                             await chat_mutator.mutate(
                                 SetActorIdMessageGroupMutation(
                                     message_group_id=message_group_id,
@@ -309,6 +311,7 @@ async def gpt_analysis_function_step(
             agent=picked_agent,
             relevant_materials=relevant_materials,
             next_step=plan.next_step,
+            is_final_step=plan.is_final_step,
         )
     finally:
         await chat_mutator.mutate(

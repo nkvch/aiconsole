@@ -61,6 +61,11 @@ const ChatOptions = ({
   }, [materialsOptions]);
 
   useEffect(() => {
+    const filtredAgents = agents.filter((item) => item.status === 'enabled');
+    setFilteredAgentsOptions(filtredAgents);
+  }, [agents]);
+
+  useEffect(() => {
     if (focusedIndex >= 0) {
       const buttons = wrapperRef.current?.querySelectorAll('.options-list button') as NodeListOf<HTMLButtonElement>;
       const buttonToFocus = buttons?.[focusedIndex];
@@ -74,7 +79,9 @@ const ChatOptions = ({
 
     const regex = new RegExp(`^${inputValue}`, 'i');
     const filteredMaterialOptions = materialsOptions.filter((item) => regex.test(item.name));
-    const filteredAgentOptions = agents.filter((item) => regex.test(item.name));
+    const filteredAgentOptions = agents
+      .filter((item) => regex.test(item.name))
+      .filter((item) => item.status === 'enabled');
     setFilteredAgentsOptions(filteredAgentOptions);
     setFilteredMaterialsOptions(filteredMaterialOptions);
   };

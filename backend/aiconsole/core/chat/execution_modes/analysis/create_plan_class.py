@@ -23,13 +23,12 @@ from aiconsole.core.gpt.function_calls import OpenAISchema
 
 def create_plan_class(available_agents, available_materials):
     class Plan(OpenAISchema):
-
         """
         Plan what should happen next.
         """
 
         thinking_process: str = Field(
-            description="Short description of the thinking process that led to the next step.",
+            description="Short description (up to two short sentences) of the thinking process that led to the next step.",
             json_schema_extra={"type": "string"},
         )
 
@@ -37,6 +36,12 @@ def create_plan_class(available_agents, available_materials):
             description="A short actionable description of the next single atomic task to move this conversation "
             "forward.",
             json_schema_extra={"type": "string"},
+        )
+
+        is_final_step: bool = Field(
+            ...,
+            description="Whether this is the final step to be done by the agents, and after it, it will be the user's turn.",
+            json_schema_extra={"type": "boolean"},
         )
 
         is_users_turn: bool = Field(

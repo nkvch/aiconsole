@@ -22,7 +22,7 @@ import { SettingsAPI } from '../../api/api/SettingsAPI';
 
 export type SettingsStore = {
   openAiApiKey?: string;
-  isApiKeyValid?: boolean;
+  isApiKeyValid?: boolean | undefined;
   alwaysExecuteCode: boolean;
   username?: string;
   userEmail?: string;
@@ -38,7 +38,7 @@ export type SettingsStore = {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   openAiApiKey: undefined,
-  isApiKeyValid: false,
+  isApiKeyValid: undefined,
   alwaysExecuteCode: false,
   username: undefined,
   userEmail: undefined,

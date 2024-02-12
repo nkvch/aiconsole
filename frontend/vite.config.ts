@@ -16,16 +16,20 @@
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import wasm from 'vite-plugin-wasm';
 import * as path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [wasm(), react()],
   server: {
     port: 3000,
     host: '0.0.0.0',
   },
   resolve: {
     alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
+  },
+  optimizeDeps: {
+    exclude: ['@swc/wasm-web'],
   },
 });

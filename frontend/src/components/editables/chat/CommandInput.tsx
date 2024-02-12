@@ -137,7 +137,11 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   }, [chat?.chat_options.materials_ids, materials, chat?.id]);
 
   useEffect(() => {
-    setMaterialsOptions(materials?.filter((material) => !chosenMaterials.includes(material)) as Material[]);
+    setMaterialsOptions(
+      materials
+        ?.filter((material) => !chosenMaterials.includes(material))
+        .filter((item) => item.status === 'enabled') as Material[],
+    );
   }, [chat?.id, materials, chosenMaterials]);
 
   const getAgent = (agentId: string) => agents.find((agent) => agent.id === agentId);
@@ -187,7 +191,9 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
 
   const handleMaterialSelect = (material: Material) => {
     setChosenMaterials((prev) => [...prev, material]);
-    const filteredOptions = materialsOptions.filter(({ id }) => id !== material.id);
+    const filteredOptions = materialsOptions
+      .filter(({ id }) => id !== material.id)
+      .filter((item) => item.status === 'enabled');
     setMaterialsOptions(filteredOptions);
     debounceChatUpdate();
     setShowChatOptions(false);

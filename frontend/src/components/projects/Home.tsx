@@ -69,7 +69,7 @@ export function Home() {
       title: 'This folder already contains an AIConsole project',
       message: 'Do you want to open it instead?',
       confirmText: 'Yes, open',
-      cancelText: 'Close',
+      cancelText: 'No, Close',
       onConfirm: openProjectConfirmation,
       onCancel: resetProjectOpening,
     },
@@ -121,7 +121,7 @@ export function Home() {
     <div className="min-h-[100vh] relative overflow-x-hidden">
       <BackgroundGradient />
       <div>
-        {openAiApiKey === undefined || isProjectLoading ? (
+        {(openAiApiKey === undefined && isProjectLoading) || isApiKeyValid === undefined ? (
           <>{/* the request is in progress - don't render anything to avoid flickering */}</>
         ) : (
           <>
@@ -156,12 +156,9 @@ export function Home() {
                   </div>
                 </div>
               </div>
-            ) : null}
+            ) : <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />}
           </>
         )}
-        {!recentProjects.length || !openAiApiKey || !isApiKeyValid ? (
-          <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
-        ) : null}
       </div>
       {currentAlertDialogConfig && (
         <AlertDialog

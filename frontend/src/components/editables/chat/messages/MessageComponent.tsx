@@ -22,6 +22,7 @@ export function MessageComponent({ message, group }: MessageProps) {
   const userMutateChat = useChatStore((state) => state.userMutateChat);
   const saveCommandAndMessagesToHistory = useChatStore((state) => state.saveCommandAndMessagesToHistory);
   const getBaseURL = useAPIStore((state) => state.getBaseURL);
+  const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
 
   const handleRemoveClick = useCallback(() => {
     userMutateChat({
@@ -54,7 +55,9 @@ export function MessageComponent({ message, group }: MessageProps) {
         hideControls
       >
         <div className="flex flex-col gap-2">
-          {message.is_streaming && !message.content && message.tool_calls.length === 0 && <BlinkingCursor />}
+          {message.is_streaming && !message.content && message.tool_calls.length === 0 && isExecutionRunning && (
+            <BlinkingCursor />
+          )}
           {message.content && (
             <div className="max-w-[700px]">
               {group.role !== 'user' && (
