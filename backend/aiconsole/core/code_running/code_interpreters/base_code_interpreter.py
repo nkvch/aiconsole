@@ -46,7 +46,7 @@ class BaseCodeInterpreter(Protocol):
     async def initialize(self):  # fmt: off
         ...
 
-    async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:  # fmt: off
+    def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:  # fmt: off
         ...
 
     def terminate(self) -> None:  # fmt: off

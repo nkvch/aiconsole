@@ -40,7 +40,7 @@ import re
 import threading
 import time
 import traceback
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 
 from jupyter_client.manager import KernelManager
 
@@ -92,7 +92,7 @@ matplotlib.use('{backend}')
         self.finish_flag = False
         try:
             preprocessed_code = preprocess_python(code, materials)
-            message_queue = queue.Queue()
+            message_queue: queue.Queue[Any] = queue.Queue()
             self._execute_code(preprocessed_code, message_queue)
             for output in self._capture_output(message_queue):
                 yield output
