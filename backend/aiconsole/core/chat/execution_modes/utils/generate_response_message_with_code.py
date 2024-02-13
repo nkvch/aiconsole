@@ -115,6 +115,18 @@ async def generate_response_message_with_code(
                         )
                     )
 
+                message_location = chat_mutator.chat.get_message_location(message_id)
+                if not message_location:
+                    raise Exception(f"Message {message_id} should have been created")
+
+                if executor.partial_response.choices[0].message.tool_calls and message_location.message.is_streaming:
+                    await chat_mutator.mutate(
+                        SetIsStreamingMessageMutation(
+                            message_id=message_id,
+                            is_streaming=False,
+                        )
+                    )
+
                 await send_code(
                     executor.partial_response.choices[0].message.tool_calls,
                     chat_mutator,

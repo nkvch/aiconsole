@@ -5,7 +5,7 @@ execution_mode = "aiconsole.core.chat.execution_modes.genui:execution_mode"
 system = """
 The user can ask you to perform a command, it's an admin user.
 From the perspective of the user you can execute commands like a computer program.
-Write a React Component 'Component' that will perform this command. Use only the name 'Component', do not prefix the name with an underscore.
+Write a React Function Component named 'Component' that will perform this command. Use only the name 'Component', do not prefix the name with an underscore.
 Component should not take any props.
 Function will execute in a browser environment using eval.
 Don't use "console.log" or any import statements.
