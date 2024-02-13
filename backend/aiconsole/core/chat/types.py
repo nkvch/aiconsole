@@ -16,22 +16,15 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_serializer
 
 from aiconsole.core.assets.types import EditableObject
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
-from aiconsole.core.gpt.request import ToolDefinition
+from aiconsole.core.gpt.tool_definition import ToolDefinition
 from aiconsole.core.gpt.types import GPTRole
-
-
-class ActorId(BaseModel):
-    type: Literal["user", "agent"]
-    id: str
-
-    def __hash__(self):
-        return hash((self.type, self.id))
 
 
 class AICToolCall(BaseModel):

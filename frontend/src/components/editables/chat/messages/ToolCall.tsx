@@ -86,7 +86,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
   };
 
   const handleRunClick = async () => {
-    if (tool_call.type === 'function') {
+    if (tool_call.language !== 'react_ui') {
       doAcceptCode(tool_call.id);
       tool_call.output = '';
     } else {
@@ -142,12 +142,16 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
         <div className="flex flex-row gap-2 items-center ">
           <div className="flex-grow flex flex-row gap-3 items-center">
             {shouldDisplaySpinner && <Spinner width={20} height={20} />}
-            {!shouldDisplaySpinner && !isError && !(tool_call.output != undefined || tool_call.type == 'ui') && (
-              <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success flex-shrink-0" />
-            )}
-            {!shouldDisplaySpinner && !isError && (tool_call.output != undefined || tool_call.type == 'ui') && (
-              <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success flex-shrink-0" />
-            )}
+            {!shouldDisplaySpinner &&
+              !isError &&
+              !(tool_call.output != undefined || tool_call.language == 'react_ui') && (
+                <Icon icon={CircleDashedIcon} width={20} height={20} className="text-success flex-shrink-0" />
+              )}
+            {!shouldDisplaySpinner &&
+              !isError &&
+              (tool_call.output != undefined || tool_call.language == 'react_ui') && (
+                <Icon icon={CheckCircle2Icon} width={20} height={20} className="text-success flex-shrink-0" />
+              )}
             {!shouldDisplaySpinner && isError && (
               <Icon icon={AlertCircleIcon} width={20} height={20} className="text-danger flex-shrink-0" />
             )}

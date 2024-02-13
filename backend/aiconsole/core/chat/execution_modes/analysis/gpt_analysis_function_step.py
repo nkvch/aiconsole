@@ -21,6 +21,7 @@ from aiconsole.consts import DIRECTOR_MIN_TOKENS, DIRECTOR_PREFERRED_TOKENS
 from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import AssetLocation, AssetStatus
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.chat.chat_mutations import (
     SetActorIdMessageGroupMutation,
     SetAnalysisMessageGroupMutation,
@@ -36,14 +37,11 @@ from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
 from aiconsole.core.chat.execution_modes.analysis.create_plan_class import (
     create_plan_class,
 )
-from aiconsole.core.chat.types import ActorId, Chat
+from aiconsole.core.chat.types import Chat
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
-from aiconsole.core.gpt.request import (
-    GPTRequest,
-    ToolDefinition,
-    ToolFunctionDefinition,
-)
+from aiconsole.core.gpt.request import GPTRequest
+from aiconsole.core.gpt.tool_definition import ToolDefinition, ToolFunctionDefinition
 from aiconsole.core.gpt.types import (
     EnforcedFunctionCall,
     EnforcedFunctionCallFuncSpec,

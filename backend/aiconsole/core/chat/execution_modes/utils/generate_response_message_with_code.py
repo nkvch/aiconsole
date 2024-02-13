@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Type
 from uuid import uuid4
@@ -15,20 +16,26 @@ from aiconsole.core.chat.chat_mutations import (
 )
 from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.convert_messages import convert_messages
-from aiconsole.core.chat.execution_modes.interpreter import _log
 from aiconsole.core.chat.execution_modes.utils.send_code import send_code
 from aiconsole.core.gpt.function_calls import OpenAISchema
 from aiconsole.core.gpt.gpt_executor import GPTExecutor
-from aiconsole.core.gpt.request import (
-    GPTRequest,
-    ToolDefinition,
-    ToolFunctionDefinition,
+from aiconsole.core.gpt.request import GPTRequest
+from aiconsole.core.gpt.tool_definition import ToolDefinition, ToolFunctionDefinition
+from aiconsole.core.gpt.types import (
+    CLEAR_STR,
+    EnforcedFunctionCall,
+    EnforcedFunctionCallFuncSpec,
 )
-from aiconsole.core.gpt.types import CLEAR_STR
+
+_log = logging.getLogger(__name__)
 
 
 async def generate_response_message_with_code(
-    chat_mutator: ChatMutator, agent: AICAgent, system_message: str, language_classes: list[Type[OpenAISchema]]
+    chat_mutator: ChatMutator,
+    agent: AICAgent,
+    system_message: str,
+    language_classes: list[Type[OpenAISchema]],
+    enforced_language: Type[OpenAISchema] | None = None,
 ):
     executor = GPTExecutor()
 
@@ -47,12 +54,6 @@ async def generate_response_message_with_code(
         )
     )
 
-    all_requested_formats: list[ToolDefinition] = []
-    for message_group in chat_mutator.chat.message_groups:
-        for message in message_group.messages:
-            if message.requested_format:
-                all_requested_formats.append(message.requested_format)
-
     try:
         await chat_mutator.mutate(
             SetIsStreamingMessageMutation(
@@ -60,6 +61,13 @@ async def generate_response_message_with_code(
                 is_streaming=True,
             )
         )
+
+        all_requested_formats: list[ToolDefinition] = []
+        for message_group in chat_mutator.chat.message_groups:
+            for message in message_group.messages:
+                if message.requested_format:
+                    all_requested_formats.append(message.requested_format)
+
         async for chunk_or_clear in executor.execute(
             GPTRequest(
                 system_message=system_message,
@@ -75,18 +83,19 @@ async def generate_response_message_with_code(
                     ],
                     *all_requested_formats,
                 ],
+                tool_choice=(
+                    EnforcedFunctionCall(
+                        type="function", function=EnforcedFunctionCallFuncSpec(name=enforced_language.__name__)
+                    )
+                    if enforced_language
+                    else None
+                ),
                 min_tokens=250,
                 preferred_tokens=2000,
                 temperature=0.2,
             )
         ):
-            # What is this?
-            await chat_mutator.mutate(
-                SetIsStreamingMessageMutation(
-                    message_id=message_id,
-                    is_streaming=False,
-                )
-            )
+
             if chunk_or_clear == CLEAR_STR:
                 await chat_mutator.mutate(SetContentMessageMutation(message_id=message_id, content=""))
                 continue
@@ -115,6 +124,13 @@ async def generate_response_message_with_code(
                 )
 
     finally:
+        await chat_mutator.mutate(
+            SetIsStreamingMessageMutation(
+                message_id=message_id,
+                is_streaming=False,
+            )
+        )
+
         for tool_id in tools_requiring_closing_parenthesis:
             await chat_mutator.mutate(
                 AppendToCodeToolCallMutation(

@@ -1,7 +1,5 @@
 from typing import Protocol
 
-from pydantic import BaseModel
-
 from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
@@ -55,6 +53,12 @@ def accept_code_not_supported(
     raise NotImplementedError("accept code is not supported")
 
 
-class ExecutionMode(BaseModel):
-    process_chat: ProcessChatDataProtocol = process_chat_not_supported
-    accept_code: AcceptCodeDataProtocol = accept_code_not_supported
+class ExecutionMode:
+
+    def __init__(
+        self,
+        process_chat: ProcessChatDataProtocol = process_chat_not_supported,
+        accept_code: AcceptCodeDataProtocol = accept_code_not_supported,
+    ):
+        self.process_chat = process_chat
+        self.accept_code = accept_code

@@ -35,8 +35,7 @@ from aiconsole.core.gpt.function_calls import OpenAISchema
 
 class react_ui(OpenAISchema):
     """
-    Execute python code in a stateful Jupyter notebook environment.
-    You can execute shell commands by prefixing code lines with "!".
+    Execute react typescript code in a browser.
     """
 
     headline: str = Field(
@@ -63,7 +62,9 @@ async def _execution_mode_process(
         materials=rendered_materials,
     )
 
-    await generate_response_message_with_code(chat_mutator, agent, system_message, [react_ui])
+    await generate_response_message_with_code(
+        chat_mutator, agent, system_message, language_classes=[react_ui], enforced_language=react_ui
+    )
 
 
 execution_mode = ExecutionMode(

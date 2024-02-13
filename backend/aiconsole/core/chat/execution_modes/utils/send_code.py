@@ -25,9 +25,10 @@ async def send_code(
     message_id,
     language_classes: list[type],
 ):
-    default_language = LanguageStr(language_classes[0].__name__)
 
     for index, tool_call in enumerate(tool_calls):
+        default_language = LanguageStr(language_classes[0].__name__)
+
         # All tool calls with lower indexes are finished
         prev_tool = tool_calls[index - 1] if index > 0 else None
         if prev_tool and prev_tool.id in tools_requiring_closing_parenthesis:
@@ -64,12 +65,13 @@ async def send_code(
         if not tool_call_data:
             raise Exception(f"Tool call {tool_call.id} not found")
 
-        await chat_mutator.mutate(
-            SetIsStreamingToolCallMutation(
-                tool_call_id=tool_call.id,
-                is_streaming=True,
+        if not tool_call_data.is_streaming:
+            await chat_mutator.mutate(
+                SetIsStreamingToolCallMutation(
+                    tool_call_id=tool_call.id,
+                    is_streaming=True,
+                )
             )
-        )
 
         async def send_language_if_needed(lang: LanguageStr):
             if tool_call_data.language is None:

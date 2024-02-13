@@ -20,12 +20,13 @@ from aiconsole.api.websockets.client_messages import (
     ReleaseLockClientMessage,
 )
 from aiconsole.app import app
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.chat.chat_mutations import (
     CreateMessageGroupMutation,
     CreateMessageMutation,
 )
 from aiconsole.core.chat.load_chat_history import load_chat_history
-from aiconsole.core.chat.types import ActorId, AICMessage
+from aiconsole.core.chat.types import AICMessage
 from aiconsole.core.settings.fs.settings_file_storage import SettingsFileStorage
 from aiconsole.core.settings.settings import settings
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData

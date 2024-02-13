@@ -25,6 +25,7 @@ from aiconsole.core.assets.materials.content_evaluation_context import (
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.chat.chat_mutations import (
     CreateMessageGroupMutation,
     DeleteMessageGroupMutation,
@@ -35,7 +36,6 @@ from aiconsole.core.chat.execution_modes.execution_mode import ExecutionMode
 from aiconsole.core.chat.execution_modes.utils.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
-from aiconsole.core.chat.types import ActorId
 
 _log = logging.getLogger(__name__)
 

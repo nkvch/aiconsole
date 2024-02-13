@@ -34,7 +34,7 @@ class EnforcedFunctionCallFuncSpec(TypedDict):
 
 
 class EnforcedFunctionCall(TypedDict):
-    type: Literal["function", "ui"]
+    type: Literal["function"]
     function: EnforcedFunctionCallFuncSpec
 
 

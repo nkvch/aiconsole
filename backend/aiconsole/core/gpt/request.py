@@ -16,13 +16,13 @@
 
 import json
 import logging
-from typing import Any, Literal
+from typing import Literal
 
 import tiktoken
-from pydantic import BaseModel
 
 from aiconsole.core.gpt.consts import GPTMode
 from aiconsole.core.gpt.token_error import TokenError
+from aiconsole.core.gpt.tool_definition import ToolDefinition
 from aiconsole.core.gpt.types import (
     EnforcedFunctionCall,
     GPTRequestMessage,
@@ -34,23 +34,6 @@ from aiconsole_toolkit.settings.settings_data import REFERENCE_TO_GLOBAL_OPENAI_
 _log = logging.getLogger(__name__)
 
 EXTRA_BUFFER_FOR_ENCODING_OVERHEAD = 50
-
-
-class ToolFunctionParameters(BaseModel):
-    type: "object"
-    properties: dict[str, Any]
-    required: list[str]
-
-
-class ToolFunctionDefinition(BaseModel):
-    name: str
-    description: str
-    parameters: ToolFunctionParameters
-
-
-class ToolDefinition(BaseModel):
-    type: Literal["function"]
-    function: ToolFunctionDefinition
 
 
 class GPTRequest:

@@ -22,7 +22,7 @@ from functools import lru_cache
 
 from fastapi import WebSocket
 
-from aiconsole.api.websockets.server_messages import BaseServerMessage
+from aiconsole.api.websockets.base_server_message import BaseServerMessage
 
 _log = logging.getLogger(__name__)
 

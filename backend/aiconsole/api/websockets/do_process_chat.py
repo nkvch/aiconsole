@@ -5,6 +5,7 @@ from aiconsole.api.websockets.render_materials_from_message_group import (
 )
 from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.types import AssetLocation
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.chat.chat_mutations import CreateMessageGroupMutation
 from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
@@ -13,7 +14,6 @@ from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
 from aiconsole.core.chat.execution_modes.utils.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
-from aiconsole.core.chat.types import ActorId
 from aiconsole.core.gpt.consts import ANALYSIS_GPT_MODE
 from aiconsole.core.gpt.types import GPTRole
 from aiconsole.core.project import project
