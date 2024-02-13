@@ -99,6 +99,13 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
     handleRunClick();
   };
 
+  function translateLanguageToRealLanguage(language: string | undefined) {
+    if (language === 'react_ui') {
+      return 'jsx';
+    }
+    return language;
+  }
+
   //Either executing or streaming while there are still no output messages
   const shouldDisplaySpinner = tool_call.is_executing || tool_call.is_streaming;
 
@@ -191,7 +198,7 @@ export function ToolCall({ group, toolCall: tool_call }: MessageProps) {
                 <span className="text-[15px] w-20 flex-none">{upperFirst(tool_call.language || '')}: </span>
                 <EditableContentMessage
                   initialContent={tool_call.code}
-                  language={tool_call.language}
+                  language={translateLanguageToRealLanguage(tool_call.language)}
                   handleAcceptedContent={handleAcceptedContent}
                   handleRemoveClick={handleRemoveClick}
                   className="mt-2"
