@@ -38,11 +38,11 @@ import logging
 import queue
 import re
 import threading
-import time
 import traceback
 from typing import Any, AsyncGenerator
 
-from jupyter_client.manager import KernelManager
+from jupyter_client.asynchronous.client import AsyncKernelClient
+from jupyter_client.manager import AsyncKernelManager
 
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.code_running.code_interpreters.base_code_interpreter import (
@@ -57,12 +57,12 @@ DEBUG_MODE = True
 
 class Python(BaseCodeInterpreter):
     async def initialize(self):
-        self.km = KernelManager(kernel_name="python3")
-        self.km.start_kernel()
-        self.kc = self.km.client()
+        self.km = AsyncKernelManager(kernel_name="python3", env=self.get_environment_variables())
+        await self.km.start_kernel()
+        self.kc: AsyncKernelClient = self.km.client()
         self.kc.start_channels()
 
-        while not self.kc.is_alive():
+        while not await self.kc.is_alive():
             await asyncio.sleep(0.1)
         await asyncio.sleep(0.5)
 
@@ -84,9 +84,9 @@ matplotlib.use('{backend}')
         async for _ in self.run(code, []):
             pass
 
-    def terminate(self):
+    async def terminate(self):
         self.kc.stop_channels()
-        self.km.shutdown_kernel()
+        await self.km.shutdown_kernel()
 
     async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
         self.finish_flag = False
@@ -94,7 +94,7 @@ matplotlib.use('{backend}')
             preprocessed_code = preprocess_python(code, materials)
             message_queue: queue.Queue[Any] = queue.Queue()
             self._execute_code(preprocessed_code, message_queue)
-            for output in self._capture_output(message_queue):
+            async for output in self._capture_output(message_queue):
                 yield output
         except GeneratorExit:
             raise  # gotta pass this up!
@@ -103,16 +103,16 @@ matplotlib.use('{backend}')
             yield content
 
     def _execute_code(self, code, message_queue):
-        def iopub_message_listener():
+        async def iopub_message_listener():
             while True:
                 # If self.finish_flag = True, and we didn't set it (we do below), we need to stop. That's our "stop"
                 if self.finish_flag:
                     if DEBUG_MODE:
                         print("interrupting kernel!!!!!")
-                    self.km.interrupt_kernel()
+                    await self.km.interrupt_kernel()
                     return
                 try:
-                    msg = self.kc.iopub_channel.get_msg(timeout=0.05)
+                    msg = await self.kc.iopub_channel.get_msg(timeout=0.05)
                 except queue.Empty:
                     continue
 
@@ -188,7 +188,15 @@ matplotlib.use('{backend}')
                             }
                         )
 
-        self.listener_thread = threading.Thread(target=iopub_message_listener)
+        def start_async_loop(async_func):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(async_func())
+            finally:
+                loop.close()
+
+        self.listener_thread = threading.Thread(target=start_async_loop, args=(iopub_message_listener,))
         # self.listener_thread.daemon = True
         self.listener_thread.start()
 
@@ -197,7 +205,7 @@ matplotlib.use('{backend}')
 
         self.kc.execute(code)
 
-    def _capture_output(self, message_queue):
+    async def _capture_output(self, message_queue):
         while True:
             if self.listener_thread:
                 try:
@@ -211,7 +219,7 @@ matplotlib.use('{backend}')
                         if DEBUG_MODE:
                             print("we're done")
                         break
-            time.sleep(0.1)
+            await asyncio.sleep(0.1)
 
     def stop(self):
         self.finish_flag = True

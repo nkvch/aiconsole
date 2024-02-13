@@ -22,14 +22,21 @@ def is_domain_available(domain) -> bool:
         )
         output = result.stdout.lower()
 
-        if "Domain Status: No Object Found" in result.stdout:
-            return True
-
-        if "No match for domain" in result.stdout:
-            return True
+        for i in [
+            "No match",
+            "NOT FOUND",
+            "Not fo",
+            "^No Data Fou",
+            "has not been regi",
+            "No entri",
+            "Not Found",
+            "No Object Found",
+        ]:
+            if i.lower() in output:
+                return True
 
         # Common indicators that a domain is taken:
-        indicators = ["registrant", "creation date", "domain name:", "status:"]
+        indicators = ["registrant", "creation date", "domain name:"]
 
         for indicator in indicators:
             if indicator in output:

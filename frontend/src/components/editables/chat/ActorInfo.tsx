@@ -118,12 +118,11 @@ export function ActorInfo({
     };
 
     const menuItems = actorId.type === 'agent' ? editableMenuItems : userMenuItems;
-
     return (
       <>
         <ContextMenu options={menuItems} ref={triggerRef}>
           <Link
-            to={actorId.type === 'agent' ? `/agents/${actorId}` : ''}
+            to={actorId.type === 'agent' ? `/agents/${actorId.id}` : ''}
             onClick={openContext}
             className="flex-none items-center flex flex-col"
           >
@@ -147,24 +146,16 @@ export function ActorInfo({
             </div>
           </Link>
         </ContextMenu>
-        {materialsIds.length > 0 && (
-          <div
-            className={cn('text-xs text-center opacity-0', {
-              'transition-opacity duration-500 opacity-40': isLoaded,
-              'opacity-40': !isAnalysisRunning && !isExecutionRunning,
-            })}
-          >
-            +
-          </div>
-        )}
-        {materialsIds.map((material_id) => (
-          <AgentInfoMaterialLink
-            key={material_id}
-            materialId={material_id}
-            isLoaded={isLoaded}
-            isRunning={!isAnalysisRunning && !isExecutionRunning}
-          />
-        ))}
+        <div className="flex flex-col mt-2">
+          {materialsIds.map((material_id) => (
+            <AgentInfoMaterialLink
+              key={material_id}
+              materialId={material_id}
+              isLoaded={isLoaded}
+              isRunning={!isAnalysisRunning && !isExecutionRunning}
+            />
+          ))}
+        </div>
       </>
     );
   }

@@ -169,7 +169,7 @@ export function ChatPage() {
     return () => {
       stopWork();
     };
-  }, [chat?.id, stopWork]); //Initentional trigger when chat_id changes
+  }, [stopWork]); //Initentional trigger when chat_id changes
 
   const isProcessesAreNotRunning = !isExecutionRunning && !isAnalysisRunning;
 

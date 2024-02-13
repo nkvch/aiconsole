@@ -33,7 +33,6 @@
 #
 import asyncio
 import logging
-import os
 import platform
 import queue
 import subprocess
@@ -48,10 +47,7 @@ from aiconsole.core.code_running.virtual_env.create_dedicated_venv import (
     WaitForEnvEvent,
 )
 from aiconsole.utils.events import internal_events
-from aiconsole_toolkit.env import (
-    get_current_project_venv_bin_path,
-    get_current_project_venv_path,
-)
+from aiconsole_toolkit.env import get_current_project_venv_path
 
 from .base_code_interpreter import BaseCodeInterpreter
 
@@ -101,7 +97,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=self._patched_env(),
+            env=self.get_environment_variables(),
             shell=True if platform.system() == "Windows" else False,
             text=True,
             bufsize=0,
@@ -196,21 +192,6 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
                 self.done.set()
             else:
                 self.output_queue.put(line)
-
-    def _patched_env(self):
-        path = os.environ.get("PATH") or ""
-
-        # replace the first element in the PATH with the venv bin path
-        # this is the one we've added to get the correct embedded interpreter when the app is starting
-        sep = str(os.pathsep)
-        _path = sep.join([str(get_current_project_venv_bin_path()), *path.split(sep)])
-        r = {
-            **os.environ,
-            # just in case for correct questions about the venv locations and similar
-            "VIRTUAL_ENV": str(get_current_project_venv_path()),
-        }
-        r["PATH"] = _path
-        return r
 
     async def wait_for_path(self, timeout: int = 100, check_interval: int = 5):
         """
