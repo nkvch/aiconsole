@@ -121,6 +121,7 @@ def _handle_CreateMessageMutation(chat, mutation: CreateMessageMutation) -> None
         id=mutation.message_id,
         content=mutation.content,
         timestamp=datetime.now().isoformat(),
+        requested_format=None,
         tool_calls=[],
         is_streaming=False,
     )
@@ -155,7 +156,6 @@ def _handle_CreateToolCallMutation(chat, mutation: CreateToolCallMutation) -> No
     message = _get_message_location(chat, mutation.message_id).message
     tool_call = AICToolCall(
         id=mutation.tool_call_id,
-        type=mutation.tool_type,
         language=mutation.language,
         code=mutation.code,
         headline=mutation.headline,

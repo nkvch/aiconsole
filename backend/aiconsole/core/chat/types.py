@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, field_serializer
 
 from aiconsole.core.assets.types import EditableObject
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
+from aiconsole.core.gpt.request import ToolDefinition
 from aiconsole.core.gpt.types import GPTRole
 
 
@@ -35,7 +36,6 @@ class ActorId(BaseModel):
 
 class AICToolCall(BaseModel):
     id: str
-    type: Literal["function", "ui"]
     language: LanguageStr | None = None
     code: str
     headline: str
@@ -49,8 +49,8 @@ class AICMessage(BaseModel):
     id: str
     timestamp: str
     content: str
-    tool_calls: list[AICToolCall]
-
+    requested_format: ToolDefinition | None = None
+    tool_calls: list[AICToolCall] = []
     is_streaming: bool = False
 
 

@@ -1,10 +1,10 @@
 import importlib
 
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.chat.execution_modes.execution_mode import ExecutionMode
 
 
-async def import_and_validate_execution_mode(agent: Agent):
+async def import_and_validate_execution_mode(agent: AICAgent):
     execution_mode = agent.execution_mode
 
     split = execution_mode.split(":")

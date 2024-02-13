@@ -19,7 +19,7 @@ from datetime import datetime
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
 )
@@ -32,7 +32,7 @@ router = APIRouter()
 
 
 def create_user_agent():
-    return Agent(
+    return AICAgent(
         id="user",
         name="You",
         usage="",

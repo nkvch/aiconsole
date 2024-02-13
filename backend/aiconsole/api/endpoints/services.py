@@ -1,6 +1,6 @@
 from fastapi import UploadFile
 
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import Asset, AssetType
@@ -31,11 +31,11 @@ class _Assets:
 
 
 class Agents(_Assets):
-    async def create_agent(self, agent_id: str, agent: Agent) -> None:
+    async def create_agent(self, agent_id: str, agent: AICAgent) -> None:
         agents = project.get_project_agents()
         await self._create(agents, agent_id, agent)
 
-    async def partially_update_agent(self, agent_id: str, agent: Agent) -> None:
+    async def partially_update_agent(self, agent_id: str, agent: AICAgent) -> None:
         agents = project.get_project_agents()
         await self._partially_update(agents, agent_id, agent)
 

@@ -7,8 +7,8 @@ from aiconsole.core.chat.types import Chat
 class ChatMutator(Protocol):
     # readonly chat: Chat
     @property
-    def chat(self) -> Chat:
+    def chat(self) -> Chat:  # fmt: off
         ...
 
-    async def mutate(self, mutation: ChatMutation) -> None:
+    async def mutate(self, mutation: ChatMutation) -> None:  # fmt: off
         ...

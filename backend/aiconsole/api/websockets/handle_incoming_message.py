@@ -20,9 +20,6 @@ from collections import defaultdict
 from typing import Any, Callable, cast
 from uuid import uuid4
 
-from aiconsole.api.websockets._render_materials_from_message_group import (
-    _render_materials_from_message_group,
-)
 from aiconsole.api.websockets.client_messages import (
     AcceptCodeClientMessage,
     AcquireLockClientMessage,
@@ -39,14 +36,16 @@ from aiconsole.api.websockets.connection_manager import (
     connection_manager,
 )
 from aiconsole.api.websockets.do_process_chat import do_process_chat
+from aiconsole.api.websockets.render_materials_from_message_group import (
+    render_materials_from_message_group,
+)
 from aiconsole.api.websockets.server_messages import (
     ChatOpenedServerMessage,
     NotificationServerMessage,
     ResponseServerMessage,
 )
-from aiconsole.core.assets.agents.agent import Agent
-from aiconsole.core.chat.execution_modes.execution_mode import AcceptCodeContext
-from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode import (
+from aiconsole.core.assets.agents.agent import AICAgent
+from aiconsole.core.chat.execution_modes.utils.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
 from aiconsole.core.chat.locking import DefaultChatMutator, acquire_lock, release_lock
@@ -231,20 +230,18 @@ async def _handle_accept_code_ws_message(connection: AICConnection, json: dict):
         if agent is None:
             raise Exception(f"Agent with id {agent_id} not found")
 
-        agent = cast(Agent, agent)
+        agent = cast(AICAgent, agent)
 
         execution_mode = await import_and_validate_execution_mode(agent)
 
-        mats = await _render_materials_from_message_group(tool_call_location.message_group, chat_mutator.chat, agent)
+        mats = await render_materials_from_message_group(tool_call_location.message_group, chat_mutator.chat, agent)
 
         await execution_mode.accept_code(
-            AcceptCodeContext(
-                chat_mutator=chat_mutator,
-                agent=agent,
-                materials=mats.materials,
-                rendered_materials=mats.rendered_materials,
-                tool_call_id=tool_call_location.tool_call.id,
-            )
+            chat_mutator=chat_mutator,
+            agent=agent,
+            materials=mats.materials,
+            rendered_materials=mats.rendered_materials,
+            tool_call_id=tool_call_location.tool_call.id,
         )
     finally:
         await release_lock(chat_id=message.chat_id, request_id=message.request_id)

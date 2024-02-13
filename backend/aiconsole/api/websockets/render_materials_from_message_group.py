@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import cast
 
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
 )
@@ -17,8 +17,8 @@ class MaterialsAndRenderedMaterials:
     rendered_materials: list[RenderedMaterial]
 
 
-async def _render_materials_from_message_group(
-    message_group: AICMessageGroup, chat: Chat, agent: Agent, init: bool = False
+async def render_materials_from_message_group(
+    message_group: AICMessageGroup, chat: Chat, agent: AICAgent, init: bool = False
 ) -> MaterialsAndRenderedMaterials:
     relevant_materials_ids = message_group.materials_ids
 

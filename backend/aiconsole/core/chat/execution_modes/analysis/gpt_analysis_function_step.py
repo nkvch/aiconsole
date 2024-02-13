@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import cast
 
 from aiconsole.consts import DIRECTOR_MIN_TOKENS, DIRECTOR_PREFERRED_TOKENS
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import AssetLocation, AssetStatus
 from aiconsole.core.chat.chat_mutations import (
@@ -54,7 +54,7 @@ from aiconsole.core.project import project
 _log = logging.getLogger(__name__)
 
 
-def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
+def pick_agent(arguments, chat: Chat, available_agents: list[AICAgent]) -> AICAgent:
     # Try support first
     default_agent = next((agent for agent in available_agents if agent.id == "assistant"), None)
 
@@ -65,7 +65,7 @@ def pick_agent(arguments, chat: Chat, available_agents: list[Agent]) -> Agent:
     is_users_turn = arguments.is_users_turn
 
     if is_users_turn:
-        picked_agent = Agent(
+        picked_agent = AICAgent(
             id="user",
             name="User",
             usage="When a human user needs to respond",
@@ -110,7 +110,7 @@ def _get_relevant_materials(relevant_material_ids: list[str]) -> list[Material]:
 
 @dataclass
 class AnalysisResult:
-    agent: Agent
+    agent: AICAgent
     relevant_materials: list[Material]
     next_step: str
     is_final_step: bool
@@ -152,7 +152,7 @@ async def gpt_analysis_function_step(
 
     plan_class = create_plan_class(
         [
-            Agent(
+            AICAgent(
                 id="user",
                 name="User",
                 usage="When a human user needs to respond",

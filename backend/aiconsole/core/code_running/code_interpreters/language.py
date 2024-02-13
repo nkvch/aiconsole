@@ -1,3 +1,7 @@
-from typing import Literal
+from typing import Annotated
 
-LanguageStr = Literal["python"] | Literal["applescript"]
+from pydantic import StringConstraints
+
+LanguageStr = Annotated[
+    str, StringConstraints(strip_whitespace=True, to_lower=True, pattern=r"^(python|applescript|react_ui)$")
+]

@@ -1,17 +1,16 @@
 from uuid import uuid4
 
-from aiconsole.api.websockets._render_materials_from_message_group import (
-    _render_materials_from_message_group,
+from aiconsole.api.websockets.render_materials_from_message_group import (
+    render_materials_from_message_group,
 )
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.types import AssetLocation
 from aiconsole.core.chat.chat_mutations import CreateMessageGroupMutation
 from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.execution_modes.analysis.agents_to_choose_from import (
     agents_to_choose_from,
 )
-from aiconsole.core.chat.execution_modes.execution_mode import ProcessChatContext
-from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode import (
+from aiconsole.core.chat.execution_modes.utils.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
 from aiconsole.core.chat.types import ActorId
@@ -20,7 +19,7 @@ from aiconsole.core.gpt.types import GPTRole
 from aiconsole.core.project import project
 
 # TODO: Move this to a file
-_director_agent = Agent(
+_director_agent = AICAgent(
     id="director",
     name="Director",
     gpt_mode=ANALYSIS_GPT_MODE,
@@ -67,7 +66,7 @@ async def do_process_chat(chat_mutator: ChatMutator):
 
     if materials_ids:
         materials = [_m for _m in project.get_project_materials().all_assets() if _m.id in materials_ids]
-        materials_and_rmats = await _render_materials_from_message_group(
+        materials_and_rmats = await render_materials_from_message_group(
             chat_mutator.chat.message_groups[-1], chat_mutator.chat, agent, init=True
         )
         render_materials = materials_and_rmats.rendered_materials
@@ -77,11 +76,8 @@ async def do_process_chat(chat_mutator: ChatMutator):
 
     execution_mode = await import_and_validate_execution_mode(agent)
     await execution_mode.process_chat(
-        ProcessChatContext(
-            message_group_id=message_group_id,
-            chat_mutator=chat_mutator,
-            agent=agent,
-            materials=materials,  # type: ignore
-            rendered_materials=render_materials,
-        )
+        chat_mutator=chat_mutator,
+        agent=agent,
+        materials=materials,  # type: ignore
+        rendered_materials=render_materials,
     )

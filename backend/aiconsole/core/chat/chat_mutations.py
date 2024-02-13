@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from aiconsole.core.chat.types import ActorId
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
+from aiconsole.core.gpt.request import ToolDefinition
 from aiconsole.core.gpt.types import GPTRole
 
 
@@ -94,6 +95,7 @@ class CreateMessageMutation(BaseModel):
     message_id: str
     timestamp: str
     content: str
+    requested_format: ToolDefinition | None = None
 
 
 class DeleteMessageMutation(BaseModel):
@@ -121,7 +123,6 @@ class SetIsStreamingMessageMutation(BaseModel):
 
 class CreateToolCallMutation(BaseModel):
     type: Literal["CreateToolCallMutation"] = "CreateToolCallMutation"
-    tool_type: Literal["function", "ui"]
     message_id: str
     tool_call_id: str
     code: str
