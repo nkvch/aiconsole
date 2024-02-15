@@ -51,7 +51,7 @@ export const GPTRoleSchema = z.enum(['user', 'system', 'assistant', 'tool']);
 
 export type GPTRole = z.infer<typeof GPTRoleSchema>;
 
-export const LanguageStrSchema = z.enum(['python', 'actionscript']);
+export const LanguageStrSchema = z.enum(['python', 'actionscript', 'react_ui']);
 
 export type LanguageStr = z.infer<typeof LanguageStrSchema>;
 

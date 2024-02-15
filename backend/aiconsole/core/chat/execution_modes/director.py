@@ -14,92 +14,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import logging
-from typing import cast
 from uuid import uuid4
 
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import NotificationServerMessage
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.materials.content_evaluation_context import (
     ContentEvaluationContext,
 )
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.chat.chat_mutations import (
     CreateMessageGroupMutation,
     DeleteMessageGroupMutation,
 )
+from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.execution_modes.analysis.director import director_analyse
-from aiconsole.core.chat.execution_modes.execution_mode import (
-    AcceptCodeContext,
-    ExecutionMode,
-    ProcessChatContext,
-)
-from aiconsole.core.chat.execution_modes.import_and_validate_execution_mode import (
+from aiconsole.core.chat.execution_modes.execution_mode import ExecutionMode
+from aiconsole.core.chat.execution_modes.utils.import_and_validate_execution_mode import (
     import_and_validate_execution_mode,
 )
-from aiconsole.core.chat.types import ActorId, AICMessageGroup
-from aiconsole.core.project import project
 
 _log = logging.getLogger(__name__)
 
 
-async def render_materials_from_message_group(
-    message_group: AICMessageGroup, context: ProcessChatContext, agent: Agent
-) -> list[RenderedMaterial]:
-    # Find the message group with id context.message_group_id
-    relevant_materials_ids = message_group.materials_ids
-    relevant_materials = [
-        cast(Material, project.get_project_materials().get_asset(material_id))
-        for material_id in relevant_materials_ids
-    ]
-
-    content_context = ContentEvaluationContext(
-        chat=context.chat_mutator.chat,
-        agent=agent,
-        gpt_mode=agent.gpt_mode,
-        relevant_materials=relevant_materials,
-    )
-
-    rendered_materials = await asyncio.gather(
-        *[material.render(content_context) for material in relevant_materials if material.type == "rendered_material"]
-    )
-
-    return rendered_materials
-
-
-async def execution_mode_process(
-    context: ProcessChatContext,
+async def _execution_mode_process(
+    chat_mutator: ChatMutator,
+    agent: AICAgent,
+    materials: list[Material],
+    rendered_materials: list[RenderedMaterial],
 ):
     _log.debug("execution_mode_director")
 
+    # Assumes an existing message group that was created for us
+    last_message_group = chat_mutator.chat.message_groups[-1]
+
     # if there are no messages in message groups, stop processing
-    if not any(group.messages for group in context.chat_mutator.chat.message_groups):
+    if not any(group.messages for group in chat_mutator.chat.message_groups):
         # Send an error notification and delete the current message group
         _log.error("No messages in message groups")
 
         await connection_manager().send_to_chat(
             message=NotificationServerMessage(title="Error", message="No messages to respond to"),
-            chat_id=context.chat_mutator.chat.id,
+            chat_id=chat_mutator.chat.id,
         )
 
-        await context.chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=context.message_group_id))
+        await chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=last_message_group.id))
 
         return
 
-    last_messages = context.chat_mutator.chat.message_groups[-2].messages
+    last_messages = chat_mutator.chat.message_groups[-2].messages
     for message in last_messages:
         if message.tool_calls and not all(call.output for call in message.tool_calls):
-            await context.chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=context.message_group_id))
+            await chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=last_message_group.id))
             return
 
-    analysis = await director_analyse(context.chat_mutator, context.message_group_id)
+    analysis = await director_analyse(chat_mutator, last_message_group.id)
 
     if analysis.agent.id != "user" and analysis.next_step:
         content_context = ContentEvaluationContext(
-            chat=context.chat_mutator.chat,
+            chat=chat_mutator.chat,
             agent=analysis.agent,
             gpt_mode=analysis.agent.gpt_mode,
             relevant_materials=analysis.relevant_materials,
@@ -112,13 +88,10 @@ async def execution_mode_process(
         execution_mode = await import_and_validate_execution_mode(analysis.agent)
 
         await execution_mode.process_chat(
-            ProcessChatContext(
-                message_group_id=context.message_group_id,
-                chat_mutator=context.chat_mutator,
-                agent=analysis.agent,
-                materials=analysis.relevant_materials,
-                rendered_materials=rendered_materials,
-            )
+            chat_mutator=chat_mutator,
+            agent=analysis.agent,
+            materials=analysis.relevant_materials,
+            rendered_materials=rendered_materials,
         )
 
         if not analysis.is_final_step:
@@ -126,15 +99,15 @@ async def execution_mode_process(
 
             message_group_id = str(uuid4())
 
-            if context.chat_mutator.chat.chat_options.materials_ids:
-                materials_ids = context.chat_mutator.chat.chat_options.materials_ids
+            if chat_mutator.chat.chat_options.materials_ids:
+                materials_ids = chat_mutator.chat.chat_options.materials_ids
             else:
                 materials_ids = []
 
-            await context.chat_mutator.mutate(
+            await chat_mutator.mutate(
                 CreateMessageGroupMutation(
                     message_group_id=message_group_id,
-                    actor_id=ActorId(type="agent", id=context.agent.id),
+                    actor_id=ActorId(type="agent", id=agent.id),
                     role="assistant",
                     materials_ids=materials_ids,
                     analysis="",
@@ -142,27 +115,17 @@ async def execution_mode_process(
                 )
             )
 
-            await execution_mode_process(
-                ProcessChatContext(
-                    message_group_id=message_group_id,
-                    chat_mutator=context.chat_mutator,
-                    agent=context.agent,
-                    materials=[],
-                    rendered_materials=[],
-                )
+            await _execution_mode_process(
+                chat_mutator=chat_mutator,
+                agent=agent,
+                materials=[],
+                rendered_materials=[],
             )
     else:
         # Delete the current message group
-        await context.chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=context.message_group_id))
-
-
-async def execution_mode_accept_code(
-    context: AcceptCodeContext,
-):
-    raise Exception("Director does not support running code")
+        await chat_mutator.mutate(DeleteMessageGroupMutation(message_group_id=last_message_group.id))
 
 
 execution_mode = ExecutionMode(
-    process_chat=execution_mode_process,
-    accept_code=execution_mode_accept_code,
+    process_chat=_execution_mode_process,
 )

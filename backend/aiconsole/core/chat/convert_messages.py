@@ -72,20 +72,17 @@ def convert_message(group: AICMessageGroup, message: AICMessage) -> list[GPTRequ
     return result
 
 
-def convert_messages(chat: Chat, last_message_group: AICMessageGroup | None = None) -> list[GPTRequestMessage]:
+def convert_messages(chat: Chat) -> list[GPTRequestMessage]:
     last_system_message = None
 
     messages: list[GPTRequestMessage] = []
 
     for message_group in chat.message_groups:
-        if last_message_group is None:
-            last_message_group = chat.message_groups[-1]
-
-        is_last_group = message_group == last_message_group
+        is_last_group = message_group == chat.message_groups[-1]
         if message_group.task:
             # Augment the messages with system messages with meta data about which agent is speaking and what materials were available
             system_message = f"""
-As a director I have assigned you ({message_group.actor_id}) and given you access to the following materials text: {", ".join(message_group.materials_ids) if message_group.materials_ids else "None"}.
+As a director I have assigned you ({message_group.actor_id.id}) and given you access to the following materials text: {", ".join(message_group.materials_ids) if message_group.materials_ids else "None"}.
 """.strip()
 
             # Only provide a task for last message
@@ -103,7 +100,6 @@ As a director I have assigned you ({message_group.actor_id}) and given you acces
                 last_system_message = system_message
 
         for message in message_group.messages:
-            # is_last = is_last_group and message == message_group.messages[-1]
             messages.extend(convert_message(message_group, message))
 
         if is_last_group:

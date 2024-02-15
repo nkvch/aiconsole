@@ -85,6 +85,15 @@ async def load_chat_history(id: str, project_path: Path | None = None) -> Chat:
                                 if "language" in tool_call and tool_call["language"] == "shell":
                                     tool_call["language"] = "python"
 
+            # For each tool call add "type" field with default "function" value
+            for group in data["message_groups"]:
+                if "messages" in group and group["messages"]:
+                    for msg in group["messages"]:
+                        if "tool_calls" in msg and msg["tool_calls"]:
+                            for tool_call in msg["tool_calls"]:
+                                if "type" not in tool_call:
+                                    tool_call["type"] = "function"
+
             # For each agent_id change it to actor_id
             for group in data["message_groups"]:
                 if "agent_id" in group:

@@ -30,6 +30,7 @@ interface AgentFormProps {
   agent: Agent;
   avatarData: File | null;
   setAvatarData: React.Dispatch<React.SetStateAction<File | null>>;
+  isAvatarOverwritten: boolean;
   setIsAvatarOverwritten: React.Dispatch<React.SetStateAction<boolean>>;
   errors?: ErrorObject;
   setErrors?: React.Dispatch<React.SetStateAction<ErrorObject>>;
@@ -43,6 +44,7 @@ export const AgentForm = ({
   setErrors,
   avatarData,
   setAvatarData,
+  isAvatarOverwritten,
   setIsAvatarOverwritten,
   onRevert,
 }: AgentFormProps) => {
@@ -83,9 +85,12 @@ export const AgentForm = ({
 
   useEffect(() => {
     // new Date is used to refresh image url
-    const userAgentAvatarUrl = `${getBaseURL()}/api/agents/${agent.id}/image?time=${new Date()}`;
-    setAvatarUrl(userAgentAvatarUrl);
-  }, [getBaseURL, avatarData, onRevert]);
+    if (!isAvatarOverwritten) {
+      console.log(isAvatarOverwritten, agent.id);
+      const userAgentAvatarUrl = `${getBaseURL()}/api/agents/${agent.id}/image?time=${new Date()}`;
+      setAvatarUrl(userAgentAvatarUrl);
+    }
+  }, [agent.id, getBaseURL, isAvatarOverwritten]);
 
   return (
     <>

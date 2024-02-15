@@ -19,7 +19,7 @@ import os
 
 import rtoml
 
-from aiconsole.core.assets.agents.agent import Agent
+from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
@@ -103,7 +103,7 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
         if "execution_mode" in tomldoc:
             params["execution_mode"] = str(tomldoc["execution_mode"]).strip()
 
-        agent = Agent(**params)
+        agent = AICAgent(**params)
 
         return agent
 

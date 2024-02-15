@@ -28,6 +28,8 @@ interface EditableContentMessageProps {
   handleAcceptedContent: (content: string) => void;
   className?: string;
   hideControls?: boolean;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function EditableContentMessage({
@@ -38,10 +40,10 @@ export function EditableContentMessage({
   handleRemoveClick,
   hideControls,
   className,
+  isEditing,
+  setIsEditing,
 }: EditableContentMessageProps) {
   const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
-
-  const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(initialContent);
 
   const handleEditClick = () => {
@@ -62,7 +64,7 @@ export function EditableContentMessage({
   const handleSaveClick = useCallback(() => {
     handleAcceptedContent(content);
     setIsEditing(false);
-  }, [content, handleAcceptedContent]);
+  }, [content, handleAcceptedContent, setIsEditing]);
 
   return (
     <div className={cn('flex flex-row items-start overflow-auto', className)}>
@@ -77,7 +79,7 @@ export function EditableContentMessage({
             focused={isEditing}
             maxHeight="400px"
             minHeight="400px"
-            onBlur={() => setIsEditing(false)}
+            onBlur={handleSaveClick}
           />
         </div>
       ) : (

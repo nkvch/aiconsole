@@ -157,7 +157,7 @@ const ChatOptions = ({
   return (
     <div
       style={{ width: 'calc(100% - 60px)', bottom: 'calc(100% + 8px)' }}
-      className="flex flex-col py-3 px-2 w-full bg-gray-800 rounded-[8px] min-h-[104px] absolute w-full border border-gray-600"
+      className="flex flex-col py-3 px-2 w-full bg-gray-800 rounded-[8px] min-h-[104px] absolute w-full border border-gray-600 z-20"
     >
       <div className="relative flex flex-col gap-2" ref={wrapperRef}>
         <input

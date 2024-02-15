@@ -30,7 +30,7 @@ const DEFAULT_MIN_HEIGHT = '180px';
 
 interface CodeInputProps {
   label?: string;
-  value: string;
+  value: string | ReactNode;
   labelContent?: ReactNode;
   labelSize?: 'sm' | 'md';
   className?: string;
@@ -189,28 +189,32 @@ export function CodeInput({
         )}
         onClick={handleEditorBoxClick}
       >
-        <Editor
-          value={value}
-          disabled={disabled || readOnly}
-          textareaId={label}
-          onValueChange={handleValueChange}
-          placeholder="Write some text"
-          onFocus={handleFocus}
-          highlight={(code) => onHighlight(code)}
-          padding={10}
-          className={cn(
-            'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400 text-[15px] text-gray-300 focus:text-white rounded-[8px]',
-            {
-              'opacity-[0.7] ': disabled,
-              'bg-transparent': transparent,
-              'pointer-events-none': disabled || readOnly,
-            },
-          )}
-          preClassName="!px-[20px] !py-[12px] "
-          textareaClassName={cn('focus:!outline-none focus:!shadow-none h-full !px-[20px] !py-[12px] h-full', {
-            'cursor-not-allowed': disabled,
-          })}
-        />
+        {typeof value === 'string' ? (
+          <Editor
+            value={value}
+            disabled={disabled || readOnly}
+            textareaId={label}
+            onValueChange={handleValueChange}
+            placeholder="Write some text"
+            onFocus={handleFocus}
+            highlight={(code) => onHighlight(code)}
+            padding={10}
+            className={cn(
+              'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400 text-[15px] text-gray-300 focus:text-white rounded-[8px]',
+              {
+                'opacity-[0.7] ': disabled,
+                'bg-transparent': transparent,
+                'pointer-events-none': disabled || readOnly,
+              },
+            )}
+            preClassName="!px-[20px] !py-[12px] "
+            textareaClassName={cn('focus:!outline-none focus:!shadow-none h-full !px-[20px] !py-[12px] h-full', {
+              'cursor-not-allowed': disabled,
+            })}
+          />
+        ) : (
+          value
+        )}
 
         {withFullscreen && (
           <Icon

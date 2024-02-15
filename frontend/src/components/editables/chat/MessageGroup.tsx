@@ -33,7 +33,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
 
   return (
     <div
-      className={cn('group flex flex-row shadow-md border-b border-gray-600 py-[30px] px-[10px] bg-gray-900 ', {
+      className={cn('group flex flex-row shadow-md border-b border-gray-600 py-[30px] px-[10px] bg-gray-900', {
         'message-gradient': group.role === 'assistant' || group.role === 'system',
       })}
     >
@@ -45,7 +45,7 @@ export function MessageGroup({ group }: { group: AICMessageGroup }) {
             <AnalysisClosed group={group} onClick={() => setIsAnalysisManuallyOpen(!isOpen)} />
           )}
         </div>
-        <div className="flex-grow flex flex-col gap-5 overflow-auto ">
+        <div className="flex-grow flex flex-col gap-5 overflow-x-auto">
           <AnalysisOpened group={group} onClick={() => setIsAnalysisManuallyOpen(!isOpen)} isOpen={isOpen} />
           {group.messages.map((message) => (
             <MessageComponent key={message.id} message={message} group={group} />

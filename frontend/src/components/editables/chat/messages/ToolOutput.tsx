@@ -16,7 +16,7 @@
 
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { AICToolCall } from '@/types/editables/chatTypes';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import SyntaxHighlighter, { SyntaxHighlighterProps } from 'react-syntax-highlighter';
 import { duotoneDark as vs2015 } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { EditableContentMessage } from './EditableContentMessage';
@@ -28,6 +28,7 @@ interface OutputProps {
 
 export function ToolOutput({ tool_call, syntaxHighlighterCustomStyles }: OutputProps) {
   const userMutateChat = useChatStore((state) => state.userMutateChat);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleAcceptedContent = useCallback(
     (content: string) => {
@@ -56,6 +57,8 @@ export function ToolOutput({ tool_call, syntaxHighlighterCustomStyles }: OutputP
         handleAcceptedContent={handleAcceptedContent}
         handleRemoveClick={handleRemoveClick}
         className="flex-grow"
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
       >
         <SyntaxHighlighter
           style={syntaxHighlighterCustomStyles || vs2015}

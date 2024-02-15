@@ -45,6 +45,12 @@ export function ProjectTopBarElements() {
           </ContextMenu>
         </div>
         <AddAssetDropdown />
+        {/* <Link
+          to={`/genui`}
+          className="h-11 text-lg text-gray-400 hover:animate-pulse cursor-pointer flex gap-2 items-center mr-[32px] uppercase"
+        >
+          GENUI
+        </Link> */}
         <LeaveProjectDialog onCancel={closeDialog} isOpen={isDialogOpen} />
       </div>
     </>

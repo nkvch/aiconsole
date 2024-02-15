@@ -21,29 +21,32 @@ from uuid import uuid4
 
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
+from aiconsole.core.assets.agents.agent import AICAgent
+from aiconsole.core.assets.materials.material import Material
+from aiconsole.core.assets.materials.rendered_material import RenderedMaterial
 from aiconsole.core.chat.chat_mutations import (
     AppendToContentMessageMutation,
     AppendToOutputToolCallMutation,
     CreateMessageMutation,
     CreateToolCallMutation,
 )
-from aiconsole.core.chat.execution_modes.execution_mode import (
-    AcceptCodeContext,
-    ExecutionMode,
-    ProcessChatContext,
-)
+from aiconsole.core.chat.chat_mutator import ChatMutator
+from aiconsole.core.chat.execution_modes.execution_mode import ExecutionMode
 from aiconsole.core.code_running.run_code import get_code_interpreter
 
 
-async def execution_mode_process(
-    context: ProcessChatContext,
+async def _execution_mode_process(
+    chat_mutator: ChatMutator,
+    agent: AICAgent,
+    materials: list[Material],
+    rendered_materials: list[RenderedMaterial],
 ):
     message_id = str(uuid4())
 
     # Assumes that a group already exists
-    await context.chat_mutator.mutate(
+    await chat_mutator.mutate(
         CreateMessageMutation(
-            message_group_id=context.chat_mutator.chat.message_groups[-1].id,
+            message_group_id=chat_mutator.chat.message_groups[-1].id,
             message_id=message_id,
             timestamp=datetime.now().isoformat(),
             content="This is a demo of execution mode. I will count down from 10 to 1 and then hello world code.\n\n",
@@ -51,7 +54,7 @@ async def execution_mode_process(
     )
 
     for i in range(10, 0, -1):
-        await context.chat_mutator.mutate(
+        await chat_mutator.mutate(
             AppendToContentMessageMutation(
                 message_id=message_id,
                 content_delta=f"{i}...",
@@ -62,9 +65,9 @@ async def execution_mode_process(
     await asyncio.sleep(1)
 
     message_id = str(uuid4())
-    await context.chat_mutator.mutate(
+    await chat_mutator.mutate(
         CreateMessageMutation(
-            message_group_id=context.chat_mutator.chat.message_groups[-1].id,
+            message_group_id=chat_mutator.chat.message_groups[-1].id,
             message_id=message_id,
             timestamp=datetime.now().isoformat(),
             content="Done",
@@ -75,7 +78,7 @@ async def execution_mode_process(
 
     code = "print('Hello world!')"
 
-    await context.chat_mutator.mutate(
+    await chat_mutator.mutate(
         CreateToolCallMutation(
             tool_call_id=tool_call_id,
             message_id=message_id,
@@ -88,38 +91,31 @@ async def execution_mode_process(
 
     try:
         try:
-            async for token in (await get_code_interpreter("python", context.chat_mutator.chat.id)).run(code, []):
-                await context.chat_mutator.mutate(
+            async for token in (await get_code_interpreter("python", chat_mutator.chat.id)).run(code, []):
+                await chat_mutator.mutate(
                     AppendToOutputToolCallMutation(
                         tool_call_id=tool_call_id,
                         output_delta=token,
                     )
                 )
         except asyncio.CancelledError:
-            (await get_code_interpreter("python", context.chat_mutator.chat.id)).terminate()
+            (await get_code_interpreter("python", chat_mutator.chat.id)).terminate()
             raise
         except Exception:
             await connection_manager().send_to_chat(
-                ErrorServerMessage(error=traceback.format_exc().strip()), context.chat_mutator.chat.id
+                ErrorServerMessage(error=traceback.format_exc().strip()), chat_mutator.chat.id
             )
-            await context.chat_mutator.mutate(
+            await chat_mutator.mutate(
                 AppendToOutputToolCallMutation(
                     tool_call_id=tool_call_id,
                     output_delta=traceback.format_exc().strip(),
                 )
             )
     except Exception as e:
-        await connection_manager().send_to_chat(ErrorServerMessage(error=str(e)), context.chat_mutator.chat.id)
+        await connection_manager().send_to_chat(ErrorServerMessage(error=str(e)), chat_mutator.chat.id)
         raise e
 
 
-async def execution_mode_accept_code(
-    context: AcceptCodeContext,
-):
-    pass
-
-
 execution_mode = ExecutionMode(
-    process_chat=execution_mode_process,
-    accept_code=execution_mode_accept_code,
+    process_chat=_execution_mode_process,
 )

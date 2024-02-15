@@ -38,9 +38,13 @@ export function MessageControls({
     <div className="min-w-[48px]">
       {isEditing ? (
         <div className="flex justify-between">
-          <button>
-            <Icon icon={Save} width={20} height={20} onClick={onSaveClick} />
-          </button>
+          {onSaveClick ? (
+            <button>
+              <Icon icon={Save} width={20} height={20} onClick={onSaveClick} />
+            </button>
+          ) : (
+            <div className="h-4 w-4"></div>
+          )}
           <button>
             <Icon icon={X} width={20} height={20} onClick={onCancelClick} />{' '}
           </button>

@@ -1,4 +1,5 @@
-import { Ref, useCallback } from 'react';
+import { Ref, useCallback, useState } from 'react';
+import { cn } from '@/utils/common/cn';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import rehypeRaw from 'rehype-raw';
@@ -22,7 +23,7 @@ export function MessageComponent({ message, group }: MessageProps) {
   const userMutateChat = useChatStore((state) => state.userMutateChat);
   const saveCommandAndMessagesToHistory = useChatStore((state) => state.saveCommandAndMessagesToHistory);
   const getBaseURL = useAPIStore((state) => state.getBaseURL);
-  const isExecutionRunning = useChatStore((state) => state.isExecutionRunning());
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleRemoveClick = useCallback(() => {
     userMutateChat({
@@ -53,11 +54,11 @@ export function MessageComponent({ message, group }: MessageProps) {
         handleAcceptedContent={handleSaveClick}
         handleRemoveClick={handleRemoveClick}
         hideControls
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
       >
         <div className="flex flex-col gap-2">
-          {message.is_streaming && !message.content && message.tool_calls.length === 0 && isExecutionRunning && (
-            <BlinkingCursor />
-          )}
+          {message.is_streaming && !message.content && message.tool_calls.length === 0 && <BlinkingCursor />}
           {message.content && (
             <div className="max-w-[700px]">
               {group.role !== 'user' && (
@@ -98,7 +99,6 @@ export function MessageComponent({ message, group }: MessageProps) {
                         },
                         img: ({ src, ...props }) => {
                           const imgSrc = urlRegex.test(src || '') ? src : `${getBaseURL()}/image?path=${src}`;
-
                           return (
                             <a href={imgSrc} target="_blank">
                               <img src={imgSrc} {...props} className=" max-w-xs rounded-md mr-5" alt={props.alt} />
@@ -122,6 +122,15 @@ export function MessageComponent({ message, group }: MessageProps) {
                             <code {...rest} className={className}>
                               {children}
                             </code>
+                          );
+                        },
+                        ol(props) {
+                          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                          const { children, className, node, ...rest } = props;
+                          return (
+                            <ol className={cn('ml-[8px]', className)} {...rest}>
+                              {children}
+                            </ol>
                           );
                         },
                       }}

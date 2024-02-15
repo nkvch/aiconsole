@@ -23,7 +23,7 @@ from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
-from aiconsole.core.assets.agents.agent import Agent, AgentWithStatus
+from aiconsole.core.assets.agents.agent import AgentWithStatus, AICAgent
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
@@ -56,7 +56,7 @@ async def get_agent(request: Request, agent_id: str):
 
 
 @router.patch("/{agent_id}")
-async def partially_update_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)):
+async def partially_update_agent(agent_id: str, agent: AICAgent, agents_service: Agents = Depends(agents)):
     try:
         await agents_service.partially_update_agent(agent_id=agent_id, agent=agent)
     except AssetWithGivenNameAlreadyExistError:
@@ -71,7 +71,7 @@ async def set_agent_avatar(agent_id: str, avatar: UploadFile = File(...), agents
 
 
 @router.post("/{agent_id}")
-async def create_agent(agent_id: str, agent: Agent, agents_service: Agents = Depends(agents)):
+async def create_agent(agent_id: str, agent: AICAgent, agents_service: Agents = Depends(agents)):
     try:
         await agents_service.create_agent(agent_id=agent_id, agent=agent)
     except AssetWithGivenNameAlreadyExistError:

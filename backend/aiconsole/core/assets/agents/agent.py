@@ -18,7 +18,7 @@ from aiconsole.core.assets.types import Asset, AssetStatus, AssetType
 from aiconsole.core.gpt.consts import QUALITY_GPT_MODE, GPTMode
 
 
-class Agent(Asset):
+class AICAgent(Asset):
     type: AssetType = AssetType.AGENT
     system: str
 
@@ -26,5 +26,5 @@ class Agent(Asset):
     execution_mode: str = "aiconsole.core.chat.execution_modes.normal:execution_mode"
 
 
-class AgentWithStatus(Agent):
+class AgentWithStatus(AICAgent):
     status: AssetStatus = AssetStatus.ENABLED

@@ -2,8 +2,9 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from aiconsole.core.chat.types import ActorId
+from aiconsole.core.chat.actor_id import ActorId
 from aiconsole.core.code_running.code_interpreters.language import LanguageStr
+from aiconsole.core.gpt.tool_definition import ToolDefinition
 from aiconsole.core.gpt.types import GPTRole
 
 
@@ -94,6 +95,7 @@ class CreateMessageMutation(BaseModel):
     message_id: str
     timestamp: str
     content: str
+    requested_format: ToolDefinition | None = None
 
 
 class DeleteMessageMutation(BaseModel):

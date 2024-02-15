@@ -62,6 +62,7 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
   });
   const [avatarData, setAvatarData] = useState<File | null>(null);
   const [isAvatarOverwritten, setIsAvatarOverwritten] = useState(false);
+  const [isVisibleInfoBar, setIsVisibleInfoBar] = useState(true);
   const asset = useAssetStore((state) => state.selectedAsset);
   const lastSavedAsset = useAssetStore((state) => state.lastSavedSelectedAsset);
   const setLastSavedSelectedAsset = useAssetStore((state) => state.setLastSavedSelectedAsset);
@@ -290,8 +291,10 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
 
   const revertAsset = () => handleRevert(asset?.id);
 
+  const hideInfoBar = () => setIsVisibleInfoBar(false);
+
   return (
-    <div className="flex flex-col w-full h-full max-h-full overflow-auto">
+    <div className="flex flex-col w-full h-full max-h-full overflow-hidden">
       <ContextMenu options={menuItems}>
         <EditorHeader
           editable={asset}
@@ -308,9 +311,9 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
         </EditorHeader>
       </ContextMenu>
 
-      <div className="flex-grow overflow-auto">
+      <div className="flex-grow overflow-hidden">
         <div className="flex w-full h-full flex-col justify-between">
-          <div className="w-full h-full overflow-auto relative">
+          <div className="w-full h-full overflow-hidden relative">
             {asset && (
               <AssetInfoBar
                 asset={asset}
@@ -318,10 +321,16 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
                 assetType={assetType}
                 lastSavedAsset={lastSavedAsset}
                 onRevert={revertAsset}
+                isVisible={isVisibleInfoBar}
+                hideBar={hideInfoBar}
               />
             )}
             {asset && (
-              <div className="flex-grow flex flex-col overflow-auto h-full px-[60px] py-10 gap-5">
+              <div
+                className={cn('flex-grow flex flex-col overflow-auto px-[60px] py-10 gap-5 h-full', {
+                  'h-[calc(100%-50px)]': isVisibleInfoBar,
+                })}
+              >
                 {assetType === 'material' ? (
                   <MaterialForm material={asset as Material} />
                 ) : (
@@ -331,14 +340,16 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
                     errors={errors}
                     avatarData={avatarData}
                     setAvatarData={setAvatarData}
+                    isAvatarOverwritten={isAvatarOverwritten}
                     setIsAvatarOverwritten={setIsAvatarOverwritten}
                     onRevert={revertAsset}
                   />
                 )}
                 <div className="flex items-center justify-between w-full gap-[10px]">
-                  {isProjectAsset ? (
+                  {isProjectAsset && lastSavedAsset ? (
                     <AlertDialog
                       title={`Are you sure you want to delete this ${editableObjectType}?`}
+                      confirmationButtonText="Okay"
                       onConfirm={() => handleDeleteWithInteraction(asset.id)}
                       openModalButton={
                         <Button variant="tertiary">

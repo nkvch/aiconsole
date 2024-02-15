@@ -34,13 +34,21 @@ interface MessageInputProps {
   className?: string;
   actionLabel: string;
   onSubmit?: (command: string) => void;
+  setCommandInputHeight: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: MessageInputProps) => {
+export const CommandInput = ({
+  className,
+  onSubmit,
+  actionIcon,
+  actionLabel,
+  setCommandInputHeight,
+}: MessageInputProps) => {
   const ActionIcon = actionIcon;
   const [showChatOptions, setShowChatOptions] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const command = useChatStore((state) => state.commandHistory[state.commandIndex]);
+  const commandInputRef = useRef<HTMLDivElement>(null);
 
   const setCommand = useChatStore((state) => state.editCommand);
   const promptUp = useChatStore((state) => state.historyUp);
@@ -54,6 +62,13 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const materialsIds = chosenMaterials.map((material) => material.id);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatOptionsInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (commandInputRef.current) {
+      const currentHeight = commandInputRef.current.offsetHeight;
+      setCommandInputHeight(currentHeight);
+    }
+  }, [selectedAgentId, materialsOptions, setCommandInputHeight]);
 
   const handleSendMessage = useCallback(
     async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -215,7 +230,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   }, []);
 
   return (
-    <div className={cn(className, 'flex w-full flex-col px-4 py-[20px]  bg-gray-900 z-50 ')}>
+    <div className={cn(className, 'flex w-full flex-col px-4 py-[20px]  bg-gray-900 z-50 ')} ref={commandInputRef}>
       <div className="flex items-end gap-[10px] max-w-[700px] w-full mx-auto relative">
         {showChatOptions && (
           <ChatOptions

@@ -29,7 +29,7 @@ import { Chat } from '@/types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
 import { ArrowDown, ReplyIcon, Square } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { unstable_useBlocker as useBlocker, useParams, useSearchParams } from 'react-router-dom';
 import ScrollToBottom, { useAnimating, useScrollToBottom, useSticky } from 'react-scroll-to-bottom';
 import { v4 as uuidv4 } from 'uuid';
@@ -81,6 +81,7 @@ export function ChatPage() {
   const copyId = searchParams.get('copy');
   const forceRefresh = searchParams.get('forceRefresh'); // used to force a refresh
   const command = useChatStore((state) => state.commandHistory[state.commandIndex]);
+  const [commandInputHeight, setCommandInputHeight] = useState(80);
 
   const chat = useChatStore((state) => state.chat);
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
@@ -169,7 +170,7 @@ export function ChatPage() {
     return () => {
       stopWork();
     };
-  }, [chat?.id, stopWork]); //Initentional trigger when chat_id changes
+  }, [stopWork]); //Initentional trigger when chat_id changes
 
   const isProcessesAreNotRunning = !isExecutionRunning && !isAnalysisRunning;
 
@@ -247,42 +248,50 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full max-h-full overflow-auto">
+    <div className="flex flex-col w-full h-full max-h-full overflow-hidden">
       <ContextMenu options={menuItems}>
         <EditorHeader editableObjectType="chat" editable={chat} onRename={handleRename} isChanged={false} />
       </ContextMenu>
-
-      <div className="flex-grow overflow-auto">
-        <div className="flex w-full h-full flex-col justify-between">
+      <div className="overflow-y-hidden h-full w-full">
+        <div className="h-full w-full overflow-hidden">
           {!isProjectLoading && !loadingMessages ? ( // This is needed because of https://github.com/compulim/react-scroll-to-bottom/issues/61#issuecomment-1608456508
-            <ScrollToBottom
-              className="h-full overflow-y-auto flex flex-col"
-              scrollViewClassName="main-chat-window"
-              initialScrollBehavior="auto"
-              mode={'bottom'}
-              followButtonClassName="hidden"
+            <div
+              className="transition-height duration-200"
+              style={{
+                height: `calc(100% - ${commandInputHeight}px)`,
+                width: '100%',
+              }}
             >
-              <ChatWindowScrollToBottomSave />
-              {chat.message_groups.length === 0 ? (
-                <EmptyChat />
-              ) : (
-                <div>
-                  <ScrollToBottomButton />
-                  {chat.message_groups.map((group) => (
-                    <MessageGroup group={group} key={group.id} />
-                  ))}
-                </div>
-              )}
-            </ScrollToBottom>
+              {' '}
+              <ScrollToBottom
+                className={`h-full w-full`}
+                scrollViewClassName="main-chat-window"
+                initialScrollBehavior="auto"
+                mode={'bottom'}
+                followButtonClassName="hidden"
+              >
+                <ChatWindowScrollToBottomSave />
+                {chat.message_groups.length === 0 ? (
+                  <EmptyChat />
+                ) : (
+                  <div className="flex flex-col overflow-y-auto w-full">
+                    {chat.message_groups.map((group) => (
+                      <MessageGroup group={group} key={group.id} />
+                    ))}
+                    <ScrollToBottomButton />
+                  </div>
+                )}
+              </ScrollToBottom>
+            </div>
           ) : (
-            <div className="h-full overflow-y-auto flex flex-col"></div>
+            <div className="h-full flex flex-col"></div>
           )}
-
           <CommandInput
             className="flex-none"
             actionIcon={ActionButtonIcon}
             actionLabel={actionButtonLabel}
             onSubmit={actionButtonAction}
+            setCommandInputHeight={setCommandInputHeight}
           />
           <AlertDialog
             title="Are you sure you want to exit this chat?"

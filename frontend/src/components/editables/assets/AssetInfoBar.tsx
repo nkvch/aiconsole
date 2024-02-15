@@ -4,7 +4,6 @@ import { Icon } from '@/components/common/icons/Icon';
 import { Asset, AssetType } from '@/types/editables/assetTypes';
 import { cn } from '@/utils/common/cn';
 import { IterationCcw, X } from 'lucide-react';
-import { useState } from 'react';
 
 interface AssetInfoBarProps {
   asset: Asset;
@@ -12,6 +11,8 @@ interface AssetInfoBarProps {
   assetType: AssetType;
   lastSavedAsset: Asset | undefined;
   onRevert: () => void;
+  isVisible: boolean;
+  hideBar: () => void;
 }
 
 export const RestoreButton = ({ onRevert }: { onRevert: () => void }) => (
@@ -29,12 +30,16 @@ export const RestoreButton = ({ onRevert }: { onRevert: () => void }) => (
   </AlertDialog>
 );
 
-export const AssetInfoBar = ({ asset, hasCore, assetType, lastSavedAsset, onRevert }: AssetInfoBarProps) => {
-  const [visible, setVisible] = useState(true);
-
-  const hide = () => setVisible(false);
-
-  return hasCore && visible ? (
+export const AssetInfoBar = ({
+  asset,
+  hasCore,
+  assetType,
+  lastSavedAsset,
+  onRevert,
+  isVisible,
+  hideBar,
+}: AssetInfoBarProps) => {
+  return hasCore && isVisible ? (
     <div
       className={cn(
         'bg-gray-800 flex items-center justify-center gap-[20px] leading-[18px] text-white text-center text-[14px] px-[20px] py-[16px] h-[50px] right-0 left-0 z-10',
@@ -53,7 +58,7 @@ export const AssetInfoBar = ({ asset, hasCore, assetType, lastSavedAsset, onReve
           <RestoreButton onRevert={onRevert} />
         </>
       )}
-      <Icon icon={X} className="absolute right-[30px] cursor-pointer" onClick={hide} />
+      <Icon icon={X} className="absolute right-[30px] cursor-pointer" onClick={hideBar} />
     </div>
   ) : null;
 };
