@@ -48,7 +48,6 @@ export const CommandInput = ({
   const [showChatOptions, setShowChatOptions] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const command = useChatStore((state) => state.commandHistory[state.commandIndex]);
-  const commandInputRef = useRef<HTMLDivElement>(null);
 
   const setCommand = useChatStore((state) => state.editCommand);
   const promptUp = useChatStore((state) => state.historyUp);
@@ -62,13 +61,6 @@ export const CommandInput = ({
   const materialsIds = chosenMaterials.map((material) => material.id);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatOptionsInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (commandInputRef.current) {
-      const currentHeight = commandInputRef.current.offsetHeight;
-      setCommandInputHeight(currentHeight);
-    }
-  }, [selectedAgentId, materialsOptions, setCommandInputHeight]);
 
   const handleSendMessage = useCallback(
     async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -230,7 +222,7 @@ export const CommandInput = ({
   }, []);
 
   return (
-    <div className={cn(className, 'flex w-full flex-col px-4 py-[20px]  bg-gray-900 z-50 ')} ref={commandInputRef}>
+    <div className={cn(className, 'flex w-full flex-col px-4 py-[20px] bg-gray-900 z-50')}>
       <div className="flex items-end gap-[10px] max-w-[700px] w-full mx-auto relative">
         {showChatOptions && (
           <ChatOptions
@@ -242,7 +234,7 @@ export const CommandInput = ({
             textAreaRef={textAreaRef}
           />
         )}
-        <div className="w-full max-h-[200px] overflow-y-auto border border-gray-500 bg-gray-800 hover:bg-gray-600 focus-within:bg-gray-600 focus-within:border-gray-400 transition duration-100 rounded-[8px] flex flex-col flex-grow resize-none">
+        <div className="w-full overflow-y-auto border border-gray-500 bg-gray-800 hover:bg-gray-600 focus-within:bg-gray-600 focus-within:border-gray-400 transition duration-100 rounded-[8px] flex flex-col flex-grow resize-none">
           {(selectedAgentId || chosenMaterials.length > 0) && (
             <div className="px-[20px] py-[12px] w-full flex flex-col gap-2">
               {selectedAgentId && (
@@ -295,6 +287,8 @@ export const CommandInput = ({
             onKeyDown={handleKeyDown}
             placeholder={`Type "@" to select a specific agent or materials`}
             rows={1}
+            onHeightChange={(height) => setCommandInputHeight(height + 40)}
+            maxRows={4}
           />
         </div>
 
