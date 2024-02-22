@@ -24,6 +24,7 @@ from aiconsole.api.endpoints import (
     genui,
     image,
     materials,
+    files,
     ping,
     profile,
     projects,
@@ -40,6 +41,7 @@ app_router.include_router(check_key.router)
 app_router.include_router(profile.router, tags=["Profile"])
 app_router.include_router(chats.router, prefix="/api/chats", tags=["Chats"])
 app_router.include_router(materials.router, prefix="/api/materials", tags=["Materials"])
+app_router.include_router(files.router, prefix="/api/files", tags=["Files"])
 app_router.include_router(agents.router, prefix="/api/agents", tags=["Agents"])
 app_router.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app_router.include_router(settings.router, prefix="/api/settings", tags=["Project Settings"])

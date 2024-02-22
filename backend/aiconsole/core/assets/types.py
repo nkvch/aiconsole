@@ -32,6 +32,7 @@ class AssetLocation(str, Enum):
 class AssetType(str, Enum):
     AGENT = "agent"
     MATERIAL = "material"
+    FILE = "file"
 
 
 class AssetStatus(str, Enum):

@@ -27,7 +27,7 @@ from aiconsole.core.assets.fs.project_asset_exists_fs import project_asset_exist
 from aiconsole.core.assets.fs.save_asset_to_fs import save_asset_to_fs
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
-from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.project.paths import get_project_assets_directory, get_project_directory
 from aiconsole.core.settings.settings import settings
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
@@ -47,12 +47,24 @@ class Assets:
 
         self.observer = watchdog.observers.Observer()
 
-        get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
-        self.observer.schedule(
-            BatchingWatchDogHandler(self.reload),
-            get_project_assets_directory(asset_type),
-            recursive=True,
-        )
+        if asset_type == AssetType.FILE:
+            project_dir = get_project_directory()
+
+            for dir in project_dir.iterdir():
+                # watch only directories that are not used for other purposes
+                if dir.name not in ["chats", "agents", "materials", ".aic"]:
+                    self.observer.schedule(
+                        BatchingWatchDogHandler(self.reload, extension=""),
+                        dir,
+                        recursive=True,
+                    )
+        else:
+            get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
+            self.observer.schedule(
+                BatchingWatchDogHandler(self.reload),
+                get_project_assets_directory(asset_type),
+                recursive=True,
+            )
         self.observer.start()
 
     def stop(self):
@@ -174,7 +186,8 @@ class Assets:
             asset = project.get_project_agents().get_asset(id)
             default_status = asset.default_status if asset else AssetStatus.ENABLED
             return default_status
-
+        elif asset_type == AssetType.FILE:
+            return AssetStatus.ENABLED
         else:
             raise ValueError(f"Unknown asset type {asset_type}")
 
@@ -184,6 +197,8 @@ class Assets:
             settings().save(PartialSettingsData(materials={id: status}), to_global=to_global)
         elif asset_type == AssetType.AGENT:
             settings().save(PartialSettingsData(agents={id: status}), to_global=to_global)
+        elif asset_type == AssetType.FILE:
+            pass
         else:
             raise ValueError(f"Unknown asset type {asset_type}")
 
@@ -199,6 +214,8 @@ class Assets:
                 agents_to_reset=[old_id],
                 agents={new_id: Assets.get_status(asset_type, old_id)},
             )
+        elif asset_type == AssetType.FILE:
+            pass
         else:
             raise ValueError(f"Unknown asset type {asset_type}")
 

@@ -20,14 +20,16 @@ import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { Icon } from '@/components/common/icons/Icon';
 import { useClickOutside } from '@/utils/common/useClickOutside';
 import { getEditableObjectIcon } from '@/utils/editables/getEditableObjectIcon';
-import { Agent, Material } from '@/types/editables/assetTypes';
+import { Agent, Asset, Material } from '@/types/editables/assetTypes';
 import { ActorAvatar } from '../chat/ActorAvatar';
 import clsx from 'clsx';
 
 type ChatOptionsProps = {
   onSelectAgentId: (id: string) => void;
   handleMaterialSelect: (material: Material) => void;
+  handleFileSelect: (file: Asset) => void;
   materialsOptions: Material[];
+  filesOptions: Asset[];
   setShowChatOptions: React.Dispatch<React.SetStateAction<boolean>>;
   inputRef: React.RefObject<HTMLInputElement>;
   textAreaRef: React.RefObject<HTMLTextAreaElement>;
@@ -42,7 +44,9 @@ const MaterialIcon = ({ option }: { option: Material }) => {
 const ChatOptions = ({
   onSelectAgentId,
   handleMaterialSelect,
+  handleFileSelect,
   materialsOptions,
+  filesOptions,
   setShowChatOptions,
   inputRef,
   textAreaRef,
@@ -127,6 +131,8 @@ const ChatOptions = ({
       if (currentOption) {
         currentOption.type === 'agent'
           ? onSelectAgentId(currentOption.id)
+          : currentOption.type === 'file'
+          ? handleFileSelect(currentOption as Asset)
           : handleMaterialSelect(currentOption as Material);
         setInputValue('');
         setShowChatOptions(false);
@@ -152,7 +158,7 @@ const ChatOptions = ({
     return;
   }
 
-  const options = [...filteredAgentsOptions, ...filteredMaterialsOptions];
+  const options = [...filteredAgentsOptions, ...filteredMaterialsOptions, ...filesOptions];
 
   return (
     <div
@@ -188,7 +194,11 @@ const ChatOptions = ({
                         focusedIndex === options.indexOf(option) && 'bg-gray-600',
                       )}
                       onClick={() =>
-                        option.type === 'agent' ? onSelectAgentId(option.id) : handleMaterialSelect(option as Material)
+                        option.type === 'agent'
+                          ? onSelectAgentId(option.id)
+                          : option.type === 'file'
+                          ? handleFileSelect(option as Asset)
+                          : handleMaterialSelect(option as Material)
                       }
                     >
                       <div className="w-6 h-6 flex-shrink-0">

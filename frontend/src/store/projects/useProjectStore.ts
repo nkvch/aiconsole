@@ -60,6 +60,7 @@ export const useProjectStore = create<ProjectSlice>((set, _) => ({
       await Promise.all([
         useEditablesStore.getState().initAgents(),
         useEditablesStore.getState().initMaterials(),
+        useEditablesStore.getState().initFiles(),
         useSettingsStore.getState().initSettings(),
       ]);
     }

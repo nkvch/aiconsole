@@ -51,6 +51,7 @@ export type ChatHeadline = z.infer<typeof ChatHeadlineSchema>;
 const ChatOptionsSchema = z.object({
   agent_id: z.string().optional().default(''),
   materials_ids: z.array(z.string()).default([]),
+  files_ids: z.array(z.string()).default([]),
 });
 
 export const ChatSchema = EditableObjectSchema.extend({

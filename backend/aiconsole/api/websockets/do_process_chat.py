@@ -46,6 +46,13 @@ async def do_process_chat(chat_mutator: ChatMutator):
     else:
         materials_ids = []
 
+    if chat_mutator.chat.chat_options.files_ids:
+        files_ids = chat_mutator.chat.chat_options.files_ids
+    else:
+        files_ids = []
+
+    # TODO: Process files
+
     if materials_ids:
         try:
             materials_and_rmats = await render_materials(materials_ids, chat_mutator.chat, agent, init=True)

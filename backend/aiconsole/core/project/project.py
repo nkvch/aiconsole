@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
 _materials: "assets.Assets | None" = None
 _agents: "assets.Assets | None" = None
+_files: "assets.Assets | None" = None
 _project_initialized = False
 
 
@@ -52,6 +53,7 @@ async def _clear_project():
     global _materials
     global _agents
     global _project_initialized
+    global _files
 
     if _materials:
         _materials.stop()
@@ -59,10 +61,14 @@ async def _clear_project():
     if _agents:
         _agents.stop()
 
+    if _files:
+        _files.stop()
+
     reset_code_interpreters()
 
     _materials = None
     _agents = None
+    _files = None
     _project_initialized = False
 
 
@@ -81,6 +87,12 @@ def get_project_materials() -> "assets.Assets":
     if not _materials:
         raise ValueError("Project materials are not initialized")
     return _materials
+
+
+def get_project_files() -> "assets.Assets":
+    if not _files:
+        raise ValueError("Project files are not initialized")
+    return _files
 
 
 def get_project_agents() -> "assets.Assets":
@@ -114,6 +126,7 @@ async def reinitialize_project():
 
     global _materials
     global _agents
+    global _files
     global _project_initialized
 
     await _clear_project()
@@ -126,6 +139,7 @@ async def reinitialize_project():
 
     _agents = assets.Assets(asset_type=AssetType.AGENT)
     _materials = assets.Assets(asset_type=AssetType.MATERIAL)
+    _files = assets.Assets(asset_type=AssetType.FILE)
 
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
 
@@ -135,6 +149,7 @@ async def reinitialize_project():
 
     await _materials.reload(initial=True)
     await _agents.reload(initial=True)
+    await _files.reload(initial=True)
 
 
 async def choose_project(path: Path, background_tasks: BackgroundTasks):

@@ -27,7 +27,7 @@ import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import { ActorAvatar } from './ActorAvatar';
 import { useDebounceCallback } from '@mantine/hooks';
 import { ChatAPI } from '@/api/api/ChatAPI';
-import { Material } from '@/types/editables/assetTypes';
+import { Asset, Material } from '@/types/editables/assetTypes';
 
 interface MessageInputProps {
   actionIcon: LucideIcon | ((props: React.SVGProps<SVGSVGElement>) => JSX.Element);
@@ -57,9 +57,13 @@ export const CommandInput = ({
   const agents = useEditablesStore((state) => state.agents);
   const setChat = useChatStore((state) => state.setChat);
   const materials = useEditablesStore((state) => state.materials);
+  const files = useEditablesStore((state) => state.files);
   const [materialsOptions, setMaterialsOptions] = useState<Material[]>([]);
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
+  const [filesOptions, setFilesOptions] = useState<Asset[]>([]);
+  const [chosenFiles, setChosenFiles] = useState<Asset[]>([]);
   const materialsIds = chosenMaterials.map((material) => material.id);
+  const filesIds = chosenFiles.map((file) => file.id);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatOptionsInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,6 +140,7 @@ export const CommandInput = ({
   useEffect(() => {
     setSelectedAgentId('');
     setChosenMaterials([]);
+    setChosenFiles([]);
   }, [chat?.id]);
 
   useEffect(() => {
@@ -152,12 +157,23 @@ export const CommandInput = ({
   }, [chat?.chat_options.materials_ids, materials, chat?.id]);
 
   useEffect(() => {
+    const filteredFiles = files?.filter(({ id }) => (chat?.chat_options.files_ids || []).includes(id));
+    if (filteredFiles) {
+      setChosenFiles(filteredFiles);
+    }
+  }, [chat?.chat_options.files_ids, files, chat?.id]);
+
+  useEffect(() => {
     setMaterialsOptions(
       materials
         ?.filter((material) => !chosenMaterials.includes(material))
         .filter((item) => item.status === 'enabled') as Material[],
     );
   }, [chat?.id, materials, chosenMaterials]);
+
+  useEffect(() => {
+    setFilesOptions(files?.filter((item) => item.status === 'enabled') as Asset[]);
+  }, [files]);
 
   const getAgent = (agentId: string) => agents.find((agent) => agent.id === agentId);
 
@@ -167,6 +183,7 @@ export const CommandInput = ({
         ChatAPI.patchChatOptions(chat?.id, {
           agent_id: selectedAgentId,
           materials_ids: materialsIds,
+          files_ids: filesIds,
         });
 
         setChat({
@@ -174,6 +191,7 @@ export const CommandInput = ({
           chat_options: {
             agent_id: selectedAgentId,
             materials_ids: materialsIds,
+            files_ids: filesIds,
           },
         });
       }
@@ -218,10 +236,29 @@ export const CommandInput = ({
     }, 0);
   };
 
+  const handleFileSelect = (file: Asset) => {
+    setChosenFiles((prev) => [...prev, file]);
+    const filteredOptions = filesOptions.filter(({ id }) => id !== file.id);
+    setFilesOptions(filteredOptions);
+    debounceChatUpdate();
+    setShowChatOptions(false);
+    removeLastAt();
+    setTimeout(() => {
+      textAreaRef?.current?.focus();
+    }, 0);
+  };
+
   const removeSelectedMaterial = (id: string) => () => {
     const material = chosenMaterials.find((material) => material.id === id) as Material;
     setChosenMaterials((prev) => prev.filter(({ id }) => id !== material.id));
     setMaterialsOptions((prev) => [...prev, material].sort((a, b) => a.name.localeCompare(b.name)));
+    debounceChatUpdate();
+  };
+
+  const removeSelectedFile = (id: string) => () => {
+    const file = chosenFiles.find((file) => file.id === id) as Asset;
+    setChosenFiles((prev) => prev.filter(({ id }) => id !== file.id));
+    setFilesOptions((prev) => [...prev, file].sort((a, b) => a.name.localeCompare(b.name)));
     debounceChatUpdate();
   };
 
@@ -236,14 +273,16 @@ export const CommandInput = ({
           <ChatOptions
             onSelectAgentId={onSelectAgentId}
             handleMaterialSelect={handleMaterialSelect}
+            handleFileSelect={handleFileSelect}
             setShowChatOptions={setShowChatOptions}
             materialsOptions={materialsOptions}
+            filesOptions={filesOptions}
             inputRef={chatOptionsInputRef}
             textAreaRef={textAreaRef}
           />
         )}
         <div className="w-full max-h-[200px] overflow-y-auto border border-gray-500 bg-gray-800 hover:bg-gray-600 focus-within:bg-gray-600 focus-within:border-gray-400 transition duration-100 rounded-[8px] flex flex-col flex-grow resize-none">
-          {(selectedAgentId || chosenMaterials.length > 0) && (
+          {(selectedAgentId || chosenMaterials.length > 0 || chosenFiles.length > 0) && (
             <div className="px-[20px] py-[12px] w-full flex flex-col gap-2">
               {selectedAgentId && (
                 <div className="w-full flex jusify-between items-center">
@@ -266,23 +305,26 @@ export const CommandInput = ({
                   />
                 </div>
               )}
-              {chosenMaterials.length > 0 && (
-                <div className="flex gap-2">
-                  <span className="text-gray-400 text-[14px]">Using:</span>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 overflow-y-auto max-h-[52px]">
-                    {chosenMaterials.map((material) => (
-                      <div key={material.id} className="flex gap-1 items-center">
-                        <span className="text-gray-300 text-[14px]">{material.name}</span>
-                        <Icon
-                          icon={X}
-                          className={cn('w-4 h-4 min-h-4 min-w-4 flex-shrink-0 cursor-pointer text-gray-400')}
-                          onClick={removeSelectedMaterial(material.id)}
-                        />
-                      </div>
-                    ))}
+              {chosenMaterials.length > 0 ||
+                (chosenFiles.length > 0 && (
+                  <div className="flex gap-2">
+                    <span className="text-gray-400 text-[14px]">Using:</span>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 overflow-y-auto max-h-[52px]">
+                      {[...chosenMaterials, ...chosenFiles].map((asset) => (
+                        <div key={asset.id} className="flex gap-1 items-center">
+                          <span className="text-gray-300 text-[14px]">{asset.name}</span>
+                          <Icon
+                            icon={X}
+                            className={cn('w-4 h-4 min-h-4 min-w-4 flex-shrink-0 cursor-pointer text-gray-400')}
+                            onClick={
+                              asset.type === 'file' ? removeSelectedFile(asset.id) : removeSelectedMaterial(asset.id)
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                ))}
             </div>
           )}
 

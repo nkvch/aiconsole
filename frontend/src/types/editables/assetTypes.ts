@@ -39,7 +39,7 @@ export type RenderedMaterial = {
 export const MaterialDefinitionSourceSchema = z.enum(['aiconsole', 'project']);
 export type MaterialDefinitionSource = z.infer<typeof MaterialDefinitionSourceSchema>;
 
-export const AssetTypeSchema = z.enum(['material', 'agent']);
+export const AssetTypeSchema = z.enum(['material', 'agent', 'file']);
 
 export type AssetType = z.infer<typeof AssetTypeSchema>;
 
@@ -55,7 +55,7 @@ export const LanguageStrSchema = z.enum(['python', 'actionscript', 'react_ui']);
 
 export type LanguageStr = z.infer<typeof LanguageStrSchema>;
 
-export type EditableObjectType = 'material' | 'agent' | 'chat';
+export type EditableObjectType = 'material' | 'agent' | 'chat' | 'file';
 
 export type EditableObjectTypePlural = 'materials' | 'agents' | 'chats';
 
@@ -71,7 +71,7 @@ export const AssetSchema = EditableObjectSchema.extend({
   usage: z.string(),
   usage_examples: z.array(z.string()),
   defined_in: MaterialDefinitionSourceSchema,
-  type: z.enum(['material', 'agent', 'chat']),
+  type: z.enum(['material', 'agent', 'chat', 'file']),
   default_status: AssetStatusSchema,
   status: AssetStatusSchema,
   override: z.boolean(),

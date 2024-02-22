@@ -77,11 +77,23 @@ export async function handleServerMessage(message: ServerMessage) {
           });
         }
       }
+
+      if (message.asset_type === 'file') {
+        useEditablesStore.getState().initFiles();
+        if (!message.initial) {
+          showToast({
+            title: 'Files updated',
+            message: `Loaded ${message.count} files.`,
+          });
+        }
+      }
+
       break;
 
     case 'SettingsServerMessage':
       useSettingsStore.getState().initSettings();
       useEditablesStore.getState().initMaterials();
+      useEditablesStore.getState().initFiles();
       useEditablesStore.getState().initAgents();
       if (!message.initial) {
         showToast({

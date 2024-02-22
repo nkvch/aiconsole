@@ -108,3 +108,19 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
         return agent
 
     raise Exception(f"Asset type {asset_type} not supported.")
+
+
+def load_arbitrary_asset_from_fs(asset_id: str, location: AssetLocation | None = None) -> Asset:
+    # load non .toml files
+    params = {
+        "id": asset_id,
+        "name": asset_id,
+        "defined_in": location,
+        "usage": "",
+        "usage_examples": [],
+        "default_status": AssetStatus.ENABLED,
+        "override": False,
+        "type": AssetType.FILE,
+    }
+
+    return Asset(**params)
