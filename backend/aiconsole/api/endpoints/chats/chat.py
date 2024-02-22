@@ -51,3 +51,12 @@ async def chat_options(chat_id: str, chat_odj: dict):
         chat.name = str(chat_odj.get("name"))
         save_chat_history(chat, scope="name")
     return Response(status_code=status.HTTP_200_OK)
+
+
+@router.patch("/{chat_id}/draft_message")
+async def chat_draft_message(chat_id: str, chat_odj: dict):
+    chat = await load_chat_history(id=chat_id)
+    if chat_odj.get("draft_message") is not None:
+        chat.draft_message = str(chat_odj.get("draft_message"))
+        save_chat_history(chat, scope="draft_message")
+    return Response(status_code=status.HTTP_200_OK)

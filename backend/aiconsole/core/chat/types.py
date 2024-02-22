@@ -97,6 +97,7 @@ class Chat(ChatHeadline):
     chat_options: ChatOptions = Field(default_factory=ChatOptions)
     message_groups: list[AICMessageGroup]
     is_analysis_in_progress: bool = False
+    draft_message: str | None = None
 
     def get_message_group(self, message_group_id: str) -> AICMessageGroup | None:
         for message_group in self.message_groups:

@@ -48,12 +48,21 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const chat = useChatStore((state) => state.chat);
   const agents = useEditablesStore((state) => state.agents);
   const setChat = useChatStore((state) => state.setChat);
+  const draftMessage = useChatStore((state) => state.chat?.draft_message);
   const materials = useEditablesStore((state) => state.materials);
   const [materialsOptions, setMaterialsOptions] = useState<Material[]>([]);
   const [chosenMaterials, setChosenMaterials] = useState<Material[]>([]);
   const materialsIds = chosenMaterials.map((material) => material.id);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const chatOptionsInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (draftMessage) {
+      setCommand(draftMessage);
+    } else {
+      setCommand('');
+    }
+  }, [draftMessage]);
 
   const handleSendMessage = useCallback(
     async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -69,6 +78,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
       setCommand(e.target.value);
       const mentionMatch = e.target.value.match(/@(\s*)$/);
       setShowChatOptions(!!mentionMatch);
+      debounceChatUpdate();
 
       setTimeout(() => {
         chatOptionsInputRef?.current?.focus();
@@ -153,6 +163,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
           agent_id: selectedAgentId,
           materials_ids: materialsIds,
         });
+        ChatAPI.patchChatDraftMessage(chat?.id, command);
 
         setChat({
           ...chat,

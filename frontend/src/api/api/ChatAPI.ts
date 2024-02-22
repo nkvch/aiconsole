@@ -47,6 +47,13 @@ const patchChatOptions = (chatId: string, body: object) =>
     hooks: API_HOOKS,
   });
 
+const patchChatDraftMessage = (chatId: string, draft_message: string) =>
+  ky.patch(`${getBaseURL()}/api/chats/${chatId}/draft_message`, {
+    json: { draft_message },
+    timeout: 60000,
+    hooks: API_HOOKS,
+  });
+
 // Commands
 
 const getCommandHistory = () => ky.get(`${getBaseURL()}/commands/history`);
@@ -60,6 +67,7 @@ const saveCommandToHistory = (body: object) =>
 
 export const ChatAPI = {
   patchChatOptions,
+  patchChatDraftMessage,
   runCode,
   getCommandHistory,
   saveCommandToHistory,

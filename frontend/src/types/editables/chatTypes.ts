@@ -61,6 +61,7 @@ export const ChatSchema = EditableObjectSchema.extend({
   chat_options: ChatOptionsSchema,
   message_groups: z.array(AICMessageGroupSchema),
   is_analysis_in_progress: z.boolean(),
+  draft_message: z.string().optional(),
 });
 
 export type Chat = z.infer<typeof ChatSchema>;

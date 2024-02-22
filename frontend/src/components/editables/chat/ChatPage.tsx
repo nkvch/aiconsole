@@ -15,7 +15,6 @@
 // limitations under the License.
 
 import { EditablesAPI } from '@/api/api/EditablesAPI';
-import AlertDialog from '@/components/common/AlertDialog';
 import { ContextMenu } from '@/components/common/ContextMenu';
 import { QuestionMarkIcon } from '@/components/common/icons/QuestionMarkIcon';
 import { SendRotated } from '@/components/common/icons/SendRotated';
@@ -30,7 +29,7 @@ import { cn } from '@/utils/common/cn';
 import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuForEditable';
 import { ArrowDown, ReplyIcon, Square } from 'lucide-react';
 import { useEffect } from 'react';
-import { unstable_useBlocker as useBlocker, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import ScrollToBottom, { useAnimating, useScrollToBottom, useSticky } from 'react-scroll-to-bottom';
 import { v4 as uuidv4 } from 'uuid';
 import { EditorHeader } from '../EditorHeader';
@@ -98,10 +97,6 @@ export function ChatPage() {
   const renameChat = useChatStore((state) => state.renameChat);
   const setChat = useChatStore((state) => state.setChat);
   const hasAnyCommandInput = command.trim() !== '';
-  const setCommand = useChatStore((state) => state.editCommand);
-  const blocker = useBlocker(hasAnyCommandInput);
-
-  const { reset, proceed, state: blockerState } = blocker || {};
 
   useEffect(() => {
     const stopEvent = (e: Event) => {
@@ -241,11 +236,6 @@ export function ChatPage() {
 
   const { label: actionButtonLabel, icon: ActionButtonIcon, action: actionButtonAction } = getActionButton();
 
-  const confirm = () => {
-    setCommand('');
-    proceed?.();
-  };
-
   return (
     <div className="flex flex-col w-full h-full max-h-full overflow-hidden">
       <ContextMenu options={menuItems}>
@@ -280,16 +270,6 @@ export function ChatPage() {
           onSubmit={actionButtonAction}
         />
       </div>
-      <AlertDialog
-        title="Are you sure you want to exit this chat?"
-        isOpen={blockerState === 'blocked'}
-        onClose={reset}
-        onConfirm={confirm}
-        confirmationButtonText="Yes, exit"
-        cancelButtonText="No, stay"
-      >
-        Changes that you made may not be saved.
-      </AlertDialog>
     </div>
   );
 }

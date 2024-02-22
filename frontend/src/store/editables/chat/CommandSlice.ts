@@ -99,6 +99,8 @@ export const createCommandSlice: StateCreator<ChatStore, [], [], CommandSlice> =
         throw new Error('Chat is not initialized');
       }
 
+      await ChatAPI.patchChatDraftMessage(chat.id, '');
+
       const messageGroupId = uuid();
 
       await get().userMutateChat([

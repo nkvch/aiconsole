@@ -49,6 +49,11 @@ def save_chat_history(chat: Chat, scope: str = "default"):
                     old_content["name"] = new_content["name"]
                     old_content["title_edited"] = True
                     new_content = old_content
+                elif scope == "draft_message" and (
+                    "draft_message" not in old_content or old_content["draft_message"] != new_content["draft_message"]
+                ):
+                    old_content["draft_message"] = new_content["draft_message"]
+                    new_content = old_content
                 else:
                     return  # contents are the same, no need to write to file
 
