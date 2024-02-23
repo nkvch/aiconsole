@@ -20,6 +20,7 @@ from aiconsole.core.chat.chat_mutations import (
 )
 from aiconsole.core.chat.chat_mutator import ChatMutator
 from aiconsole.core.chat.load_chat_history import load_chat_history
+from aiconsole.core.chat.load_current_draft_message import load_current_draft_message
 from aiconsole.core.chat.save_chat_history import save_chat_history
 from aiconsole.core.chat.types import Chat
 
@@ -67,7 +68,11 @@ async def _read_chat_outside_of_lock(chat_id: str):
     if chat_id not in chats:
         return await load_chat_history(chat_id)
 
-    return chats[chat_id]
+    locked_chat = chats[chat_id]
+    current_draft_message = await load_current_draft_message(chat_id)
+    locked_chat.draft_message = current_draft_message
+
+    return locked_chat
 
 
 async def release_lock(chat_id: str, request_id: str) -> None:
