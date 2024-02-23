@@ -57,11 +57,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const chatOptionsInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (draftMessage) {
-      setCommand(draftMessage);
-    } else {
-      setCommand('');
-    }
+    setCommand(draftMessage ?? '');
   }, [draftMessage]);
 
   const handleSendMessage = useCallback(
