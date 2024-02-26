@@ -42,7 +42,7 @@ const runCode = async ({
 
 const saveChatOptions = (
   chatId: string,
-  body: { agent_id: string; materials_ids: string[]; ai_can_add_extra_materials: boolean },
+  body: { agent_id: string; materials_ids: string[]; ai_can_add_extra_materials: boolean; draft_command: string },
 ) =>
   ky.patch(`${getBaseURL()}/api/assets/${chatId}/chat_options`, {
     json: { ...body },

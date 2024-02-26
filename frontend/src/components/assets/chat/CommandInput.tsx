@@ -44,6 +44,9 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const setAICanAddExtraMaterials = useChatStore((state) => state.setAICanAddExtraMaterials);
   const aiCanAddExtraMaterials = useChatStore((state) => state.chatOptions?.aiCanAddExtraMaterials);
 
+  const draftCommand = useChatStore((state) => state.chatOptions?.draft_command);
+  const setDraftCommand = useChatStore((state) => state.setDraftCommand);
+
   const command = useChatStore((state) => state.commandHistory[state.commandIndex]);
 
   const setCommand = useChatStore((state) => state.editCommand);
@@ -63,6 +66,8 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
 
   const handleSendMessage = useCallback(
     async (e?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      setDraftCommand('');
+
       if (onSubmit) onSubmit(command);
 
       if (e) e.currentTarget.blur();
@@ -73,6 +78,7 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setCommand(e.target.value);
+      setDraftCommand(e.target.value);
       const mentionMatch = e.target.value.match(/@(\s*)$/);
       setShowChatOptions(!!mentionMatch);
 
@@ -123,6 +129,14 @@ export const CommandInput = ({ className, onSubmit, actionIcon, actionLabel }: M
       textAreaRef.current.focus();
     }
   }, [chat?.id]);
+
+  useEffect(() => {
+    setCommand(draftCommand || '');
+
+    if (textAreaRef.current) {
+      textAreaRef.current.setSelectionRange(draftCommand?.length || 0, draftCommand?.length || 0);
+    }
+  }, [draftCommand, setCommand]);
 
   const getAgent = (agentId: string) => assets.find((agent) => agent.id === agentId);
 

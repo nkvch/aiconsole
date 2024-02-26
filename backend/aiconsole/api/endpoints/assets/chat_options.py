@@ -13,6 +13,7 @@ class PatchChatOptions(BaseModel):
     agent_id: Optional[str] = None
     materials_ids: Optional[list[str]] = None
     ai_can_add_extra_materials: Optional[bool] = None
+    draft_command: Optional[str] = None
 
 
 @router.patch("/{chat_id}/chat_options")
@@ -27,6 +28,9 @@ async def chat_options(chat_id: str, chat_options: PatchChatOptions):
 
     if chat_options.ai_can_add_extra_materials is not None:
         chat.chat_options.ai_can_add_extra_materials = chat_options.ai_can_add_extra_materials
+
+    if chat_options.draft_command is not None:
+        chat.chat_options.draft_command = chat_options.draft_command
 
     await save_chat_history(chat, scope="chat_options")
     return Response(status_code=status.HTTP_200_OK)

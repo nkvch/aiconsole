@@ -51,6 +51,7 @@ const AICChatOptionsSchema = z.object({
   agent_id: z.string().optional().default(''),
   materials_ids: z.array(z.string()).default([]),
   ai_can_add_extra_materials: z.boolean().default(true),
+  draft_command: z.string().default(''),
 });
 
 export const AICChatSchema = AssetSchema.extend({

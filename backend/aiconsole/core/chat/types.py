@@ -78,6 +78,7 @@ class AICChatOptions(BaseModel):
     agent_id: Optional[str] = ""
     materials_ids: Optional[list[str]] = Field(default_factory=list)
     ai_can_add_extra_materials: Optional[bool] = True
+    draft_command: Optional[str] = None
 
     def is_default(self):
         return self.agent_id == "" and self.materials_ids == []

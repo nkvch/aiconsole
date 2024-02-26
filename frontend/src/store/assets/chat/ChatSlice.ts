@@ -28,6 +28,7 @@ export type ChatSlice = {
     agentId: string;
     materialsIds: string[];
     aiCanAddExtraMaterials: boolean;
+    draft_command: string;
   };
   lastUsedChat?: AICChat;
   isChatLoading: boolean;
@@ -41,6 +42,7 @@ export type ChatSlice = {
   setSelectedAgentId: (id: string) => void;
   setSelectedMaterialsIds: (ids: string[]) => void;
   setAICanAddExtraMaterials: (aiCanAddExtraMaterials: boolean) => void;
+  setDraftCommand: (draftCommand: string) => void;
 
   chatOptionsSaveDebounceTimer: NodeJS.Timeout | null;
 };
@@ -64,6 +66,7 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
         agentId: chat.chat_options.agent_id,
         materialsIds: chat.chat_options.materials_ids,
         aiCanAddExtraMaterials: chat.chat_options.ai_can_add_extra_materials,
+        draft_command: chat.chat_options.draft_command,
       },
     });
   },
@@ -87,6 +90,7 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
           agentId: id,
           materialsIds: state.chatOptions?.materialsIds ?? [],
           aiCanAddExtraMaterials: state.chatOptions?.aiCanAddExtraMaterials ?? true,
+          draft_command: state.chatOptions?.draft_command ?? '',
         },
       };
       debounceChatOptionsUpdate(state.chat?.id, newState.chatOptions);
@@ -100,6 +104,7 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
           agentId: state.chatOptions?.agentId ?? '',
           materialsIds: ids,
           aiCanAddExtraMaterials: state.chatOptions?.aiCanAddExtraMaterials ?? true,
+          draft_command: state.chatOptions?.draft_command ?? '',
         },
       };
       debounceChatOptionsUpdate(state.chat?.id, newState.chatOptions);
@@ -113,6 +118,21 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
           agentId: state.chatOptions?.agentId ?? '',
           materialsIds: state.chatOptions?.materialsIds ?? [],
           aiCanAddExtraMaterials,
+          draft_command: state.chatOptions?.draft_command ?? '',
+        },
+      };
+      debounceChatOptionsUpdate(state.chat?.id, newState.chatOptions);
+      return newState;
+    });
+  },
+  setDraftCommand: (draftCommand: string) => {
+    set((state) => {
+      const newState = {
+        chatOptions: {
+          agentId: state.chatOptions?.agentId ?? '',
+          materialsIds: state.chatOptions?.materialsIds ?? [],
+          aiCanAddExtraMaterials: state.chatOptions?.aiCanAddExtraMaterials ?? true,
+          draft_command: draftCommand,
         },
       };
       debounceChatOptionsUpdate(state.chat?.id, newState.chatOptions);
@@ -123,7 +143,7 @@ export const createChatSlice: StateCreator<ChatStore, [], [], ChatSlice> = (set,
 
 const debounceChatOptionsUpdate = (
   chatId: string | undefined,
-  chatOptions: { agentId: string; materialsIds: string[]; aiCanAddExtraMaterials: boolean },
+  chatOptions: { agentId: string; materialsIds: string[]; aiCanAddExtraMaterials: boolean; draft_command: string },
 ) => {
   const debounceDelay = 500; // milliseconds
 
@@ -141,6 +161,7 @@ const debounceChatOptionsUpdate = (
           agent_id: chatOptions.agentId,
           materials_ids: chatOptions.materialsIds,
           ai_can_add_extra_materials: chatOptions.aiCanAddExtraMaterials,
+          draft_command: chatOptions.draft_command,
         });
         console.debug(`Chat options updated for chatId: ${chatId} with options: ${JSON.stringify(chatOptions)}`);
       }

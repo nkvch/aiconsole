@@ -23,6 +23,8 @@ from aiconsole.core.chat.load_chat_history import load_chat_history
 from aiconsole.core.chat.save_chat_history import save_chat_history
 from aiconsole.core.chat.types import AICChat
 
+from aiconsole.core.chat.load_chat_options import load_chat_options
+
 chats: dict[str, AICChat] = {}
 lock_events: dict[str, asyncio.Event] = defaultdict(asyncio.Event)
 
@@ -66,6 +68,9 @@ async def _read_chat_outside_of_lock(chat_id: str):
     _log.debug(f"Reading chat {chat_id}")
     if chat_id not in chats:
         return await load_chat_history(chat_id)
+    
+    chat_options = await load_chat_options(chat_id)
+    chats[chat_id].chat_options = chat_options
 
     return chats[chat_id]
 

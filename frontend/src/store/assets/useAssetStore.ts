@@ -151,6 +151,7 @@ export const useAssetStore = create<AssetsState>((set) => ({
           agent_id: '',
           materials_ids: [],
           ai_can_add_extra_materials: true,
+          draft_command: '',
         },
       };
 
