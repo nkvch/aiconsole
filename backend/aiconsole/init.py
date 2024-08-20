@@ -15,15 +15,22 @@
 # limitations under the License.
 
 import argparse
+import asyncio
 import logging
 import os
 
+from dotenv import load_dotenv
 from uvicorn import run
+
+from aiconsole.core.project.project import reinitialize_project
 
 _log = logging.getLogger(__name__)
 
 
 def run_aiconsole(dev: bool):
+    # Load Environment Variables before app starts.
+    load_dotenv(".env")
+
     parser = argparse.ArgumentParser(description="Start the backend server.")
     parser.add_argument("--port", type=int, help="Port to listen on.", default=8000)
     parser.add_argument(
