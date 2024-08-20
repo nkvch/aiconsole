@@ -39,16 +39,6 @@ jupyter-client = "^8.6.0"
 ipykernel = "^6.29.2"
 matplotlib = "^3.8.2"
 
-[tool.poetry.group.dev.dependencies]
-isort = "^5.13.2"
-black = "^23.12.1"
-ipdb = "^0.13.13"
-flake8 = "^7.0.0"
-pandas = "^2.2.0"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.4.4"
-pytest-asyncio = "^0.23.3"
 
 [tool.ruff]
 line-length = 119
