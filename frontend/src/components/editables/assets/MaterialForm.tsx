@@ -7,8 +7,8 @@ import { Material, RenderedMaterial } from '@/types/editables/assetTypes';
 import { MarkdownSupported } from '../MarkdownSupported';
 import { CodeEditorLabelContent } from './CodeEditorLabelContent';
 import { CodeInput } from './CodeInput';
-import { TextInput } from './TextInput';
 import { useMaterialEditorContent } from './useMaterialEditorContent';
+import RichTextEditor from './richtext/RichTextEditor';
 
 interface MaterialFormProps {
   material: Material;
@@ -44,15 +44,15 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
   return (
     <>
       <FormGroup className="relative">
-        <TextInput
+        <RichTextEditor
           className="min-h-[90px]"
           label="Usage"
           name="usage"
           placeholder="Write text here"
           value={material.usage}
           onChange={handleChange}
-          helperText="Usage is used to help identify when this material should be used. "
-          resize
+          helperText="Usage is used to help identify when this material should be used."
+          fullWidth
         />
         <MarkdownSupported />
       </FormGroup>
