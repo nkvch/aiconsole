@@ -37,7 +37,6 @@ import SideBar from './editables/sidebar/SideBar';
 import { Home } from './projects/Home';
 import { GlobalSettingsModal } from './settings/modal/GlobalSettingsModal';
 import { UI } from './editables/ui/Ui';
-
 function Project() {
   const isProjectOpen = useProjectStore((state) => state.isProjectOpen);
   const isProjectLoading = useProjectStore((state) => state.isProjectLoading);
@@ -45,7 +44,6 @@ function Project() {
   const isChat = useMatch('/chats/*');
   const isMaterial = useMatch('/materials/*');
   const isAgent = useMatch('/agents/*');
-
   if (!isProjectOpen && !isProjectLoading) {
     return <Navigate to="/" />;
   }
