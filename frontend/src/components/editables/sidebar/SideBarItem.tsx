@@ -17,6 +17,7 @@
 import { EditablesAPI } from '@/api/api/EditablesAPI';
 import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Icon } from '@/components/common/icons/Icon';
+import { useSidebarStore } from '@/store/common/useSidebarStore';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { Asset, EditableObject, EditableObjectType } from '@/types/editables/assetTypes';
@@ -39,6 +40,7 @@ const SideBarItem = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isCollapsed } = useSidebarStore();
 
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
 
@@ -214,7 +216,11 @@ const SideBarItem = ({
                     autoFocus
                   />
                 ) : (
+                  <>
+                  {!isCollapsed && (
                   <p className="text-[14px] leading-[18.2px] group-hover:text-white truncate">{editableObject.name}</p>
+                  )}
+                  </>
                 )}
                 <div className="flex gap-[10px] ml-auto items-center">
                   <Icon
