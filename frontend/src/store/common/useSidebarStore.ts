@@ -22,6 +22,8 @@ export type ActiveTab = TabsValues | string;
 export type SidebarSlice = {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+    isCollapsed: boolean;
+   handlesCollapse: () => void;
 };
 
 export const useSidebarStore = create<SidebarSlice>((set) => ({
@@ -31,4 +33,10 @@ export const useSidebarStore = create<SidebarSlice>((set) => ({
       activeTab: tab,
     }));
   },
+  isCollapsed: false,
+      handlesCollapse: () => {
+    set((state) => ({
+      isCollapsed: !state.isCollapsed,
+    }));
+  }
 }));
