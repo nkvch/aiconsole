@@ -15,12 +15,15 @@
 // limitations under the License.
 
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AssetsSidebarTab } from './AssetsSidebarTab';
 import { ChatsSidebarTab } from './ChatsSidebarTab';
 import { Tab } from './Tab';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useSidebarStore } from '@/store/common/useSidebarStore';
+import {DoubleArrowLeftIcon, DoubleArrowRightIcon } from '@radix-ui/react-icons';
+
+
 
 const TABS = [
   { label: 'Chats', key: 'chats' },
@@ -29,6 +32,7 @@ const TABS = [
 ];
 
 const SideBar = ({ initialTab }: { initialTab: string }) => {
+  const [isCollapsed,setIsCollapsed] = useState(false);
   const agents = useEditablesStore((state) => state.agents);
   const materials = useEditablesStore((state) => state.materials);
   const { activeTab, setActiveTab } = useSidebarStore();
@@ -37,26 +41,53 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
     setActiveTab(initialTab);
   }, [initialTab, setActiveTab]);
 
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => !prev);
+  };
+
   return (
     <div
-      className={`min-w-[336px] w-[336px] h-full  bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
+      className={`h-full bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r border-gray-600 transition-all duration-300 ${
+        isCollapsed ? 'w-[60px] min-w-[60px]' : 'w-[336px] min-w-[336px]'
+      }`}
     >
       <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-        <Tabs.List className="mb-[15px] px-5">
-          {TABS.map(({ label, key }) => (
-            <Tab key={key} value={key} label={label} activeTab={activeTab} />
-          ))}
+        <Tabs.List className="flex items-center px-2 mb-[15px]">
+          <button
+            onClick={toggleCollapse}
+            className="p-2 mr-2 transition-colors"
+           
+          >
+            {isCollapsed ? (
+              <DoubleArrowRightIcon className="h-8 w-6 text-gray-400 hover:text-white transition-colors" style={{marginTop:'-3px'}}/>
+            ) : (
+              <DoubleArrowLeftIcon className="h-8 w-6 text-gray-400 hover:text-white transition-colors"  style={{marginTop:'-13px'}} />
+            )}
+          </button>
+
+          {/* Tabs will only show labels when not collapsed */}
+          {!isCollapsed && (
+            <div className="flex flex-1 justify-around">
+              {TABS.map(({ label, key }) => (
+                <Tab key={key} value={key} label={label} activeTab={activeTab} />
+              ))}
+            </div>
+          )}
         </Tabs.List>
 
-        <Tabs.Content value="chats" className="flex-1 overflow-hidden">
-          <ChatsSidebarTab />
-        </Tabs.Content>
-        <Tabs.Content value="materials" className="flex-1 overflow-hidden px-5">
-          <AssetsSidebarTab assetType="material" assets={materials || []} />
-        </Tabs.Content>
-        <Tabs.Content value="agents" className="flex-1 overflow-hidden px-5">
-          <AssetsSidebarTab assetType="agent" assets={agents} />
-        </Tabs.Content>
+        {!isCollapsed && (
+          <>
+            <Tabs.Content value="chats" className="flex-1 overflow-hidden">
+              <ChatsSidebarTab />
+            </Tabs.Content>
+            <Tabs.Content value="materials" className="flex-1 overflow-hidden px-5">
+              <AssetsSidebarTab assetType="material" assets={materials || []} />
+            </Tabs.Content>
+            <Tabs.Content value="agents" className="flex-1 overflow-hidden px-5">
+              <AssetsSidebarTab assetType="agent" assets={agents} />
+            </Tabs.Content>
+          </>
+        )}
       </Tabs.Root>
     </div>
   );
