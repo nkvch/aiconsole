@@ -38,6 +38,11 @@ types-send2trash = "^1.8.2.7"
 jupyter-client = "^8.6.0"
 ipykernel = "^6.29.2"
 matplotlib = "^3.8.2"
+sqlalchemy = "^2.0.32"
+toml = "^0.10.2"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.1"
+requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"

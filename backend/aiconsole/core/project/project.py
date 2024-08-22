@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import asyncio
 import os
 import sys
 from pathlib import Path
@@ -77,7 +77,8 @@ async def send_project_init(connection: AICConnection):
     )
 
 
-def get_project_materials() -> "assets.Assets":
+async def get_project_materials() -> "assets.Assets":
+    await reinitialize_project()
     if not _materials:
         raise ValueError("Project materials are not initialized")
     return _materials
@@ -126,6 +127,7 @@ async def reinitialize_project():
 
     _agents = assets.Assets(asset_type=AssetType.AGENT)
     _materials = assets.Assets(asset_type=AssetType.MATERIAL)
+    print(f"Materials after initialization: {_materials}")
 
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
 

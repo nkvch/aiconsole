@@ -13,24 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
-from aiconsole.core.assets.types import AssetType
-from aiconsole.core.project import project
+from .database import SessionLocal
+from .models import Material
+from .schemas import MaterialOut  # Ensure this schema includes all fields
 
 router = APIRouter()
 
-
-@router.get("/")
+@router.get("/", response_model=List[MaterialOut])
 async def fetch_materials():
-    return JSONResponse(
-        [
-            {
-                **material.model_dump(exclude_none=True),
-                "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
-            }
-            for material in project.get_project_materials().all_assets()
-        ]
-    )
+    db: Session = SessionLocal()
+
+    try:
+        # Query all materials from the database
+        materials = db.query(Material).all()
+
+        # Convert SQLAlchemy model instances to Pydantic models
+        materials_list = [MaterialOut.from_orm(material) for material in materials]
+
+        return materials_list
+
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
