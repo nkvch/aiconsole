@@ -14,7 +14,6 @@ def get_db():
         db.close()
 
 def sanitize_asset_id(value: str) -> str:
-    # Remove surrounding quotes and whitespace
     return value.strip().strip("'").strip('"')
 
 @router.post("/{asset_id}", response_model=MaterialOut)

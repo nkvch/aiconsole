@@ -71,26 +71,39 @@ def create_database_and_table():
     cursor = conn.cursor()
 
     try:
-        # Create the materials table
+
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS materials (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            version VARCHAR(50),
-            usage TEXT,
-            usage_examples TEXT[],
-            content_type VARCHAR(50) NOT NULL,
-            content TEXT,
-            content_static_text TEXT,
-            default_status VARCHAR(50)
-        );
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'materialcontenttype') THEN
+                            CREATE TYPE materialcontenttype AS ENUM ('static_text', 'dynamic_text', 'api');
+                        END IF;
+                    END
+                    $$;
+                """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS materials (
+                id VARCHAR(255) PRIMARY KEY,        -- Ensure `id` is provided when inserting
+                name VARCHAR(255) NOT NULL,
+                version VARCHAR(50),
+                usage TEXT,
+                usage_examples TEXT[],
+                content_type VARCHAR(50) NOT NULL,  -- Adjusted to VARCHAR for content type
+                content TEXT,
+                content_static_text TEXT,
+                default_status VARCHAR(50) DEFAULT 'enabled',
+                defined_in VARCHAR(255),
+                type VARCHAR(50),
+                status VARCHAR(50),
+                override BOOLEAN DEFAULT FALSE
+            );
         """)
+
         print(f"Table 'materials' created successfully.")
         conn.commit()
 
-        cursor.execute("""
-        CREATE TYPE materialcontenttype AS ENUM ('api', 'dynamic_text', 'static_text');
-        """)
+
 
         conn.commit()
     except Exception as e:

@@ -13,64 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from http.client import HTTPException
+from typing import List
 
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from .database import *
-from .material import *
-from .models import *
-
-
-from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-
-from aiconsole.core.assets.types import AssetType
-from aiconsole.core.project import project
+from .database import SessionLocal
+from .models import Material
+from .schemas import MaterialOut  # Ensure this schema includes all fields
 
 router = APIRouter()
 
-
-@router.get("/")
+@router.get("/", response_model=List[MaterialOut])
 async def fetch_materials():
-    # Create a new database session
     db: Session = SessionLocal()
 
     try:
         # Query all materials from the database
         materials = db.query(Material).all()
 
-        # Convert materials to list of dictionaries
-        materials_list = [
-            {
-                "id": material.id,
-                "name": material.name,
-                "version": material.version,
-                "usage": material.usage,
-                "usage_examples": material.usage_examples,
-                "content_type": material.content_type,
-                "content": material.content,
-                "content_static_text": material.content_static_text,
-                "default_status": material.default_status,
-                "status": get_material_status(material.id)  # Implement this function
-            }
-            for material in materials
-        ]
+        # Convert SQLAlchemy model instances to Pydantic models
+        materials_list = [MaterialOut.from_orm(material) for material in materials]
 
-        # Return the result as a JSON response
-        return JSONResponse(content=materials_list)
+        return materials_list
 
     except SQLAlchemyError as e:
-        # Handle SQLAlchemy exceptions
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
-        # Close the database session
         db.close()
-
-
-def get_material_status(material_id: int):
-    # Implement this function to return the status of the material
-    # For example, it might look up the status based on the material ID
-    # This is just a placeholder implementation
-    return "status_placeholder"

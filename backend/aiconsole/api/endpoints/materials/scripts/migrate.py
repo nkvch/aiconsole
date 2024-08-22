@@ -1,18 +1,9 @@
-"""
-NOT FINISHED FULLY.
-
-BUG: SOME TOML FILES ARE NOT FORMATED RIGHT, SO NOT ALL TOML FILES ARE PARSED WHEN IT GETS ERROR IT GOES FOR NEXT TOML FILE.
-TODO: SOME TOML FILES SHOW CONTENT IN PYTHON FILE SHOULD ADD CODE TO READ INSIDE OF PYTHON FILES.
-"""
-import toml
 from pathlib import Path
-from sqlalchemy.orm import Session
-from aiconsole.api.endpoints.materials.models import Material
-from aiconsole.api.endpoints.materials.database import SessionLocal, create_database_and_table
+import toml
+import requests
 
 
 def load_toml_files(directory: str):
-    """Load all TOML files from the specified directory."""
     absolute_directory = Path(directory).resolve()
     print(f"Searching for TOML files in: {absolute_directory}")
 
@@ -36,59 +27,77 @@ def load_toml_files(directory: str):
 
     return toml_data
 
-def transform_toml_to_db_data(toml_data):
-    """Transform TOML data into a format suitable for the database."""
+def clean_file_path(file_path: str) -> str:
+    if file_path.startswith('file://'):
+        file_path = file_path[7:]
+    return file_path
+
+def read_content_from_python_file(base_path: Path, file_name: str) -> str:
+    file_path = base_path / file_name
+    content = ""
+    try:
+        with open(file_path, 'r') as file:
+            content = file.read()
+    except Exception as e:
+        print(f"Error reading Python file {file_path}: {e}")
+    return content
+
+def transform_toml_to_db_data(toml_data, base_directory: Path):
     db_data = []
-    for item in toml_data:
+    for index, item in enumerate(toml_data, start=1):
+        content_file = clean_file_path(item.get("content", ""))
+        if content_file and Path(content_file).suffix == '.py':
+            content = read_content_from_python_file(base_directory, content_file)
+        else:
+            content = item.get("content", "")
+
+        item_id = str(index)
         material_data = {
-            "name": item.get("name"),
-            "version": item.get("version"),
-            "usage": item.get("usage"),
-            "usage_examples": item.get("usage_examples", []),
-            "content_type": item.get("content_type"),
-            "content": item.get("content"),
-            "content_static_text": item.get("content_static_text"),
+            "id": item_id,
+            "name": item.get("name", "string"),
+            "version": item.get("version", "0.0.1"),
+            "usage": item.get("usage", "string"),
+            "usage_examples": item.get("usage_examples", ["string"]),
+            "defined_in": item.get("defined_in", "aiconsole"),
+            "type": item.get("type", "material"),
             "default_status": item.get("default_status", "enabled"),
+            "status": item.get("status", "enabled"),
+            "override": item.get("override", True),
+            "content_type": item.get("content_type", "static_text"),
+            "content": content,
+            "content_static_text": item.get("content_static_text", None)
         }
         db_data.append(material_data)
     return db_data
 
-def insert_data_into_db(data, db: Session):
-    """Insert transformed data into the database."""
+def post_data_to_api(data, api_base_url):
+    headers = {'Content-Type': 'application/json'}
     for item in data:
         try:
-            db_material = Material(**item)
-            db.add(db_material)
-        except Exception as e:
-            print(f"Error inserting data into the database: {e}")
-            continue
-    try:
-        db.commit()
-    except Exception as e:
-        print(f"Error committing data to the database: {e}")
-        db.rollback()
+            asset_id = item['id']
+            url = f"{api_base_url}/api/materials/{asset_id}"
+            response = requests.post(url, json=item, headers=headers)
+            response.raise_for_status()
+            print(f"Successfully posted data to {url}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error posting data to API at {url}: {e}")
 
 def main():
-    """Main function to load, transform, and insert TOML data into the database."""
-
-    toml_files = load_toml_files('../../../../../aiconsole/preinstalled/materials/')
+    toml_directory = '../../../../../aiconsole/preinstalled/materials/'
+    toml_files = load_toml_files(toml_directory)
 
     if not toml_files:
         print("No TOML files were processed.")
         return
 
-    create_database_and_table()
+    api_base_url = "http://127.0.0.1:8000"
 
     print("Processing TOML files...")
 
-    transformed_data = transform_toml_to_db_data(toml_files)
+    base_directory = Path(toml_directory).resolve()
+    transformed_data = transform_toml_to_db_data(toml_files, base_directory)
 
-    # Insert data into PostgreSQL
-    db = SessionLocal()
-    try:
-        insert_data_into_db(transformed_data, db)
-    finally:
-        db.close()
+    post_data_to_api(transformed_data, api_base_url)
 
 if __name__ == "__main__":
     main()
