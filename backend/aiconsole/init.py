@@ -30,7 +30,10 @@ _log = logging.getLogger(__name__)
 
 def run_aiconsole(dev: bool):
     # Load Environment Variables before app starts.
-    load_dotenv(dotenv_path= ".env")
+    try:
+        load_dotenv(dotenv_path= ".env")
+    except Exception as e:
+        print(e)
 
     create_database_and_table()
 
