@@ -8,7 +8,8 @@ import toml
 from pathlib import Path
 from sqlalchemy.orm import Session
 from aiconsole.api.endpoints.materials.models import Material
-from aiconsole.api.endpoints.materials.database import SessionLocal
+from aiconsole.api.endpoints.materials.database import SessionLocal, create_database_and_table
+
 
 def load_toml_files(directory: str):
     """Load all TOML files from the specified directory."""
@@ -70,11 +71,13 @@ def insert_data_into_db(data, db: Session):
 def main():
     """Main function to load, transform, and insert TOML data into the database."""
 
-    toml_files = load_toml_files('../../../preinstalled/materials/')
+    toml_files = load_toml_files('../../../../../aiconsole/preinstalled/materials/')
 
     if not toml_files:
         print("No TOML files were processed.")
         return
+
+    create_database_and_table()
 
     print("Processing TOML files...")
 

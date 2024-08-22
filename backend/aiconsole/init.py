@@ -22,6 +22,7 @@ import os
 from dotenv import load_dotenv
 from uvicorn import run
 
+from aiconsole.api.endpoints.materials.database import create_database_and_table
 from aiconsole.core.project.project import reinitialize_project
 
 _log = logging.getLogger(__name__)
@@ -29,7 +30,9 @@ _log = logging.getLogger(__name__)
 
 def run_aiconsole(dev: bool):
     # Load Environment Variables before app starts.
-    load_dotenv(".env")
+    load_dotenv(dotenv_path= ".env")
+
+    create_database_and_table()
 
     parser = argparse.ArgumentParser(description="Start the backend server.")
     parser.add_argument("--port", type=int, help="Port to listen on.", default=8000)
