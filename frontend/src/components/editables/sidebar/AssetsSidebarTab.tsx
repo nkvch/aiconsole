@@ -62,7 +62,7 @@ export const AssetsSidebarTab = ({ assetType, assets, loadMoreMaterials, hasMore
   };
 
   return (
-    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full" style={{marginTop:'20px'}} onScroll={handleScroll}>
+    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full" style={{marginTop:'8px'}} onScroll={handleScroll}>
       {groupedAssets.map(([status, assets]) => {
         const title = getTitle(status, hasForcedAssets, assetType);
         return (

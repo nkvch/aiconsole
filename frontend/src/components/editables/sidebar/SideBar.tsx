@@ -133,7 +133,7 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
                       type="text"
                       value={searchQuery}
                       onChange={handleSearch}
-                      placeholder="Search Materials"
+                      placeholder="Search materials..."
                       className="w-full p-2 rounded-md bg-gray-800 text-white"
                     />
                   </div>
