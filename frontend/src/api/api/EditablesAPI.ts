@@ -29,6 +29,7 @@ import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 import { useWebSocketStore } from '../ws/useWebSocketStore';
 import { ChatOpenedServerMessage, ServerMessage } from '../ws/serverMessages';
 import { v4 as uuidv4 } from 'uuid';
+import { Search } from 'lucide-react';
 
 const previewMaterial: (material: Material) => Promise<RenderedMaterial> = async (material: Material) =>
   ky
@@ -42,6 +43,22 @@ const previewMaterial: (material: Material) => Promise<RenderedMaterial> = async
 async function fetchEditableObjects<T extends EditableObject>(editableObjectType: EditableObjectType): Promise<T[]> {
   return ky.get(`${getBaseURL()}/api/${editableObjectType}s/`, { hooks: API_HOOKS }).json();
 }
+
+async function fetchMaterials<T extends EditableObject>(
+  editableObjectType: EditableObjectType,
+  offset: number,
+  search: string
+): Promise<T[]> {
+  return ky.get(`${getBaseURL()}/api/${editableObjectType}s/`, {
+    searchParams: {
+      offset: offset.toString(), // Offset varies with each request
+      search: search.toString()
+    },
+    hooks: API_HOOKS,
+  }).json();
+}
+
+
 
 async function setAssetStatus(assetType: AssetType, id: string, status: AssetStatus) {
   return ky
@@ -187,4 +204,5 @@ export const EditablesAPI = {
   getPathForEditableObject,
   closeChat,
   setAgentAvatar,
+  fetchMaterials
 };

@@ -21,36 +21,41 @@ import { EditablesAPI } from '../../api/api/EditablesAPI';
 import { EditablesStore } from './useEditablesStore';
 import { useProjectStore } from '@/store/projects/useProjectStore';
 
+
 export type MaterialSlice = {
-  materials?: Material[];
-  initMaterials: () => Promise<void>;
+  materials: Material[]; // Initialize with an empty array
+  initMaterials: (offset: number,search: string) => Promise<void>; // Only offset is needed
 };
 
-export const createMaterialSlice: StateCreator<EditablesStore, [], [], MaterialSlice> = (set) => ({
-  materials: undefined,
-  initMaterials: async () => {
+
+export const createMaterialSlice: StateCreator<EditablesStore, [], [], MaterialSlice> = (set, get) => ({
+  materials: [], // Initialize as an empty array
+  initMaterials: async (offset = 0,search ='') => {
     if (useProjectStore.getState().isProjectOpen) {
-      const materials = await EditablesAPI.fetchEditableObjects<Material>('material');
+      const newMaterials = await EditablesAPI.fetchMaterials<Material>('material', offset,search);
 
-      //sort alphabetically
-      materials.sort((a, b) => a.name.localeCompare(b.name));
+      console.log("Fetched materials:", newMaterials);
 
-      //sort by defined_in
-      materials.sort((a, b) => {
-        const aDefinedIn = a.defined_in === 'project' ? 0 : 1;
-        const bDefinedIn = b.defined_in === 'project' ? 0 : 1;
-        return aDefinedIn - bDefinedIn;
-      });
+      // Filter out duplicate materials
+      const existingMaterials = get().materials;
+      const uniqueNewMaterials = newMaterials.filter(
+        newMaterial => !existingMaterials.some(existingMaterial => existingMaterial.id === newMaterial.id)
+      );
 
-      //sort by status (forced first, disabled last, enabled in the middle)
-      materials.sort((a, b) => {
+      if (newMaterials.length === 0) return;
+
+      // Sort the new materials in the desired order
+      uniqueNewMaterials.sort((a, b) => a.name.localeCompare(b.name));
+      uniqueNewMaterials.sort((a, b) => (a.defined_in === 'project' ? 0 : 1) - (b.defined_in === 'project' ? 0 : 1));
+      uniqueNewMaterials.sort((a, b) => {
         const aStatus = a.status === 'forced' ? 0 : a.status === 'enabled' ? 1 : 2;
         const bStatus = b.status === 'forced' ? 0 : b.status === 'enabled' ? 1 : 2;
         return aStatus - bStatus;
       });
-      set({
-        materials,
-      });
+
+      set((state) => ({
+        materials: [...state.materials, ...uniqueNewMaterials], 
+      }));
     } else {
       set({ materials: [] });
     }

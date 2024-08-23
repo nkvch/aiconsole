@@ -17,6 +17,7 @@
 import { Asset, AssetStatus, AssetType } from '@/types/editables/assetTypes';
 import SideBarItem from './SideBarItem';
 
+
 const getTitle = (status: AssetStatus, isAgentChosen: boolean, assetType: AssetType) => {
   switch (status) {
     case 'forced':
@@ -45,15 +46,25 @@ function groupAssetsByStatus(assets: Asset[]) {
   return [...groupedAssets.entries()];
 }
 
-export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; assets: Asset[] }) => {
+export const AssetsSidebarTab = ({ assetType, assets, loadMoreMaterials, hasMore, loading, scrollable = false }: { assetType: AssetType; assets: Asset[], loadMoreMaterials?: () => void, hasMore?: boolean, loading?: boolean, scrollable?: boolean }) => {
   const groupedAssets = groupAssetsByStatus(assets);
   const hasForcedAssets = Boolean(groupedAssets[0][1].length);
 
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    console.log("Handle Scroll is triggered!")
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 1; // Allow for small rounding errors
+
+    if (isAtBottom && hasMore && !loading && loadMoreMaterials) {
+      loadMoreMaterials();
+      console.log("Reached the bottom!");
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full">
+    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full" onScroll={handleScroll}>
       {groupedAssets.map(([status, assets]) => {
         const title = getTitle(status, hasForcedAssets, assetType);
-
         return (
           assets.length > 0 && (
             <div key={status}>
@@ -65,6 +76,8 @@ export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; 
           )
         );
       })}
+      {loading && <div>Loading more materials...</div>}
+      {!hasMore && scrollable && <div>No more materials to load</div>}
     </div>
   );
 };
