@@ -16,7 +16,8 @@
 
 import { Icon } from '@/components/common/icons/Icon';
 import { cn } from '@/utils/common/cn';
-import { Trash, Pencil, Save, X } from 'lucide-react';
+import { Trash, Pencil, Save, X, Copy,Check } from 'lucide-react';
+import { useState } from 'react';
 interface MessageControlsProps {
   isEditing?: boolean;
   hideControls?: boolean;
@@ -24,6 +25,7 @@ interface MessageControlsProps {
   onEditClick?: () => void;
   onRemoveClick?: () => void;
   onCancelClick?: () => void;
+  onCopyText?:string
 }
 
 export function MessageControls({
@@ -33,7 +35,21 @@ export function MessageControls({
   onCancelClick,
   onEditClick,
   onRemoveClick,
+   onCopyText
 }: MessageControlsProps) {
+  const [isCopied, setIsCopied] = useState(false);
+ 
+  const handleCopyClick = async () => {
+     if (!onCopyText) onCopyText = '';
+    try {
+      await navigator.clipboard.writeText(onCopyText);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500); 
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
+
   return (
     <div className="min-w-[48px]">
       {isEditing ? (
@@ -61,6 +77,12 @@ export function MessageControls({
             </button>
           ) : (
             <div className="h-4 w-4"></div>
+          )}
+               {handleCopyClick && (
+            <button onClick={handleCopyClick}>
+               {isCopied ? 
+              <Icon icon={Check} />:<Icon icon={Copy} />  }
+            </button>
           )}
           {onRemoveClick && (
             <button onClick={onRemoveClick}>
