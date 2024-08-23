@@ -56,6 +56,7 @@ export function MessageComponent({ message, group }: MessageProps) {
         hideControls
         isEditing={isEditing}
         setIsEditing={setIsEditing}
+        onCopyText={message.content}
       >
         <div className="flex flex-col gap-2">
           {message.is_streaming && !message.content && message.tool_calls.length === 0 && <BlinkingCursor />}
