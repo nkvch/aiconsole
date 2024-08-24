@@ -1,0 +1,7 @@
+name = "Dalle 3 Image Generator"
+version = "0.0.20"
+usage = "Use when you need to generate images."
+usage_examples = []
+default_status = "enabled"
+content_type = "api"
+content = "file://./dalle_3_image_generator.py"

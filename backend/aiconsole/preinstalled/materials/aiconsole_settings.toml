@@ -1,0 +1,4 @@
+name = "AIConsole Settings"
+usage = "Use it to change settings in aiconsole"
+content_type = "api"
+content = "file://./aiconsole_settings.py"

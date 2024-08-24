@@ -1,0 +1,7 @@
+name = "Environment"
+version = "0.0.3"
+usage = "Use this always when code is about to be executed. Execution environment information, like operating system, shell, current working directory and Python packages will be collected."
+usage_examples = []
+default_status = "enabled"
+content_type = "dynamic_text"
+content = "file://./environment.py"

@@ -1,0 +1,7 @@
+name = "Domain Availability"
+version = "0.0.2"
+usage = "How to check domain availability???"
+usage_examples = []
+default_status = "enabled"
+content_type = "api"
+content = "file://./domain_availability.py"

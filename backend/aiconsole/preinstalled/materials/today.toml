@@ -1,0 +1,20 @@
+name = "Today"
+version = "0.0.4"
+usage = "When you need to know what is the Today's date"
+usage_examples = []
+default_status = "enabled"
+content_type = "dynamic_text"
+content = """
+from datetime import datetime
+
+async def content(context):
+    # Get current date
+    current_date = datetime.now()
+
+    # Format as string
+    current_date_string = current_date.strftime("%A, %B %d, %Y")
+
+    return f""\"
+Today is {current_date_string}
+""\".strip()
+"""

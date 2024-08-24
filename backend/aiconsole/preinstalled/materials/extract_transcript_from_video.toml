@@ -1,0 +1,41 @@
+name = "Extract Transcript from Video"
+version = "0.0.2"
+usage = "Use this when you need to extract insights from a YouTube video"
+usage_examples = []
+default_status = "enabled"
+content_type = "static_text"
+content = """
+If there will be an error "ModuleNotFoundError: No module named 'youtube_transcript_api'" say command to install it:
+pip install youtube-transcript-api
+
+```python
+from youtube_transcript_api import YouTubeTranscriptApi
+import requests
+from bs4 import BeautifulSoup
+
+# Replace 'video_id' with the actual YouTube video ID
+video_id = 'your_video_id_here'
+
+# Get the transcript for the video
+transcript = YouTubeTranscriptApi.get_transcript(video_id)
+
+# Extract the text content from the transcript
+transcript_text = ' '.join([entry['text'] for entry in transcript])
+
+# Fetch YouTube page HTML content
+response = requests.get(video_url)
+page_content = response.content
+
+# Parse with BeautifulSoup
+soup = BeautifulSoup(page_content, 'html.parser')
+
+# Extract title
+video_title = soup.find('meta', {'property': 'og:title'})['content'] if soup.find('meta', {'property': 'og:title'}) else 'Title not found'
+
+# Extract description
+video_description = soup.find('meta', {'name': 'description'})['content'] if soup.find('meta', {'name': 'description'}) else 'Description not found'
+
+# Return title and description and transcript text
+(video_title, video_description, transcript_text)
+```
+"""

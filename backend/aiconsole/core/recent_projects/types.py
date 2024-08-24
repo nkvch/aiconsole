@@ -1,0 +1,40 @@
+# The AIConsole Project
+#
+# Copyright 2023 10Clouds
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# TODO: Rename file to models.py
+from pydantic import BaseModel
+
+from aiconsole.utils.serializable_path import SerializablePath
+
+
+class RecentProjectStatsAgent(BaseModel):
+    count: int
+    agent_ids: list[str]
+
+
+class RecentProjectStats(BaseModel):
+    materials_note_count: int
+    materials_dynamic_note_count: int
+    materials_python_api_count: int
+    chats_count: int
+    agents: RecentProjectStatsAgent
+
+
+class RecentProject(BaseModel):
+    name: str
+    path: SerializablePath
+    recent_chats: list[str]
+    incorrect_path: bool
+    stats: RecentProjectStats
