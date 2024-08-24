@@ -1,0 +1,1 @@
+["I need help with using AIConsole, can you suggest what can I do from this point in the conversation?", "{copyClick && (\n            <button onClick={copyClick}>{isCopied ? <Icon icon={Check} /> : <Icon icon={Copy} />}</button>\n          )}"]
