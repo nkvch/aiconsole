@@ -14,23 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
 
+from aiconsole.database import get_db
+from aiconsole.models.material import Material
+from aiconsole.schemas.material import MaterialResponse
+from sqlalchemy.orm import Session
+
 router = APIRouter()
 
 
-@router.get("/")
-async def fetch_materials():
-    return JSONResponse(
-        [
-            {
-                **material.model_dump(exclude_none=True),
-                "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
-            }
-            for material in project.get_project_materials().all_assets()
-        ]
-    )
+@router.get("/", response_model=list[MaterialResponse])
+async def fetch_materials(db: Session = Depends(get_db)):
+    materials = db.query(Material).all()
+
+    response = [
+        {
+            **material.__dict__,
+            "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
+        }
+        for material in materials
+    ]
+
+    return JSONResponse(content=response)
