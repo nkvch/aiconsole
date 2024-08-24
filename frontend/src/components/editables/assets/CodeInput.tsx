@@ -14,16 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import hljs from 'highlight.js';
-import 'highlight.js/styles/vs2015.css';
-import Editor from 'react-simple-code-editor';
-
 import { Icon } from '@/components/common/icons/Icon';
 import { cn } from '@/utils/common/cn';
 import { useClickOutside } from '@/utils/common/useClickOutside';
 import { Maximize2, Minimize2 } from 'lucide-react';
-import { FocusEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { CodeInputFullScreen } from './CodeInputFullScreen';
+import { RichTextEditor } from './RichTextEditor';
 
 const DEFAULT_MAX_HEIGHT = 'calc(100% - 60px)';
 const DEFAULT_MIN_HEIGHT = '180px';
@@ -68,17 +65,6 @@ export function CodeInput({
   const [focus, setFocus] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const editorBoxRef = useRef<HTMLDivElement | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const onHighlight = (code: string) => {
-    if (!code) return '';
-
-    let lang = codeLanguage;
-    if (!lang) {
-      const { language } = hljs.highlightAuto(code);
-      lang = language;
-    }
-    return hljs.highlight(code, { language: lang || 'python' }).value;
-  };
 
   const handleValueChange = (code: string) => {
     if (onChange) {
@@ -86,46 +72,9 @@ export function CodeInput({
     }
   };
 
-  // When using styles and different HTML structure there was always confilct
-  // with streching textarea to full container height (when content is smaller
-  // than editor window) and preserving scrolling when content it longer. Current
-  // solution is a workaround to focus textarea even if textarea does not fills
-  // whole editor space. To not cause border flashing and losing focus on button
-  // click we use useOutsideClick hook instead of onBlur. Textarea elemet is set
-  // as ref on first click/focus event as we can't pass ref to editor's textarea.
-
-  const handleEditorBoxClick = useCallback(({ target }: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const isFocused = target === document.activeElement;
-    if (isFocused) return;
-
-    if (!textareaRef.current) {
-      const textarea = (target as HTMLDivElement).querySelector('textarea');
-      if (textarea) {
-        textareaRef.current = textarea;
-        textarea.focus();
-      }
-    } else {
-      textareaRef.current.focus();
-    }
-  }, []);
-
-  const handleFocus = useCallback(({ target }: FocusEvent<HTMLDivElement> & FocusEvent<HTMLTextAreaElement>) => {
-    if (!textareaRef.current || target !== textareaRef.current) {
-      if (target) {
-        textareaRef.current = target;
-      }
-    }
-
-    setFocus(true);
-  }, []);
-
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
-      if (textareaRef.current?.contains(event.target as HTMLElement)) {
-        if (textareaRef.current && (!disabled || !readOnly)) {
-          textareaRef.current.focus();
-        }
-
+      if (editorBoxRef.current?.contains(event.target as HTMLElement)) {
         return;
       }
 
@@ -134,7 +83,7 @@ export function CodeInput({
         onBlur?.();
       }
     },
-    [disabled, focus, onBlur, readOnly],
+    [focus, onBlur],
   );
 
   useClickOutside(editorBoxRef, handleClickOutside);
@@ -142,14 +91,12 @@ export function CodeInput({
   useEffect(() => {
     if (focused) {
       setFocus(true);
-      textareaRef.current?.focus();
     }
   }, [focused]);
 
   useEffect(() => {
     if (!isFullscreenOpen) {
       setFocus(false);
-      textareaRef.current?.blur();
     }
   }, [focused, isFullscreenOpen]);
 
@@ -169,7 +116,7 @@ export function CodeInput({
             })}
           >
             {label}
-          </label>{' '}
+          </label>
           {labelContent}
         </div>
       )}
@@ -187,30 +134,24 @@ export function CodeInput({
             'hover:bg-gray-600 hover:placeholder:text-gray-300': !disabled && !readOnly,
           },
         )}
-        onClick={handleEditorBoxClick}
       >
         {typeof value === 'string' ? (
-          <Editor
+          <RichTextEditor
             value={value}
+            onChange={handleValueChange}
+            onBlur={onBlur}
             disabled={disabled || readOnly}
-            textareaId={label}
-            onValueChange={handleValueChange}
-            placeholder="Write some text"
-            onFocus={handleFocus}
-            highlight={(code) => onHighlight(code)}
-            padding={10}
+            codeLanguage={codeLanguage}
+            readOnly={readOnly}
             className={cn(
-              'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400 text-[15px] text-gray-300 focus:text-white rounded-[8px]',
+              'resize-none appearance-none border border-transparent w-full placeholder-gray-400 bottom-0 p-0 h-full  placeholder:text-gray-400 text-[15px] text-gray-300 focus:text-white rounded-[8px] focus:!outline-none focus:!shadow-none !px-[20px] !py-[12px]',
               {
+                'cursor-not-allowed': disabled,
                 'opacity-[0.7] ': disabled,
                 'bg-transparent': transparent,
                 'pointer-events-none': disabled || readOnly,
               },
             )}
-            preClassName="!px-[20px] !py-[12px] "
-            textareaClassName={cn('focus:!outline-none focus:!shadow-none h-full !px-[20px] !py-[12px] h-full', {
-              'cursor-not-allowed': disabled,
-            })}
           />
         ) : (
           value
