@@ -29,10 +29,7 @@ import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuFo
 import { MoreVertical } from 'lucide-react';
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-=======
 import { useSidebarStore } from '@/store/common/useSidebarStore';
->>>>>>> 5f371ad1 (end)
 
 const SideBarItem = ({
   editableObjectType,
@@ -43,10 +40,7 @@ const SideBarItem = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-<<<<<<< HEAD
-=======
   const { isCollapsed } = useSidebarStore();
->>>>>>> 5f371ad1 (end)
 
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
 
@@ -222,15 +216,11 @@ const SideBarItem = ({
                     autoFocus
                   />
                 ) : (
-<<<<<<< HEAD
-                  <p className="text-[14px] leading-[18.2px] group-hover:text-white truncate">{editableObject.name}</p>
-=======
                   <>
                   {!isCollapsed && (
                   <p className="text-[14px] leading-[18.2px] group-hover:text-white truncate">{editableObject.name}</p>
                   )}
                   </>
->>>>>>> 5f371ad1 (end)
                 )}
                 <div className="flex gap-[10px] ml-auto items-center">
                   <Icon

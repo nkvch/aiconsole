@@ -29,10 +29,7 @@ interface EditableContentMessageProps {
   className?: string;
   hideControls?: boolean;
   isEditing: boolean;
-<<<<<<< HEAD
-=======
   copyingText:string;
->>>>>>> 5f371ad1 (end)
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -46,10 +43,7 @@ export function EditableContentMessage({
   className,
   isEditing,
   setIsEditing,
-<<<<<<< HEAD
-=======
   copyingText
->>>>>>> 5f371ad1 (end)
 }: EditableContentMessageProps) {
   const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
   const [content, setContent] = useState(initialContent);
@@ -107,10 +101,7 @@ export function EditableContentMessage({
             onEditClick={handleEditClick}
             onSaveClick={handleSaveClick}
             onRemoveClick={handleRemoveClick}
-<<<<<<< HEAD
-=======
             copyingText={copyingText}
->>>>>>> 5f371ad1 (end)
           />
         )}
       </div>

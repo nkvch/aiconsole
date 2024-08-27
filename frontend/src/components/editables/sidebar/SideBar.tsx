@@ -15,22 +15,15 @@
 // limitations under the License.
 
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
-<<<<<<< HEAD
-import { useEffect } from 'react';
-=======
 import { useEffect,useState } from 'react';
->>>>>>> 5f371ad1 (end)
 import { AssetsSidebarTab } from './AssetsSidebarTab';
 import { ChatsSidebarTab } from './ChatsSidebarTab';
 import { Tab } from './Tab';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useSidebarStore } from '@/store/common/useSidebarStore';
-<<<<<<< HEAD
-=======
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Icon } from '@/components/common/icons/Icon';
->>>>>>> 5f371ad1 (end)
 
 const TABS = [
   { label: 'Chats', key: 'chats' },
@@ -41,13 +34,9 @@ const TABS = [
 const SideBar = ({ initialTab }: { initialTab: string }) => {
   const agents = useEditablesStore((state) => state.agents);
   const materials = useEditablesStore((state) => state.materials);
-<<<<<<< HEAD
-  const { activeTab, setActiveTab } = useSidebarStore();
-=======
   const { activeTab, setActiveTab, isCollapsed, handlesCollapse } = useSidebarStore();
 
   const [openTab, setOpenTab] = useState(false);
->>>>>>> 5f371ad1 (end)
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -55,14 +44,6 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
 
   return (
     <div
-<<<<<<< HEAD
-      className={`min-w-[336px] w-[336px] h-full  bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
-    >
-      <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-        <Tabs.List className="mb-[15px] px-5">
-          {TABS.map(({ label, key }) => (
-            <Tab key={key} value={key} label={label} activeTab={activeTab} />
-=======
       className={`${
         isCollapsed ? 'w-[100px]' : 'min-w-[336px] w-[336px]'
       } h-full  bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
@@ -102,7 +83,6 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
         <Tabs.List className={`${isCollapsed ? 'hidden' : 'flex flex-row '}  mb-[15px] px-5 `}>
           {TABS.map(({ label, key }) => (
             <Tab key={key} value={key} label={label} activeTab={activeTab} openTab={openTab} />
->>>>>>> 5f371ad1 (end)
           ))}
         </Tabs.List>
 
@@ -115,12 +95,9 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
         <Tabs.Content value="agents" className="flex-1 overflow-hidden px-5">
           <AssetsSidebarTab assetType="agent" assets={agents} />
         </Tabs.Content>
-<<<<<<< HEAD
-=======
         <button onClick={() => handlesCollapse()} className="mr-10 mb-4 flex justify-end hover:text-white z-50">
           {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </button>
->>>>>>> 5f371ad1 (end)
       </Tabs.Root>
     </div>
   );
