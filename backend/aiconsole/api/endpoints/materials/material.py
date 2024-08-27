@@ -41,6 +41,12 @@ from sqlalchemy.orm import Session
 from aiconsole.database import get_db
 from aiconsole.models.material import Material
 from aiconsole.schemas.material import MaterialCreate, MaterialResponse, MaterialUpdate
+from aiconsole.api.services.repository import (
+    create_material,
+    get_material,
+    update_material,
+    delete_material
+)
 
 
 router = APIRouter()
@@ -123,54 +129,55 @@ def fibonacci(n):
 
 
 @router.post("/", response_model=MaterialResponse)
-async def create_material(material: MaterialCreate,
-                          db: Session = Depends(get_db)
-                          ):
+async def create_material_endpoint(material: MaterialCreate,
+                                   db: Session = Depends(get_db)
+                                   ):
     existing_material = db.query(Material).filter(Material.name == material.name).first()
     if existing_material:
-        raise HTTPException(status_code=400, detail="Material with given name already exists")
+        raise HTTPException(status_code=400, detail="Material with the given name already exists.")
 
-    new_material = Material(**material.dict())
-    db.add(new_material)
-    db.commit()
-    db.refresh(new_material)
-    return new_material
+    material_data = material.dict()
+    return create_material(db, material_data)
 
 
-@router.get("/{material_id}")
-async def get_material(material_id: int,
-                       db: Session = Depends(get_db)
-                       ):
-    material = db.query(Material).filter(Material.id == material_id).first()
+@router.get("/{material_id}", response_model=MaterialResponse)
+async def get_material_endpoint(material_id: int,
+                                db: Session = Depends(get_db)
+                                ):
+    material = get_material(db, material_id)
     if not material:
         raise HTTPException(status_code=404, detail="Material not found")
     return material
 
 
 @router.patch("/{material_id}", response_model=MaterialResponse)
-async def partially_update_material(material_id: int,
+async def update_material_endpoint(material_id: int,
                                     material: MaterialUpdate,
                                     db: Session = Depends(get_db)
                                     ):
-    existing_material = db.query(Material).filter(Material.id == material_id).first()
-    if not existing_material:
+    material_data = material.dict(exclude_unset=True)
+    updated_material = update_material(db, material_id, material_data)
+    if not updated_material:
         raise HTTPException(status_code=404, detail="Material not found")
-
-    update_data = material.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(existing_material, key, value)
-
-    db.commit()
-    db.refresh(existing_material)
-    return existing_material
+    return updated_material
 
 
-@router.post("/{material_id}/status-change")
-async def material_status_change(material_id: int,
-                                 body: StatusChangePostBody,
-                                 db: Session = Depends(get_db)
-                                 ):
-    material = db.query(Material).filter(Material.id == material_id).first()
+@router.delete("/{material_id}", response_model=dict)
+async def delete_material_endpoint(material_id: int,
+                                   db: Session = Depends(get_db)
+                                   ):
+    deleted_material = delete_material(db, material_id)
+    if not deleted_material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    return {"status": "ok"}
+
+
+@router.post("/{material_id}/status-change", response_model=MaterialResponse)
+async def material_status_change_endpoint(material_id: int,
+                                          body: StatusChangePostBody,
+                                          db: Session = Depends(get_db)
+                                          ):
+    material = get_material(db, material_id)
     if not material:
         raise HTTPException(status_code=404, detail="Material not found")
 
@@ -180,22 +187,9 @@ async def material_status_change(material_id: int,
     return material
 
 
-@router.delete("/{material_id}")
-async def delete_material(material_id: int,
-                          db: Session = Depends(get_db)
-                          ):
-    material = db.query(Material).filter(Material.id == material_id).first()
-    if not material:
-        raise HTTPException(status_code=404, detail="Material not found")
-
-    db.delete(material)
-    db.commit()
-    return JSONResponse({"status": "ok"})
-
-
-@router.get("/{material_id}/exists")
-async def material_exists(material_id: int,
-                          db: Session = Depends(get_db)
-                          ):
-    material = db.query(Material).filter(Material.id == material_id).first()
+@router.get("/{material_id}/exists", response_model=dict)
+async def material_exists_endpoint(material_id: int,
+                                   db: Session = Depends(get_db)
+                                   ):
+    material = get_material(db, material_id)
     return {"exists": bool(material)}
