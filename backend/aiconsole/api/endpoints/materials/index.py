@@ -13,24 +13,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
 
+from aiconsole.database import get_db
+from aiconsole.models.material import Material
+from aiconsole.schemas.material import MaterialResponse
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
 router = APIRouter()
 
 
-@router.get("/")
-async def fetch_materials():
-    return JSONResponse(
-        [
-            {
-                **material.model_dump(exclude_none=True),
-                "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
-            }
-            for material in project.get_project_materials().all_assets()
-        ]
-    )
+@router.get("/", response_model=List[MaterialResponse])
+async def fetch_materials(db: Session = Depends(get_db)):
+    try:
+        materials = db.query(Material).all()
+
+        materials_list = [MaterialResponse.from_orm(material) for material in materials]
+
+        return materials_list
+
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=f'{e}')
+
+    finally:
+        db.close()

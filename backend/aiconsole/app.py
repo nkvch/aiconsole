@@ -28,6 +28,8 @@ from aiconsole.core.project.paths import get_project_directory_safe
 from aiconsole.core.settings.fs.settings_file_storage import SettingsFileStorage
 from aiconsole.core.settings.settings import settings
 
+from aiconsole.assets_script import populate_database
+
 if "BE_SENTRY_DSN" in os.environ:
     sentry_sdk.init(
         dsn=os.environ.get("BE_SENTRY_DSN", ""),
@@ -41,6 +43,9 @@ logger = getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
+
+    populate_database()
+
     yield
 
 
