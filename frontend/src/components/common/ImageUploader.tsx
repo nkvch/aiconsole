@@ -10,6 +10,7 @@ interface ImageUploaderProps {
   onUpload?: (file: File) => void;
 }
 
+
 // TODO: update this component with generating ai logic and connect with backend
 const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
