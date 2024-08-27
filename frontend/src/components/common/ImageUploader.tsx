@@ -1,10 +1,6 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-// <<<<<<< HEAD
-// import { Loader, Plus, Upload } from 'lucide-react';
-// =======
 import { Loader, Plus, Upload, Trash } from 'lucide-react';
-// >>>>>>> 5f371ad1 (end)
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';
@@ -13,7 +9,6 @@ interface ImageUploaderProps {
   currentImage?: string;
   onUpload?: (file: File) => void;
 }
-
 
 // TODO: update this component with generating ai logic and connect with backend
 const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
@@ -44,12 +39,9 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   };
 
   // TODO: Implement when backend is ready
-  // const removeImage = () => {
-  //   setPreviewImage(null);
-  // };
   const removeImage = () => {
     setPreviewImage(null);
-    setShowConfirmDialog(false); 
+    setShowConfirmDialog(false);
   };
 
   const handleUploadButtonClick = () => {
