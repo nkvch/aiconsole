@@ -1,10 +1,10 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-<<<<<<< HEAD
-import { Loader, Plus, Upload } from 'lucide-react';
-=======
+// <<<<<<< HEAD
+// import { Loader, Plus, Upload } from 'lucide-react';
+// =======
 import { Loader, Plus, Upload, Trash } from 'lucide-react';
->>>>>>> 5f371ad1 (end)
+// >>>>>>> 5f371ad1 (end)
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';
@@ -19,10 +19,7 @@ interface ImageUploaderProps {
 const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-<<<<<<< HEAD
-=======
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
->>>>>>> 5f371ad1 (end)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isGenerating, _setIsGenerating] = useState(false);
 
@@ -47,16 +44,13 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   };
 
   // TODO: Implement when backend is ready
-<<<<<<< HEAD
   // const removeImage = () => {
   //   setPreviewImage(null);
   // };
-=======
   const removeImage = () => {
     setPreviewImage(null);
     setShowConfirmDialog(false); 
   };
->>>>>>> 5f371ad1 (end)
 
   const handleUploadButtonClick = () => {
     if (fileInputRef.current) {
@@ -99,15 +93,6 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     //   action: generateWithAi,
     // },
     // { type: 'separator', key: 'delete-separator', hidden: !previewImage },
-<<<<<<< HEAD
-    // {
-    //   type: 'item',
-    //   icon: Trash,
-    //   title: 'Delete',
-    //   hidden: !previewImage,
-    //   action: removeImage,
-    // },
-=======
     {
       type: 'item',
       icon: Trash,
@@ -115,7 +100,6 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
       hidden: !previewImage,
       action: removeImage,
     },
->>>>>>> 5f371ad1 (end)
   ];
 
   return (
@@ -148,8 +132,6 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
           </div>
         </ContextMenu>
       </div>
-<<<<<<< HEAD
-=======
       {previewImage && (
         <button
           onClick={() => setShowConfirmDialog(true)}
@@ -180,7 +162,6 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
         </div>
       )}
 
->>>>>>> 5f371ad1 (end)
       <p className="text-[12px] text-center text-gray-400 mb-[10px] h-[18px]">
         {isGenerating ? 'Generating...' : null}
       </p>
