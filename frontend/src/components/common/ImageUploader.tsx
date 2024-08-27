@@ -1,6 +1,6 @@
 import { ContextMenuItems } from '@/types/common/contextMenu';
 import { cn } from '@/utils/common/cn';
-import { Loader, Plus, Upload } from 'lucide-react';
+import { Loader, Plus, Upload, Trash } from 'lucide-react';
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { ContextMenu, ContextMenuRef } from './ContextMenu';
 import { Icon } from './icons/Icon';
@@ -14,6 +14,7 @@ interface ImageUploaderProps {
 const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isGenerating, _setIsGenerating] = useState(false);
 
@@ -38,9 +39,10 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
   };
 
   // TODO: Implement when backend is ready
-  // const removeImage = () => {
-  //   setPreviewImage(null);
-  // };
+  const removeImage = () => {
+    setPreviewImage(null);
+    setShowConfirmDialog(false);
+  };
 
   const handleUploadButtonClick = () => {
     if (fileInputRef.current) {
@@ -83,13 +85,13 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
     //   action: generateWithAi,
     // },
     // { type: 'separator', key: 'delete-separator', hidden: !previewImage },
-    // {
-    //   type: 'item',
-    //   icon: Trash,
-    //   title: 'Delete',
-    //   hidden: !previewImage,
-    //   action: removeImage,
-    // },
+    {
+      type: 'item',
+      icon: Trash,
+      title: 'Delete',
+      hidden: !previewImage,
+      action: removeImage,
+    },
   ];
 
   return (
@@ -122,6 +124,36 @@ const ImageUploader = ({ currentImage, onUpload }: ImageUploaderProps) => {
           </div>
         </ContextMenu>
       </div>
+      {previewImage && (
+        <button
+          onClick={() => setShowConfirmDialog(true)}
+          className="mt-[10px] px-[10px] py-[5px] bg-red-600 text-white rounded-[5px] hover:bg-red-700 transition duration-200"
+        >
+          Remove Avatar
+        </button>
+      )}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style={{ zIndex: 1 }}>
+          <div className="bg-white p-[20px] rounded-[10px] shadow-lg">
+            <p className="text-[15px] mb-[15px] text-gray-900">Are you sure you want to remove the avatar?</p>
+            <div className="flex gap-[10px] justify-end">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="px-[10px] py-[5px] bg-gray-300 text-gray-800 rounded-[5px] hover:bg-gray-400 transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={removeImage}
+                className="px-[10px] py-[5px] bg-gray-800 text-white rounded-[5px] hover:bg-red-700 transition duration-200"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="text-[12px] text-center text-gray-400 mb-[10px] h-[18px]">
         {isGenerating ? 'Generating...' : null}
       </p>

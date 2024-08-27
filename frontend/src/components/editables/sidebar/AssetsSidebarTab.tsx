@@ -16,6 +16,7 @@
 
 import { Asset, AssetStatus, AssetType } from '@/types/editables/assetTypes';
 import SideBarItem from './SideBarItem';
+import { useSidebarStore } from '@/store/common/useSidebarStore';
 
 const getTitle = (status: AssetStatus, isAgentChosen: boolean, assetType: AssetType) => {
   switch (status) {
@@ -48,16 +49,19 @@ function groupAssetsByStatus(assets: Asset[]) {
 export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; assets: Asset[] }) => {
   const groupedAssets = groupAssetsByStatus(assets);
   const hasForcedAssets = Boolean(groupedAssets[0][1].length);
+  const { isCollapsed }=useSidebarStore()
 
   return (
-    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full">
+    <div className="flex flex-col gap-[5px] overflow-x-hidden overflow-y-auto h-full">
       {groupedAssets.map(([status, assets]) => {
         const title = getTitle(status, hasForcedAssets, assetType);
 
         return (
           assets.length > 0 && (
             <div key={status}>
-              <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px]">{title}</h3>
+              <h3
+                className={`${isCollapsed ? 'px-0 text-[10px]' : 'px-[9px] text-[12px]'} uppercase  py-[5px] text-gray-400  leading-[18px]`}
+              >{title}</h3>
               {assets.map((asset) => (
                 <SideBarItem key={asset.id} editableObject={asset} editableObjectType={assetType} />
               ))}
