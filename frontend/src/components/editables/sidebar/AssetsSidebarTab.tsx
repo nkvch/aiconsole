@@ -46,7 +46,7 @@ function groupAssetsByStatus(assets: Asset[]) {
   return [...groupedAssets.entries()];
 }
 
-export const AssetsSidebarTab = ({ assetType, assets, loadMoreMaterials, hasMore, loading, scrollable = false }: { assetType: AssetType; assets: Asset[], loadMoreMaterials?: () => void, hasMore?: boolean, loading?: boolean, scrollable?: boolean }) => {
+export const AssetsSidebarTab = ({ assetType, assets, loadMoreMaterials, hasMore, loading}: { assetType: AssetType; assets: Asset[], loadMoreMaterials?: () => void, hasMore?: boolean, loading?: boolean}) => {
   const groupedAssets = groupAssetsByStatus(assets);
   const hasForcedAssets = Boolean(groupedAssets[0][1].length);
 
@@ -77,7 +77,6 @@ export const AssetsSidebarTab = ({ assetType, assets, loadMoreMaterials, hasMore
         );
       })}
       {loading && <div style={{marginTop:'20px'}}>Loading more materials...</div>}
-      {!hasMore && scrollable && <div>No more materials to load</div>}
     </div>
   );
 };

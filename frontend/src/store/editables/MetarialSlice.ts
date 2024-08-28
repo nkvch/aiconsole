@@ -23,26 +23,26 @@ import { useProjectStore } from '@/store/projects/useProjectStore';
 
 
 export type MaterialSlice = {
-  materials: Material[]; // Initialize with an empty array
-  initMaterials: (offset: number,search: string) => Promise<void>; // Only offset is needed
+  materials: Material[];
+  initMaterials: (offset: number,search: string) => Promise<void>; //matching parameters to what the endpoint needs
 };
 
 
 export const createMaterialSlice: StateCreator<EditablesStore, [], [], MaterialSlice> = (set, get) => ({
-  materials: [], // Initialize as an empty array
+  materials: [],
   initMaterials: async (offset = 0,search ='') => {
     if (useProjectStore.getState().isProjectOpen) {
-      const newMaterials = await EditablesAPI.fetchMaterials<Material>('material', offset,search);
+      const fetchedMaterials = await EditablesAPI.fetchMaterials<Material>('material', offset,search);
 
-      console.log("Fetched materials:", newMaterials);
+      console.log("Fetched materials:", fetchedMaterials);
 
       // Filter out duplicate materials
       const existingMaterials = get().materials;
-      const uniqueNewMaterials = newMaterials.filter(
-        newMaterial => !existingMaterials.some(existingMaterial => existingMaterial.id === newMaterial.id)
+      const uniqueNewMaterials = fetchedMaterials.filter(
+        fetchedMaterial => !existingMaterials.some(existingMaterial => existingMaterial.id === fetchedMaterial.id)
       );
 
-      if (newMaterials.length === 0) return;
+      if (fetchedMaterials.length === 0) return;
 
       // Sort the new materials in the desired order
       uniqueNewMaterials.sort((a, b) => a.name.localeCompare(b.name));
