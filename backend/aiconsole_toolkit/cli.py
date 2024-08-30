@@ -4,7 +4,10 @@ import os
 
 from fastapi.testclient import TestClient
 
-from aiconsole.api.websockets.client_messages import (
+import sys
+sys.path.append("../aiconsole")
+
+from api.websockets.client_messages import (
     OpenChatClientMessage,
     ProcessChatClientMessage,
 )
