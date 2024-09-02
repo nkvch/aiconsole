@@ -22,7 +22,6 @@ from aiconsole.core.project import project
 
 router = APIRouter()
 
-
 @router.get("/")
 async def fetch_materials():
     return JSONResponse(

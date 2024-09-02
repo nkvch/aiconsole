@@ -116,65 +116,65 @@ def fibonacci(n):
         raise ValueError("Invalid material content type")
 
 
-@router.get("/{material_id}")
-async def get_material(request: Request, material_id: str):
-    type = cast(MaterialContentType, request.query_params.get("type", ""))
+# @router.get("/{material_id}")
+# async def get_material(request: Request, material_id: str):
+#     type = cast(MaterialContentType, request.query_params.get("type", ""))
 
-    return await asset_get(
-        request,
-        AssetType.MATERIAL,
-        material_id,
-        lambda: MaterialWithStatus(
-            id="new_" + get_material_content_name(type).lower(),
-            name="New " + get_material_content_name(type),
-            content_type=type,
-            usage="",
-            usage_examples=[],
-            status=AssetStatus.ENABLED,
-            defined_in=AssetLocation.PROJECT_DIR,
-            override=False,
-            content=get_default_content_for_type(type),
-        ),
-    )
-
-
-@router.patch("/{asset_id}")
-async def partially_update_material(
-    asset_id: str, material: Material, materials_service: Materials = Depends(materials)
-):
-    try:
-        await materials_service.partially_update_material(material_id=asset_id, material=material)
-    except AssetWithGivenNameAlreadyExistError:
-        raise HTTPException(status_code=400, detail="Material with given name already exists")
+#     return await asset_get(
+#         request,
+#         AssetType.MATERIAL,
+#         material_id,
+#         lambda: MaterialWithStatus(
+#             id="new_" + get_material_content_name(type).lower(),
+#             name="New " + get_material_content_name(type),
+#             content_type=type,
+#             usage="",
+#             usage_examples=[],
+#             status=AssetStatus.ENABLED,
+#             defined_in=AssetLocation.PROJECT_DIR,
+#             override=False,
+#             content=get_default_content_for_type(type),
+#         ),
+#     )
 
 
-@router.post("/{asset_id}")
-async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
-    try:
-        await materials_service.create_material(material_id=asset_id, material=material)
-    except AssetWithGivenNameAlreadyExistError:
-        raise HTTPException(status_code=400, detail="Material with given name already exists")
+# @router.patch("/{asset_id}")
+# async def partially_update_material(
+#     asset_id: str, material: Material, materials_service: Materials = Depends(materials)
+# ):
+#     try:
+#         await materials_service.partially_update_material(material_id=asset_id, material=material)
+#     except AssetWithGivenNameAlreadyExistError:
+#         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
 
-@router.post("/{material_id}/status-change")
-async def material_status_change(material_id: str, body: StatusChangePostBody):
-    return await asset_status_change(AssetType.MATERIAL, material_id, body)
+# @router.post("/{asset_id}")
+# async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
+#     try:
+#         await materials_service.create_material(material_id=asset_id, material=material)
+#     except AssetWithGivenNameAlreadyExistError:
+#         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
 
-@router.delete("/{material_id}")
-async def delete_material(material_id: str):
-    try:
-        await project.get_project_materials().delete_asset(material_id)
-        return JSONResponse({"status": "ok"})
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Material not found")
+# @router.post("/{material_id}/status-change")
+# async def material_status_change(material_id: str, body: StatusChangePostBody):
+#     return await asset_status_change(AssetType.MATERIAL, material_id, body)
 
 
-@router.get("/{asset_id}/exists")
-async def material_exists(request: Request, asset_id: str):
-    return await asset_exists(AssetType.MATERIAL, request, asset_id)
+# @router.delete("/{material_id}")
+# async def delete_material(material_id: str):
+#     try:
+#         await project.get_project_materials().delete_asset(material_id)
+#         return JSONResponse({"status": "ok"})
+#     except KeyError:
+#         raise HTTPException(status_code=404, detail="Material not found")
 
 
-@router.get("/{asset_id}/path")
-async def material_path(request: Request, asset_id: str):
-    return asset_path(AssetType.MATERIAL, request, asset_id)
+# @router.get("/{asset_id}/exists")
+# async def material_exists(request: Request, asset_id: str):
+#     return await asset_exists(AssetType.MATERIAL, request, asset_id)
+
+
+# @router.get("/{asset_id}/path")
+# async def material_path(request: Request, asset_id: str):
+#     return asset_path(AssetType.MATERIAL, request, asset_id)
