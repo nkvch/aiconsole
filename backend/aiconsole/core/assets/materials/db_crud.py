@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
@@ -14,10 +15,18 @@ def _create_material_db(db: Session, material: DbMaterialSchema):
     return db_material
 
 def _get_material_db(db: Session, id: str):
-    return db.query(DbMaterial).filter(DbMaterial.id == id).first()
+    orm_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
+    if orm_material is not None:
+        return DbMaterialSchema.from_orm_with_defaults(orm_material)
+    else: 
+        return orm_material
 
-def _get_materials_db(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(DbMaterial).offset(skip).limit(limit).all()
+def _get_materials_db(db: Session, skip: int = 0, limit: int = 100):
+    orm_materials: List[DbMaterial] = db.query(DbMaterial).offset(skip).limit(limit).all()
+    return [
+        DbMaterialSchema.from_orm_with_defaults(material) 
+        for material in orm_materials
+        ]
 
 def _update_material_db(db: Session, name: str, content: str):
     db_material = db.query(DbMaterial).filter(DbMaterial.name == name).first()
@@ -34,8 +43,8 @@ def _delete_material_db(db: Session, id: str):
         db.commit()
     return db_material
 
-def _patch_material_db(db: Session, name: str, material_update: DbMaterialUpdateSchema):
-    db_material = db.query(DbMaterial).filter(DbMaterial.name == name).first()
+def _patch_material_db(db: Session, id: str, material_update: DbMaterialUpdateSchema):
+    db_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
 
     if db_material is None:
         return None
@@ -47,6 +56,8 @@ def _patch_material_db(db: Session, name: str, material_update: DbMaterialUpdate
         db_material.material_type = material_update.material_type
     if material_update.enabled is not None:
         db_material.enabled = material_update.enabled
+    if material_update.usage is not None:
+        db_material.usage = material_update.usage
     if material_update.content is not None:
         db_material.content = material_update.content
 

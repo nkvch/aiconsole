@@ -1,11 +1,16 @@
-from typing import List,  cast
+from contextlib import contextmanager
+from typing import Generator, List,  cast
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import  create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from aiconsole.api.endpoints.materials.material import get_default_content_for_type
 from aiconsole.api.utils.asset_get import asset_get
-from aiconsole.backend.aiconsole.core.assets.materials.db_model import DbMaterialSchema, DbMaterialUpdateSchema
+from aiconsole.api.endpoints.registry import materials
+from aiconsole.api.endpoints.services import AssetWithGivenNameAlreadyExistError, Materials
+from aiconsole.core.assets.assets import Assets
+from aiconsole.core.project import project
+from aiconsole.core.assets.materials.db_model import DbMaterialSchema, DbMaterialUpdateSchema
 from aiconsole.core.adapters.material import MaterialWithStatus
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import MaterialContentType
@@ -26,7 +31,8 @@ from aiconsole.core.assets.materials.db_crud import (
 
 router = APIRouter()
 
-def get_db(project_directory: str = Depends(get_project_directory)):
+@contextmanager
+def create_db_session(project_directory: str):
     db_url = f"sqlite:///{project_directory}/materials.db"
     engine = create_engine(db_url)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -40,10 +46,27 @@ def get_db(project_directory: str = Depends(get_project_directory)):
     finally:
         db.close()
 
+def get_db(project_directory: str = Depends(get_project_directory)):
+    with create_db_session(project_directory) as db:
+        yield db
+
+def get_db_session(project_directory: str) -> Session:
+    return create_db_session(project_directory)
+
 # API Endpoints
 @router.post("/{material_id}")
-def create_material_db(material_id: str, material: DbMaterialSchema, db: Session = Depends(get_db)):
-     _create_material_db(db, material)
+def create_material_db(material_id: str, material: DbMaterialSchema, db: Session = Depends(get_db), materials_service: Materials = Depends(materials)):
+    materials:Assets = project.get_project_materials()
+    try:
+        materials_service._validate_existance(materials, material_id)
+    except AssetWithGivenNameAlreadyExistError:
+        raise HTTPException(status_code=404, detail="Material with given name already exists")
+
+    existing_material = _get_material_db(db, material_id)
+    if existing_material:
+        raise HTTPException(status_code=404, detail="Material with given name already exists")
+     
+    _create_material_db(db, material)
 
 # This method mimicks the previous method from material.py. It is accessed with name='new' when creating new material
 @router.get("/{material_id}")
@@ -51,10 +74,8 @@ async def read_material(material_id: str, request: Request, db: Session = Depend
     type = cast(MaterialContentType, request.query_params.get("type", ""))
     location_param = request.query_params.get("location", None)
     location = AssetLocation(location_param) if location_param else None
-    print("type: ", type)
-    print("location: ", location)
 
-    if material_id == "new" or location == AssetLocation.AICONSOLE_CORE or location is None:
+    if material_id == "new" or location == AssetLocation.AICONSOLE_CORE:
         return await asset_get(
         request, 
         AssetType.MATERIAL, 
@@ -72,16 +93,24 @@ async def read_material(material_id: str, request: Request, db: Session = Depend
             )
         )
 
-    elif location == AssetLocation.PROJECT_DIR:  
+    elif location == AssetLocation.PROJECT_DIR or location is None:  
         material = _get_material_db(db, material_id)
         if material is None:
-            raise HTTPException(status_code=404, detail="Material not found")    
+            raise HTTPException(status_code=404, detail="Material not found in database")    
     
     return material
 
-@router.get("/", response_model=List[DbMaterialSchema])
-def read_materials_db(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return _get_materials_db(db, skip=skip, limit=limit)
+@router.get("/")
+def read_all_materials(db: Session = Depends(get_db)):
+    # effectively all materials except those in database
+    preinstalled_materials = project.get_project_materials().all_assets()
+    db_materials = _get_materials_db(db, limit=100)
+    return JSONResponse(
+        [
+                material.model_dump(exclude_none=True) for material in preinstalled_materials + db_materials
+        ]
+    )
+
 
 @router.put("/{name}", response_model=DbMaterialSchema)
 def update_material_db(name: str, content: str, db: Session = Depends(get_db)):
@@ -97,21 +126,21 @@ def delete_material_db(material_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Material not found")
     return JSONResponse({"status": "ok"})
 
-@router.patch("/{name}")
-def patch_material_db(name: str, material_update: DbMaterialUpdateSchema, db: Session = Depends(get_db)):
-    rename = _patch_material_db(db, name, material_update)
+@router.patch("/{material_id}")
+def patch_material_db(material_id: str, material_update: DbMaterialUpdateSchema, db: Session = Depends(get_db)):
+    rename = _patch_material_db(db, material_id, material_update)
     if rename is None:
         raise HTTPException(status_code=404, detail="Material not found")
         
 
-@router.post("/materials/{id}/status-change")
-async def change_material_status(id: str, request: Request, db: Session = Depends(get_db)):
+@router.post("/{material_id}/status-change")
+async def change_material_status(material_id: str, request: Request, db: Session = Depends(get_db)):
     data = await request.json()
     status = data.get("status")
     if not status:
         raise HTTPException(status_code=400, detail="Status field is required")
 
-    db_material = _set_material_status(db, id, status)
+    db_material = _set_material_status(db, material_id, status)
     
     return {
         # "id": db_material.id,

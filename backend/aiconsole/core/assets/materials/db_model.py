@@ -5,21 +5,21 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 
+from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
+
 # sqlalchemy model is created based on json model already existing in the project
 Base = declarative_base()
 
 class DbMaterial(Base):
     __tablename__ = 'materials'
 
-    id = Column(Text, primary_key=True)
+    id = Column(Text, primary_key=True, index=True)
     name = Column(Integer, unique=True, index=True)
     version = Column(String)
     usage = Column(String)
-    defined_in = Column(Text)
     status = Column(Text)
     content_type = Column(Text)
     content = Column(Text)
-    type = Column(Text)
 
     __table_args__ = (
         CheckConstraint(
@@ -27,6 +27,7 @@ class DbMaterial(Base):
             name='type_check'
         ),
     )
+
 
 # Pydantic schemas were required by the environment 
 # Also Pydantic Models make endpoints developement more managable and scalable
@@ -45,10 +46,30 @@ class DbMaterialSchema(BaseModel):
     status: str
     content_type: str = Field(..., description="Type of the material")
     content: str
+    override: Optional[bool]
 
     class Config:
         from_attributes = True
 # tables are created in project initialization
+
+    @classmethod
+    def from_orm_with_defaults(cls, db_material: DbMaterial):
+        # Convert from SQLAlchemy model to Pydantic schema, filling in missing fields
+        return cls(
+            id=db_material.id,
+            name=db_material.name,
+            version=db_material.version,
+            usage=db_material.usage,
+            status=db_material.status,
+            content_type=db_material.content_type,
+            content=db_material.content,
+            # Default values for fields not present in the SQLAlchemy model
+            usage_examples=[], 
+            type=AssetType.MATERIAL,
+            default_status=AssetStatus.ENABLED,
+            defined_in=AssetLocation.PROJECT_DIR,
+            override = False # because it's retrieved from databae (?)always(?)
+        )
 
     def model_dump_filtered(self, model_class: DeclarativeMeta) -> dict:
         """Dump the model to a dictionary, filtering to include only fields from sqlalchemy model."""

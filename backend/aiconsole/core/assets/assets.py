@@ -27,7 +27,7 @@ from aiconsole.core.assets.fs.project_asset_exists_fs import project_asset_exist
 from aiconsole.core.assets.fs.save_asset_to_fs import save_asset_to_fs
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
-from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.project.paths import get_project_assets_directory, get_project_directory
 from aiconsole.core.settings.settings import settings
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
@@ -55,8 +55,18 @@ class Assets:
         )
         self.observer.start()
 
+        self.db_observer = watchdog.observers.Observer()
+
+        self.db_observer.schedule(
+            BatchingWatchDogHandler(self.reload, extension=".db"),
+            get_project_directory(),
+            recursive=True,
+        )
+        self.db_observer.start()
+
     def stop(self):
         self.observer.stop()
+        self.db_observer.stop()
 
     def all_assets(self) -> list[Asset]:
         """
