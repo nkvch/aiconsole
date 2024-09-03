@@ -1,19 +1,17 @@
-from http.client import OK
-from typing import List, Optional, cast
+from typing import List,  cast
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import JSON, create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import  create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from aiconsole.api.endpoints.materials.material import get_default_content_for_type
+from aiconsole.api.utils.asset_get import asset_get
+from aiconsole.backend.aiconsole.core.assets.materials.db_model import DbMaterialSchema, DbMaterialUpdateSchema
 from aiconsole.core.adapters.material import MaterialWithStatus
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import MaterialContentType
-from aiconsole.core.assets.types import AssetLocation, AssetStatus
+from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import get_project_directory
 from aiconsole.core.assets.materials.db_crud import (
-    DbMaterialSchema,
-    DbMaterialUpdateSchema,
     _create_material_db, 
     _delete_material_db, 
     _get_material_db, 
@@ -44,15 +42,25 @@ def get_db(project_directory: str = Depends(get_project_directory)):
 
 # API Endpoints
 @router.post("/{material_id}")
-def create_material_db(amterial_id: str, material: DbMaterialSchema, db: Session = Depends(get_db)):
-    db_material = _create_material_db(db, material)
+def create_material_db(material_id: str, material: DbMaterialSchema, db: Session = Depends(get_db)):
+     _create_material_db(db, material)
 
 # This method mimicks the previous method from material.py. It is accessed with name='new' when creating new material
 @router.get("/{material_id}")
-def read_material(material_id: str, location='', type = 'static_text', db: Session = Depends(get_db)):
-    if material_id == "new":
-        material = MaterialWithStatus(
-            id="new_material",
+async def read_material(material_id: str, request: Request, db: Session = Depends(get_db)):
+    type = cast(MaterialContentType, request.query_params.get("type", ""))
+    location_param = request.query_params.get("location", None)
+    location = AssetLocation(location_param) if location_param else None
+    print("type: ", type)
+    print("location: ", location)
+
+    if material_id == "new" or location == AssetLocation.AICONSOLE_CORE or location is None:
+        return await asset_get(
+        request, 
+        AssetType.MATERIAL, 
+        material_id, 
+        lambda: MaterialWithStatus(
+            id="new_" + get_material_content_name(type).lower(),
             name="New " + get_material_content_name(type),
             content_type=type,
             usage="",
@@ -61,13 +69,15 @@ def read_material(material_id: str, location='', type = 'static_text', db: Sessi
             defined_in=AssetLocation.PROJECT_DIR,
             override=False,
             content=get_default_content_for_type(type),
+            )
         )
-        material = JSONResponse(material.model_dump(exclude_none=True))
-    else:
+
+    elif location == AssetLocation.PROJECT_DIR:  
         material = _get_material_db(db, material_id)
         if material is None:
-            raise HTTPException(status_code=404, detail="Material not found")
-        return material
+            raise HTTPException(status_code=404, detail="Material not found")    
+    
+    return material
 
 @router.get("/", response_model=List[DbMaterialSchema])
 def read_materials_db(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):

@@ -1,10 +1,9 @@
 from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.inspection import inspect
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from pydantic import BaseModel, Field, validator
-from typing import Optional
-
-from aiconsole.core.project.paths import get_project_directory, get_project_directory_safe
+from typing import List, Optional
 
 # sqlalchemy model is created based on json model already existing in the project
 Base = declarative_base()
@@ -16,11 +15,11 @@ class DbMaterial(Base):
     name = Column(Integer, unique=True, index=True)
     version = Column(String)
     usage = Column(String)
-    usage_examples = Column(Text)
     defined_in = Column(Text)
     status = Column(Text)
     content_type = Column(Text)
     content = Column(Text)
+    type = Column(Text)
 
     __table_args__ = (
         CheckConstraint(
@@ -29,4 +28,68 @@ class DbMaterial(Base):
         ),
     )
 
+# Pydantic schemas were required by the environment 
+# Also Pydantic Models make endpoints developement more managable and scalable
+# ChatGPT advised me to create separate schema for patch method. 
+# All fields are optional there and only non-None are used to update
+
+class DbMaterialSchema(BaseModel):
+    id: Optional[str] = Field(None, description="Primary key")
+    name: str = Field(..., description="Unique name of the material")
+    version: str
+    usage: Optional[str] = None
+    usage_examples: Optional[List[str]] = None
+    defined_in: Optional[str] = None
+    type: Optional[str] = 'material'
+    default_status: str
+    status: str
+    content_type: str = Field(..., description="Type of the material")
+    content: str
+
+    class Config:
+        from_attributes = True
 # tables are created in project initialization
+
+    def model_dump_filtered(self, model_class: DeclarativeMeta) -> dict:
+        """Dump the model to a dictionary, filtering to include only fields from sqlalchemy model."""
+        allowed_fields = {c.key for c in inspect(model_class).mapper.column_attrs}
+        model_dict = self.model_dump(by_alias=True)
+        filtered_dict = {k: v for k, v in model_dict.items() if k in allowed_fields}
+        return filtered_dict
+
+
+    @validator('content_type')
+    def validate_content_type(cls, value):
+        allowed_types = ['static_text', 'dynamic_text', 'api']
+        if value not in allowed_types:
+            raise ValueError(f"Invalid content_type: '{value}'. Must be one of {allowed_types}.")
+        return value
+
+    @validator('id', always=True)
+    def validate_id(cls, value):
+        if value is None:
+            raise ValueError("id must be provided.")
+        return value
+
+    @validator('name')
+    def validate_name(cls, value):
+        if len(value) == 0:
+            raise ValueError("name must not be empty.")
+        return value
+    
+class DbMaterialUpdateSchema(BaseModel):
+    id: Optional[str] = None
+    name: Optional[str] = None
+    version: Optional[str] = None
+    usage: Optional[str] = None
+    usage_examples: Optional[List[str]] = None
+    defined_in: Optional[str] = None
+    type: Optional[str] = None
+    default_status: Optional[str] = None
+    status: Optional[str] = None
+    content_type: Optional[str] = None
+    content: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+

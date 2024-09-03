@@ -175,6 +175,6 @@ def fibonacci(n):
 #     return await asset_exists(AssetType.MATERIAL, request, asset_id)
 
 
-@router.get("/{asset_id}/path")
-async def material_path(request: Request, asset_id: str):
-    return asset_path(AssetType.MATERIAL, request, asset_id)
+# @router.get("/{asset_id}/path")
+# async def material_path(request: Request, asset_id: str):
+#     return asset_path(AssetType.MATERIAL, request, asset_id)
