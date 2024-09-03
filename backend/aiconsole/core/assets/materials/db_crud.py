@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 
 from sqlalchemy.orm import sessionmaker, Session
+from aiconsole.core.assets.types import AssetLocation
 from aiconsole.core.assets.materials.db_model import DbMaterial
 
 # Pydantic schemas were required by the environment 
@@ -15,7 +16,7 @@ class DbMaterialSchema(BaseModel):
     name: str = Field(..., description="Unique name of the material")
     version: str
     usage: Optional[str] = None
-    usage_examples: str
+    usage_examples: Optional[str] = None
     defined_in: Optional[str] = None
     type: Optional[str] = 'material'
     default_status: str
@@ -69,8 +70,8 @@ def _create_material_db(db: Session, material: DbMaterialSchema):
     db.refresh(db_material)
     return db_material
 
-def _get_material_db(db: Session, name: str):
-    return db.query(DbMaterial).filter(DbMaterial.name == name).first()
+def _get_material_db(db: Session, id: str):
+    return db.query(DbMaterial).filter(DbMaterial.id == id).first()
 
 def _get_materials_db(db: Session, skip: int = 0, limit: int = 10):
     return db.query(DbMaterial).offset(skip).limit(limit).all()
@@ -83,8 +84,8 @@ def _update_material_db(db: Session, name: str, content: str):
         db.refresh(db_material)
     return db_material
 
-def _delete_material_db(db: Session, name: str):
-    db_material = db.query(DbMaterial).filter(DbMaterial.name == name).first()
+def _delete_material_db(db: Session, id: str):
+    db_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
     if db_material:
         db.delete(db_material)
         db.commit()
@@ -120,3 +121,16 @@ def _set_material_status(db: Session, material_id: str, status: str):
     db.commit()
     db.refresh(db_material)
     return db_material
+
+def _material_exists(db: Session, location:AssetLocation, material_id: str) -> bool:
+    if material_id == 'new':
+        return False
+    
+    # FIXME this logic is simplified.
+    # Focus was on database - here called PROJECT_DIR which is inaccurate
+    if location == AssetLocation.AICONSOLE_CORE:
+        return True
+    elif location == AssetLocation.PROJECT_DIR:
+        material = _get_material_db(db, material_id)
+
+    return (material is not None)

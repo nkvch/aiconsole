@@ -18,6 +18,7 @@ from aiconsole.core.assets.materials.db_crud import (
     _delete_material_db, 
     _get_material_db, 
     _get_materials_db,
+    _material_exists,
     _patch_material_db,
     _set_material_status, 
     _update_material_db
@@ -42,15 +43,14 @@ def get_db(project_directory: str = Depends(get_project_directory)):
         db.close()
 
 # API Endpoints
-@router.post("/", response_model=DbMaterialSchema)
-def create_material_db(material: DbMaterialSchema, db: Session = Depends(get_db)):
+@router.post("/{material_id}")
+def create_material_db(amterial_id: str, material: DbMaterialSchema, db: Session = Depends(get_db)):
     db_material = _create_material_db(db, material)
-    return db_material
 
 # This method mimicks the previous method from material.py. It is accessed with name='new' when creating new material
-@router.get("/{name}")
-def read_material(name: str, location='', type = 'static_text', db: Session = Depends(get_db)):
-    if name == "new":
+@router.get("/{material_id}")
+def read_material(material_id: str, location='', type = 'static_text', db: Session = Depends(get_db)):
+    if material_id == "new":
         material = MaterialWithStatus(
             id="new_material",
             name="New " + get_material_content_name(type),
@@ -64,7 +64,7 @@ def read_material(name: str, location='', type = 'static_text', db: Session = De
         )
         material = JSONResponse(material.model_dump(exclude_none=True))
     else:
-        material = _get_material_db(db, name)
+        material = _get_material_db(db, material_id)
         if material is None:
             raise HTTPException(status_code=404, detail="Material not found")
         return material
@@ -80,37 +80,43 @@ def update_material_db(name: str, content: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Material not found")
     return db_material
 
-@router.delete("/{name}", response_model=DbMaterialSchema)
-def delete_material_db(name: str, db: Session = Depends(get_db)):
-    db_material = _delete_material_db(db, name)
+@router.delete("/{material_id}", response_model=DbMaterialSchema)
+def delete_material_db(material_id: str, db: Session = Depends(get_db)):
+    db_material = _delete_material_db(db, material_id)
     if db_material is None:
         raise HTTPException(status_code=404, detail="Material not found")
-    return db_material
+    return JSONResponse({"status": "ok"})
 
-@router.patch("/{name}", response_model=DbMaterialSchema)
+@router.patch("/{name}")
 def patch_material_db(name: str, material_update: DbMaterialUpdateSchema, db: Session = Depends(get_db)):
-    db_material = _patch_material_db(db, name, material_update)
-    if db_material is None:
+    rename = _patch_material_db(db, name, material_update)
+    if rename is None:
         raise HTTPException(status_code=404, detail="Material not found")
-    return db_material
+        
 
 @router.post("/materials/{id}/status-change")
-async def change_material_status(
-    id: str,
-    request: Request,
-    db: Session = Depends(get_db)
-):
+async def change_material_status(id: str, request: Request, db: Session = Depends(get_db)):
     data = await request.json()
-    
     status = data.get("status")
-
     if not status:
         raise HTTPException(status_code=400, detail="Status field is required")
 
     db_material = _set_material_status(db, id, status)
     
     return {
-        "id": db_material.id,
-        "name": db_material.name,
+        # "id": db_material.id,
+        # "name": db_material.name,
         "status": db_material.status
     }
+
+@router.get("/{material_id}/exists")
+def material_exists(request: Request, material_id: str, db: Session = Depends(get_db)):
+    location_param = request.query_params.get("location", None)
+    location = AssetLocation(location_param) if location_param else None
+
+    if not location:
+        raise HTTPException(status_code=400, detail="Location not specified")
+    
+    exists = _material_exists(db, location, material_id)
+
+    return JSONResponse({"exists": exists})
