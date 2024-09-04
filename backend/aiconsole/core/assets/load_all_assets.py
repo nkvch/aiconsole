@@ -8,7 +8,7 @@ from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
-    get_project_assets_directory,
+    get_project_assets_directory
 )
 from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
 

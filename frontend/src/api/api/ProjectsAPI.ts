@@ -50,6 +50,17 @@ const getInitialPath = async () =>
     directory: string;
   };
 
+const initDataBase = async (path: string) => 
+(
+  await ky
+      .post(`${getBaseURL()}/api/projects/init_database?directory=${encodeURIComponent(path)}`, {
+      hooks: API_HOOKS,
+      timeout: false,
+    })
+    .json()) as {
+  directory: string;
+};
+
 const getCurrentProject = () => ky.get(`${getBaseURL()}/api/projects/current`, { hooks: API_HOOKS });
 
 async function getRecentProjects(): Promise<RecentProject[]> {
@@ -71,4 +82,5 @@ export const ProjectsAPI = {
   isProjectDirectory,
   getCurrentProject,
   getInitialPath,
+  initDataBase
 };

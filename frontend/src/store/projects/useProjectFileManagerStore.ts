@@ -51,6 +51,10 @@ export const useProjectFileManagerStore = create<FileManagerStore>((set, get) =>
       await ProjectsAPI.chooseProject(path);
     }
 
+    if (mode == ProjectModalMode.OPEN_NEW || mode == ProjectModalMode.OPEN_EXISTING) {
+      await ProjectsAPI.initDataBase(path)
+    }
+
     set({ projectModalMode: mode });
   },
 

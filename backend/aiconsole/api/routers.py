@@ -29,6 +29,7 @@ from aiconsole.api.endpoints import (
     projects,
     settings,
     ws,
+
 )
 
 app_router = APIRouter()

@@ -14,11 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import create_engine
 
 from aiconsole.api.endpoints.projects.registry import project_directory
 from aiconsole.api.endpoints.projects.services import ProjectDirectory
+from aiconsole.core.assets.materials.db_model import Base
 
 router = APIRouter()
 
@@ -53,3 +56,25 @@ async def switch_project_endpoint(
         await project_directory.switch_or_save_project(params.directory, background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail={"message": str(object=e), "display": False})
+
+
+# This endpoint is accessed when user chooses to either:
+# 1. open existing project
+# 2. create a new one
+# see: aiconsole\frontend\src\store\projects\useProjectFileManagerStore.ts
+# it creates the database in project directory and initializes tables
+@router.post("/init_database")
+async def init_database(directory: str):
+    # Ensure directory is provided
+    if not directory:
+        raise HTTPException(status_code=400, detail="Directory path is required.")
+    
+    # Create the directory if it doesn't exist
+    os.makedirs(directory, exist_ok=True)
+
+    db_path = os.path.join(directory, "materials.db")
+    engine = create_engine(f"sqlite:///{db_path}")
+
+    Base.metadata.create_all(bind=engine)
+
+    return {"directory": directory}

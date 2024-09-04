@@ -127,7 +127,7 @@ async function doesEdibleExist(
 }
 
 async function saveNewEditableObject(editableObjectType: EditableObjectType, asset_id: string, asset: Asset) {
-  return await ky.post(`${getBaseURL()}/api/${editableObjectType}s/${asset_id}`, {
+  return await ky.post(`${getBaseURL()}/api/${editableObjectType}s/${encodeURIComponent(asset_id)}`, {
     json: { ...asset },
     timeout: 60000,
     hooks: API_HOOKS,
