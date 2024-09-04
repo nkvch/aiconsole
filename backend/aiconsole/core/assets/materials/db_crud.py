@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import AssetLocation
-from aiconsole.core.assets.materials.db_model import DbMaterial, DbMaterialUpdateSchema
+from aiconsole.core.assets.materials.db_model import DbMaterial
 
 
 # CRUD operations
@@ -36,7 +36,7 @@ def _delete_material_db(db: Session, id: str):
         db.commit()
     return db_material
 
-def _patch_material_db(db: Session, old_id: str, material_update: DbMaterialUpdateSchema):
+def _patch_material_db(db: Session, old_id: str, material_update: Material):
     db_material = db.query(DbMaterial).filter(DbMaterial.id == old_id).first()
 
     if db_material is None:
@@ -63,12 +63,11 @@ def _patch_material_db(db: Session, old_id: str, material_update: DbMaterialUpda
 
 def _set_material_status(db: Session, material_id: str, status: str):
     db_material = db.query(DbMaterial).filter(DbMaterial.id == material_id).first()
-    if db_material is None:
-        raise HTTPException(status_code=404, detail="Material not found")
-    
-    db_material.status = status
-    db.commit()
-    db.refresh(db_material)
+    if db_material is not None:
+        db_material.status = status
+        db.commit()
+        db.refresh(db_material)
+
     return db_material
 
 def _material_exists(db: Session, location:AssetLocation, material_id: str) -> bool:

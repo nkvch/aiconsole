@@ -3,6 +3,8 @@ from sqlalchemy import Boolean, CheckConstraint, Column, Integer, String, Text, 
 from sqlalchemy.ext.declarative import declarative_base
 from typing import List, Optional
 
+from aiconsole.core.assets.types import AssetType
+
 # sqlalchemy model is created based on json model already existing in the project
 Base = declarative_base()
 
@@ -23,21 +25,4 @@ class DbMaterial(Base):
             name='type_check'
         ),
     )
-    
-class DbMaterialUpdateSchema(BaseModel):
-    id: Optional[str] = None
-    name: Optional[str] = None
-    version: Optional[str] = None
-    usage: Optional[str] = None
-    usage_examples: Optional[List[str]] = None
-    defined_in: Optional[str] = None
-    type: Optional[str] = None
-    default_status: Optional[str] = None
-    status: Optional[str] = None
-    content_type: Optional[str] = None
-    content: Optional[str] = None
-    override: Optional[bool] = None
-
-    class Config:
-        from_attributes = True
 

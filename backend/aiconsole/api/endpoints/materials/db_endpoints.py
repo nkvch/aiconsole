@@ -8,9 +8,10 @@ from aiconsole.api.endpoints.materials.material import get_default_content_for_t
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.endpoints.registry import materials
 from aiconsole.api.endpoints.services import AssetWithGivenNameAlreadyExistError, Materials
+from aiconsole.api.utils.asset_status_change import asset_status_change
+from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.project import project
-from aiconsole.core.assets.materials.db_model import DbMaterialUpdateSchema
 from aiconsole.core.adapters.material import MaterialWithStatus
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
@@ -117,13 +118,15 @@ def delete_material_db(material_id: str, db: Session = Depends(get_db)):
 @router.patch("/{old_id}")
 async def patch_material_db(
         old_id: str, 
-        material_update: DbMaterialUpdateSchema, 
+        material_update: Material, 
         db: Session = Depends(get_db), 
         materials_service: Materials = Depends(materials)
     ):
 
     new_id:str = material_update.id
+    db_material = _get_material_db(db, new_id)
 
+    # check id conflicts
     if new_id != old_id:
         # check in project materials if no conflict
         materials:Assets = project.get_project_materials()
@@ -133,34 +136,27 @@ async def patch_material_db(
             raise HTTPException(status_code=404, detail="Material with given name already exists")
 
         # check in database if no conflict
-        if _get_material_db(db, new_id) is not None:
+        if db_material is not None:
             raise HTTPException(status_code=404, detail="Material with given name already exists in database")
-
-    if material_update.override:
-        try:
-            await materials_service.partially_update_material(material_id=old_id, material=material_update)
-        except AssetWithGivenNameAlreadyExistError:
-            raise HTTPException(status_code=400, detail="Material with given name already exists")
+        
+    if db_material is not None:
+        _patch_material_db(db, old_id, material_update)
     else:
-        material = _patch_material_db(db, old_id, material_update)
-        if material is None:
-            raise HTTPException(status_code=404, detail="Material not found in database")
+        await materials_service.partially_update_material(material_id=old_id, material=material_update)
         
 
 @router.post("/{material_id}/status-change")
-async def change_material_status(material_id: str, request: Request, db: Session = Depends(get_db)):
-    data = await request.json()
+async def change_material_status(material_id: str, body: StatusChangePostBody, db: Session = Depends(get_db)):
+    data = body.model_dump()
     status = data.get("status")
     if not status:
         raise HTTPException(status_code=400, detail="Status field is required")
 
     db_material = _set_material_status(db, material_id, status)
-    
-    return {
-        # "id": db_material.id,
-        # "name": db_material.name,
-        "status": db_material.status
-    }
+    if db_material is not None:
+        return JSONResponse({"status": "ok"})
+    else:
+        return await asset_status_change(AssetType.MATERIAL, material_id, body)
 
 @router.get("/{material_id}/exists")
 def material_exists(request: Request, material_id: str, db: Session = Depends(get_db)):
