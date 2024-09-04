@@ -55,8 +55,8 @@ class Assets:
         )
         self.observer.start()
 
+        # without it the materials are not refreshing
         self.db_observer = watchdog.observers.Observer()
-
         self.db_observer.schedule(
             BatchingWatchDogHandler(self.reload, extension=".db"),
             get_project_directory(),

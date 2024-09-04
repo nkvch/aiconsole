@@ -10,10 +10,10 @@ from aiconsole.api.endpoints.registry import materials
 from aiconsole.api.endpoints.services import AssetWithGivenNameAlreadyExistError, Materials
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.project import project
-from aiconsole.core.assets.materials.db_model import DbMaterialSchema, DbMaterialUpdateSchema
+from aiconsole.core.assets.materials.db_model import DbMaterialUpdateSchema
 from aiconsole.core.adapters.material import MaterialWithStatus
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
-from aiconsole.core.assets.materials.material import MaterialContentType
+from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import get_project_directory
 from aiconsole.core.assets.materials.db_crud import (
@@ -23,8 +23,7 @@ from aiconsole.core.assets.materials.db_crud import (
     _get_materials_db,
     _material_exists,
     _patch_material_db,
-    _set_material_status, 
-    _update_material_db
+    _set_material_status
 )
 
 # fastAPI dependency uses current project directory path to initialize connection to the right database
@@ -55,7 +54,7 @@ def get_db_session(project_directory: str) -> Session:
 
 # API Endpoints
 @router.post("/{material_id}")
-def create_material_db(material_id: str, material: DbMaterialSchema, db: Session = Depends(get_db), materials_service: Materials = Depends(materials)):
+def create_material_db(material_id: str, material: Material, db: Session = Depends(get_db), materials_service: Materials = Depends(materials)):
     materials:Assets = project.get_project_materials()
     try:
         materials_service._validate_existance(materials, material_id)
@@ -111,15 +110,7 @@ def read_all_materials(db: Session = Depends(get_db)):
         ]
     )
 
-
-@router.put("/{name}", response_model=DbMaterialSchema)
-def update_material_db(name: str, content: str, db: Session = Depends(get_db)):
-    db_material = _update_material_db(db, name, content)
-    if db_material is None:
-        raise HTTPException(status_code=404, detail="Material not found")
-    return db_material
-
-@router.delete("/{material_id}", response_model=DbMaterialSchema)
+@router.delete("/{material_id}", response_model=Material)
 def delete_material_db(material_id: str, db: Session = Depends(get_db)):
     db_material = _delete_material_db(db, material_id)
     if db_material is None:

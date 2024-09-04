@@ -2,12 +2,13 @@ from typing import List
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
+from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import AssetLocation
-from aiconsole.core.assets.materials.db_model import DbMaterial, DbMaterialSchema, DbMaterialUpdateSchema
+from aiconsole.core.assets.materials.db_model import DbMaterial, DbMaterialUpdateSchema
 
 
 # CRUD operations
-def _create_material_db(db: Session, material: DbMaterialSchema):
+def _create_material_db(db: Session, material: Material):
     db_material = DbMaterial(**material.model_dump_filtered(DbMaterial))
     db.add(db_material)
     db.commit()
@@ -17,24 +18,16 @@ def _create_material_db(db: Session, material: DbMaterialSchema):
 def _get_material_db(db: Session, id: str):
     orm_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
     if orm_material is not None:
-        return DbMaterialSchema.from_orm_with_defaults(orm_material)
+        return Material.from_orm_with_defaults(orm_material)
     else: 
         return orm_material
 
 def _get_materials_db(db: Session, skip: int = 0, limit: int = 100):
     orm_materials: List[DbMaterial] = db.query(DbMaterial).offset(skip).limit(limit).all()
     return [
-        DbMaterialSchema.from_orm_with_defaults(material) 
+        Material.from_orm_with_defaults(material) 
         for material in orm_materials
         ]
-
-def _update_material_db(db: Session, name: str, content: str):
-    db_material = db.query(DbMaterial).filter(DbMaterial.name == name).first()
-    if db_material:
-        db_material.content = content
-        db.commit()
-        db.refresh(db_material)
-    return db_material
 
 def _delete_material_db(db: Session, id: str):
     db_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
@@ -52,10 +45,10 @@ def _patch_material_db(db: Session, id: str, material_update: DbMaterialUpdateSc
     # Update only the fields provided in the request
     if material_update.name is not None:
         db_material.name = material_update.name
-    if material_update.material_type is not None:
-        db_material.material_type = material_update.material_type
-    if material_update.enabled is not None:
-        db_material.enabled = material_update.enabled
+    if material_update.content_type is not None:
+        db_material.content_type = material_update.content_type
+    if material_update.status is not None:
+        db_material.status = material_update.status
     if material_update.usage is not None:
         db_material.usage = material_update.usage
     if material_update.content is not None:

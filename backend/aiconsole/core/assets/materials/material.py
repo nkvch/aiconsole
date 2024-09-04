@@ -18,6 +18,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from sqlalchemy.inspection import inspect
+from sqlalchemy.ext.declarative import DeclarativeMeta
+from aiconsole.core.assets.materials.db_model import DbMaterial
 from aiconsole.core.assets.materials.documentation_from_code import (
     documentation_from_code,
 )
@@ -126,6 +129,32 @@ class Material(Asset):
             await internal_events().emit(MaterialRenderErrorEvent(), details=f"Error in API material `{self.id}`")
             error_details = RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
             raise ValueError("Error in Python API material", error_details)
+        
+    @classmethod
+    def from_orm_with_defaults(cls, db_material: DbMaterial):
+        # Convert from SQLAlchemy model to Pydantic schema, filling in missing fields
+        return cls(
+            id=db_material.id,
+            name=db_material.name,
+            version=db_material.version,
+            usage=db_material.usage,
+            status=db_material.status,
+            content_type=db_material.content_type,
+            content=db_material.content,
+            # Default values for fields not present in the SQLAlchemy model
+            usage_examples=[], 
+            type=AssetType.MATERIAL,
+            default_status=AssetStatus.ENABLED,
+            defined_in=AssetLocation.PROJECT_DIR,
+            override = False # because it's retrieved from databae (?)always(?)
+        )
+    
+    def model_dump_filtered(self, model_class: DeclarativeMeta) -> dict:
+        """Dump the model to a dictionary, filtering to include only fields from sqlalchemy model."""
+        allowed_fields = {c.key for c in inspect(model_class).mapper.column_attrs}
+        model_dict = self.model_dump(by_alias=True)
+        filtered_dict = {k: v for k, v in model_dict.items() if k in allowed_fields}
+        return filtered_dict
 
 
 class MaterialWithStatus(Material):
