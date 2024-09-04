@@ -36,13 +36,15 @@ def _delete_material_db(db: Session, id: str):
         db.commit()
     return db_material
 
-def _patch_material_db(db: Session, id: str, material_update: DbMaterialUpdateSchema):
-    db_material = db.query(DbMaterial).filter(DbMaterial.id == id).first()
+def _patch_material_db(db: Session, old_id: str, material_update: DbMaterialUpdateSchema):
+    db_material = db.query(DbMaterial).filter(DbMaterial.id == old_id).first()
 
     if db_material is None:
         return None
 
     # Update only the fields provided in the request
+    if material_update.id is not None:
+        db_material.id = material_update.id
     if material_update.name is not None:
         db_material.name = material_update.name
     if material_update.content_type is not None:
@@ -81,24 +83,3 @@ def _material_exists(db: Session, location:AssetLocation, material_id: str) -> b
         material = _get_material_db(db, material_id)
 
     return (material is not None)
-
-# def _preview_material(material: Material):
-#     content_context = ContentEvaluationContext(
-#         chat=Chat(
-#             id="chat",
-#             name="",
-#             last_modified=datetime.now(),
-#             title_edited=False,
-#             message_groups=[],
-#         ),
-#         agent=create_user_agent(),
-#         gpt_mode=SPEED_GPT_MODE,
-#         relevant_materials=[],
-#     )
-
-#     try:
-#         rendered_material = await material.render(content_context)
-#     except ValueError as e:
-#         return JSONResponse(e.args[1].model_dump(exclude_none=True))
-
-#     return JSONResponse(rendered_material.model_dump(exclude_none=True))

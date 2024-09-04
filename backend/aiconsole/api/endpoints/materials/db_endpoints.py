@@ -74,30 +74,27 @@ async def read_material(material_id: str, request: Request, db: Session = Depend
     location_param = request.query_params.get("location", None)
     location = AssetLocation(location_param) if location_param else None
 
-    if material_id == "new" or location == AssetLocation.AICONSOLE_CORE:
-        return await asset_get(
-        request, 
-        AssetType.MATERIAL, 
-        material_id, 
-        lambda: MaterialWithStatus(
-            id="new_" + get_material_content_name(type).lower(),
-            name="New " + get_material_content_name(type),
-            content_type=type,
-            usage="",
-            usage_examples=[],
-            status=AssetStatus.ENABLED,
-            defined_in=AssetLocation.PROJECT_DIR,
-            override=False,
-            content=get_default_content_for_type(type),
-            )
-        )
-
-    elif location == AssetLocation.PROJECT_DIR or location is None:  
+    if location == AssetLocation.PROJECT_DIR or location is None:  
         material = _get_material_db(db, material_id)
-        if material is None:
-            raise HTTPException(status_code=404, detail="Material not found in database")    
+        if material is not None:
+            return material
     
-    return material
+    return await asset_get(
+    request, 
+    AssetType.MATERIAL, 
+    material_id, 
+    lambda: MaterialWithStatus(
+        id="new_" + get_material_content_name(type).lower(),
+        name="New " + get_material_content_name(type),
+        content_type=type,
+        usage="",
+        usage_examples=[],
+        status=AssetStatus.ENABLED,
+        defined_in=AssetLocation.PROJECT_DIR,
+        override=False,
+        content=get_default_content_for_type(type),
+        )
+    )
 
 @router.get("/")
 def read_all_materials(db: Session = Depends(get_db)):
@@ -117,11 +114,37 @@ def delete_material_db(material_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Material not found")
     return JSONResponse({"status": "ok"})
 
-@router.patch("/{material_id}")
-def patch_material_db(material_id: str, material_update: DbMaterialUpdateSchema, db: Session = Depends(get_db)):
-    rename = _patch_material_db(db, material_id, material_update)
-    if rename is None:
-        raise HTTPException(status_code=404, detail="Material not found")
+@router.patch("/{old_id}")
+async def patch_material_db(
+        old_id: str, 
+        material_update: DbMaterialUpdateSchema, 
+        db: Session = Depends(get_db), 
+        materials_service: Materials = Depends(materials)
+    ):
+
+    new_id:str = material_update.id
+
+    if new_id != old_id:
+        # check in project materials if no conflict
+        materials:Assets = project.get_project_materials()
+        try:
+            materials_service._validate_existance(materials, new_id)
+        except AssetWithGivenNameAlreadyExistError:
+            raise HTTPException(status_code=404, detail="Material with given name already exists")
+
+        # check in database if no conflict
+        if _get_material_db(db, new_id) is not None:
+            raise HTTPException(status_code=404, detail="Material with given name already exists in database")
+
+    if material_update.override:
+        try:
+            await materials_service.partially_update_material(material_id=old_id, material=material_update)
+        except AssetWithGivenNameAlreadyExistError:
+            raise HTTPException(status_code=400, detail="Material with given name already exists")
+    else:
+        material = _patch_material_db(db, old_id, material_update)
+        if material is None:
+            raise HTTPException(status_code=404, detail="Material not found in database")
         
 
 @router.post("/{material_id}/status-change")

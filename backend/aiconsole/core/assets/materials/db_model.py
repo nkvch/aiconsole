@@ -36,6 +36,7 @@ class DbMaterialUpdateSchema(BaseModel):
     status: Optional[str] = None
     content_type: Optional[str] = None
     content: Optional[str] = None
+    override: Optional[bool] = None
 
     class Config:
         from_attributes = True
