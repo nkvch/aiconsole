@@ -20,6 +20,7 @@ import os
 import rtoml
 
 from aiconsole.core.assets.agents.agent import AICAgent
+from aiconsole.core.assets.fs.db.database import MaterialNotFoundError, MaterialsService
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
@@ -75,24 +76,7 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
     }
 
     if asset_type == AssetType.MATERIAL:
-        material = Material(
-            **params,
-            content_type=MaterialContentType(str(tomldoc["content_type"]).strip()),
-        )
-
-        if "content" in tomldoc:
-            material.content = str(tomldoc["content"]).strip()
-
-        if "content_static_text" in tomldoc and material.content_type == MaterialContentType.STATIC_TEXT:
-            material.content = str(tomldoc["content_static_text"]).strip()
-
-        if "content_dynamic_text" in tomldoc and material.content_type == MaterialContentType.DYNAMIC_TEXT:
-            material.content = str(tomldoc["content_dynamic_text"]).strip()
-
-        if "content_api" in tomldoc and material.content_type == MaterialContentType.API:
-            material.content = str(tomldoc["content_api"]).strip()
-
-        return material
+        return get_material(params, tomldoc)
 
     if asset_type == AssetType.AGENT:
         params["system"] = str(tomldoc["system"]).strip()
@@ -108,3 +92,73 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
         return agent
 
     raise Exception(f"Asset type {asset_type} not supported.")
+
+
+def get_material(params, tomldoc) -> Material:
+    material = Material(
+        **params,
+        content_type=MaterialContentType(str(tomldoc["content_type"]).strip()),
+    )
+
+    if "content" in tomldoc:
+        material.content = str(tomldoc["content"]).strip()
+
+    if "content_static_text" in tomldoc and material.content_type == MaterialContentType.STATIC_TEXT:
+        material.content = str(tomldoc["content_static_text"]).strip()
+
+    if "content_dynamic_text" in tomldoc and material.content_type == MaterialContentType.DYNAMIC_TEXT:
+        material.content = str(tomldoc["content_dynamic_text"]).strip()
+
+    if "content_api" in tomldoc and material.content_type == MaterialContentType.API:
+        material.content = str(tomldoc["content_api"]).strip()
+
+    return material
+
+
+async def load_all_materials_for_project(project_id: str, service: MaterialsService) -> dict[str, list[Asset]]:
+    files = service.get_all_files(project_id)
+    materials: dict[str, list[Asset]] = {}
+
+    for file_name, file_contents in files:
+        tomldoc = rtoml.loads(file_contents)
+
+        params = {
+            "id": file_name,
+            "name": str(tomldoc.get("name", file_name)).strip(),
+            "version": str(tomldoc.get("version", "0.0.1")).strip(),
+            "defined_in": AssetLocation.PROJECT_DIR,
+            "usage": str(tomldoc["usage"]).strip(),
+            "usage_examples": tomldoc.get("usage_examples", []),
+            "default_status": AssetStatus(str(tomldoc.get("default_status", "enabled")).strip()),
+            "override": False,
+        }
+
+        asset = get_material(params, tomldoc)
+
+        if file_name not in materials:
+            materials[file_name] = []
+        materials[file_name].append(asset)
+
+    return materials
+
+
+async def load_material_for_project(service: MaterialsService, project_id: str, file_name: str) -> Asset:
+    file_contents = service.get_file(project_id, file_name)
+
+    if file_contents is None:
+        raise MaterialNotFoundError(f"Didn't find material: {file_name} for project: {project_id}")
+
+    tomldoc = rtoml.loads(file_contents)
+
+    params = {
+        "id": file_name,
+        "name": str(tomldoc.get("name", file_name)).strip(),
+        "version": str(tomldoc.get("version", "0.0.1")).strip(),
+        "defined_in": AssetLocation.PROJECT_DIR,
+        "usage": str(tomldoc["usage"]).strip(),
+        "usage_examples": tomldoc.get("usage_examples", []),
+        "default_status": AssetStatus(str(tomldoc.get("default_status", "enabled")).strip()),
+        "override": True,
+    }
+
+    return get_material(params, tomldoc)

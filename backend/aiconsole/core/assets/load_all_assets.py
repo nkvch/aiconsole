@@ -4,11 +4,16 @@ from pathlib import Path
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
 from aiconsole.core.assets.assets import Assets
-from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
+from aiconsole.core.assets.fs.db.database import MaterialsService
+from aiconsole.core.assets.fs.load_asset_from_fs import (
+    load_all_materials_for_project,
+    load_asset_from_fs,
+)
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
     get_project_assets_directory,
+    get_project_directory,
 )
 from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
 
@@ -50,3 +55,9 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
                 continue
 
     return _assets
+
+
+async def load_all_materials(service: MaterialsService) -> dict[str, list[Asset]]:
+    project_id = get_project_directory()
+
+    return await load_all_materials_for_project(str(project_id), service)

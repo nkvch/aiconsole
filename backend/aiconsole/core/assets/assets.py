@@ -21,13 +21,20 @@ import watchdog.observers
 
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import AssetsUpdatedServerMessage
-from aiconsole.core.assets.fs.delete_asset_from_fs import delete_asset_from_fs
+from aiconsole.core.assets.fs.db.database import MaterialsService
+from aiconsole.core.assets.fs.delete_asset_from_fs import (
+    delete_asset_from_fs,
+    delete_material,
+)
 from aiconsole.core.assets.fs.move_asset_in_fs import move_asset_in_fs
 from aiconsole.core.assets.fs.project_asset_exists_fs import project_asset_exists_fs
-from aiconsole.core.assets.fs.save_asset_to_fs import save_asset_to_fs
+from aiconsole.core.assets.fs.save_asset_to_fs import save_asset_to_fs, save_material
 from aiconsole.core.assets.types import Asset, AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
-from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.project.paths import (
+    get_project_assets_directory,
+    get_project_directory,
+)
 from aiconsole.core.settings.settings import settings
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
@@ -44,8 +51,10 @@ class Assets:
         self._suppress_notification_until: datetime.datetime | None = None
         self.asset_type = asset_type
         self._assets = {}
-
         self.observer = watchdog.observers.Observer()
+
+        if asset_type == AssetType.MATERIAL:
+            self.service = MaterialsService()
 
         get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
         self.observer.schedule(
@@ -76,8 +85,12 @@ class Assets:
         if asset.defined_in != AssetLocation.PROJECT_DIR and not create:
             raise Exception("Cannot save asset not defined in project.")
 
-        exists_in_project = project_asset_exists_fs(self.asset_type, asset.id)
-        old_exists = project_asset_exists_fs(self.asset_type, old_asset_id)
+        if asset.type == AssetType.MATERIAL:
+            exists_in_project = self.service.get_file(str(get_project_directory()), asset.id) is not None
+            old_exists = self.service.get_file(str(get_project_directory()), old_asset_id) is not None
+        else:
+            exists_in_project = project_asset_exists_fs(self.asset_type, asset.id)
+            old_exists = project_asset_exists_fs(self.asset_type, old_asset_id)
 
         if create and exists_in_project:
             create = False
@@ -87,11 +100,15 @@ class Assets:
 
         rename = False
         if create and old_asset_id and not exists_in_project and old_exists:
-            await move_asset_in_fs(asset.type, old_asset_id, asset.id)
+            if asset.type != AssetType.MATERIAL:
+                await move_asset_in_fs(asset.type, old_asset_id, asset.id)
             Assets.rename_asset(asset.type, old_asset_id, asset.id)
             rename = True
 
-        new_asset = await save_asset_to_fs(asset, old_asset_id)
+        if asset.type == AssetType.MATERIAL:
+            new_asset = await save_material(asset, str(get_project_directory()), old_asset_id, self.service)
+        else:
+            new_asset = await save_asset_to_fs(asset, old_asset_id)
 
         if asset.id not in self._assets:
             self._assets[asset.id] = []
@@ -112,12 +129,16 @@ class Assets:
         return rename
 
     async def delete_asset(self, asset_id):
+        print(f"Deleting asset with id: {asset_id}")
         self._assets[asset_id].pop(0)
 
         if len(self._assets[asset_id]) == 0:
             del self._assets[asset_id]
 
-        delete_asset_from_fs(self.asset_type, asset_id)
+        if self.asset_type == AssetType.MATERIAL:
+            delete_material(self.service, str(get_project_directory()), asset_id)
+        else:
+            delete_asset_from_fs(self.asset_type, asset_id)
 
         self._suppress_notification()
 
@@ -138,11 +159,17 @@ class Assets:
         return None
 
     async def reload(self, initial: bool = False):
-        from aiconsole.core.assets.load_all_assets import load_all_assets
+        from aiconsole.core.assets.load_all_assets import (
+            load_all_assets,
+            load_all_materials,
+        )
 
         _log.info(f"Reloading {self.asset_type}s ...")
 
-        self._assets = await load_all_assets(self.asset_type)
+        if self.asset_type == AssetType.MATERIAL:
+            self._assets = await load_all_materials(self.service)
+        else:
+            self._assets = await load_all_assets(self.asset_type)
 
         await connection_manager().send_to_all(
             AssetsUpdatedServerMessage(
