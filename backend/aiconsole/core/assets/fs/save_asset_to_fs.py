@@ -19,8 +19,12 @@ import shutil
 import tomlkit
 
 from aiconsole.core.assets.agents.agent import AICAgent
+from aiconsole.core.assets.fs.db.database import MaterialNotFoundError, MaterialsService
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
-from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
+from aiconsole.core.assets.fs.load_asset_from_fs import (
+    load_asset_from_fs,
+    load_material_for_project,
+)
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.types import Asset
 from aiconsole.core.project.paths import (
@@ -58,55 +62,7 @@ async def save_asset_to_fs(asset: Asset, old_asset_id: str) -> Asset:
 
         model_dump = asset.model_dump(exclude_none=True)
 
-        def make_sure_starts_and_ends_with_newline(s: str):
-            if not s.startswith("\n"):
-                s = "\n" + s
-
-            if not s.endswith("\n"):
-                s = s + "\n"
-
-            return s
-
-        doc = tomlkit.document()
-        doc.append("name", tomlkit.string(asset.name))
-        doc.append("version", tomlkit.string(asset.version))
-        doc.append("usage", tomlkit.string(asset.usage))
-        doc.append("usage_examples", tomlkit.item(asset.usage_examples))
-        doc.append("default_status", tomlkit.string(asset.default_status))
-
-        if isinstance(asset, Material):
-            material: Material = asset
-
-            doc.append("content_type", tomlkit.string(asset.content_type))
-
-            {
-                MaterialContentType.STATIC_TEXT: lambda: doc.append(
-                    "content_static_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.DYNAMIC_TEXT: lambda: doc.append(
-                    "content_dynamic_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.API: lambda: doc.append(
-                    "content_api",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-            }[asset.content_type]()
-
-        if isinstance(asset, AICAgent):
-            doc.append("system", tomlkit.string(asset.system))
-            doc.append("gpt_mode", tomlkit.string(asset.gpt_mode))
-            doc.append("execution_mode", tomlkit.string(asset.execution_mode))
+        doc = prepare_doc(asset)
 
         file.write(doc.as_string())
 
@@ -118,3 +74,87 @@ async def save_asset_to_fs(asset: Asset, old_asset_id: str) -> Asset:
             shutil.copy(old_file_path, new_file_path)
 
     return asset
+
+
+async def save_material(asset: Asset, project_id: str, old_file_name: str, service: MaterialsService) -> Asset:
+    try:
+        old_asset = await load_material_for_project(service, project_id, old_file_name)
+    except MaterialNotFoundError:
+        old_asset = None
+
+    if old_asset is not None:
+        current_version = old_asset.version
+    else:
+        current_version = "0.0.1"
+
+    # Parse version number
+    current_version_parts = current_version.split(".")
+
+    # Increment version number
+    current_version_parts[-1] = str(int(current_version_parts[-1]) + 1)
+
+    # Join version number
+    asset.version = ".".join(current_version_parts)
+
+    doc = prepare_doc(asset)
+
+    if old_asset is None:
+        service.add_file(project_id, asset.id, doc.as_string())
+    else:
+        service.edit_file(project_id, old_file_name, doc.as_string(), asset.id)
+
+    return asset
+
+
+def prepare_doc(asset: Asset):
+    def make_sure_starts_and_ends_with_newline(s: str):
+        if not s.startswith("\n"):
+            s = "\n" + s
+
+        if not s.endswith("\n"):
+            s = s + "\n"
+
+        return s
+
+    doc = tomlkit.document()
+    doc.append("name", tomlkit.string(asset.name))
+    doc.append("version", tomlkit.string(asset.version))
+    doc.append("usage", tomlkit.string(asset.usage))
+    doc.append("usage_examples", tomlkit.item(asset.usage_examples))
+    doc.append("default_status", tomlkit.string(asset.default_status))
+
+    if isinstance(asset, Material):
+        material: Material = asset
+
+        doc.append("content_type", tomlkit.string(asset.content_type))
+
+        {
+            MaterialContentType.STATIC_TEXT: lambda: doc.append(
+                "content_static_text",
+                tomlkit.string(
+                    make_sure_starts_and_ends_with_newline(material.content),
+                    multiline=True,
+                ),
+            ),
+            MaterialContentType.DYNAMIC_TEXT: lambda: doc.append(
+                "content_dynamic_text",
+                tomlkit.string(
+                    make_sure_starts_and_ends_with_newline(material.content),
+                    multiline=True,
+                ),
+            ),
+            MaterialContentType.API: lambda: doc.append(
+                "content_api",
+                tomlkit.string(
+                    make_sure_starts_and_ends_with_newline(material.content),
+                    multiline=True,
+                ),
+            ),
+        }[asset.content_type]()
+
+    if isinstance(asset, AICAgent):
+        doc.append("system", tomlkit.string(asset.system))
+        doc.append("gpt_mode", tomlkit.string(asset.gpt_mode))
+        doc.append("execution_mode", tomlkit.string(asset.execution_mode))
+
+    return doc
