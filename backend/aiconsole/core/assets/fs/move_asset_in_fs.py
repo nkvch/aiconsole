@@ -17,7 +17,7 @@
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
-from aiconsole.core.git.utils import commit_changes
+from aiconsole.core.git.utils import commit_async
 
 
 async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> None:
@@ -45,4 +45,4 @@ async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> N
             old_file_path.rename(new_file_path)
 
     if asset_type == AssetType.MATERIAL:
-        await commit_changes(path, f"moved material from {old_id} to {new_id}")
+        await commit_async(path, f"moved material from {old_id} to {new_id}")
