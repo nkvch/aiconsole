@@ -17,11 +17,13 @@
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.git.utils import commit_changes
 
 
 async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> None:
-    old_file_path = get_project_assets_directory(asset_type) / f"{old_id}.toml"
-    new_file_path = get_project_assets_directory(asset_type) / f"{new_id}.toml"
+    path = get_project_assets_directory(asset_type)
+    old_file_path = path / f"{old_id}.toml"
+    new_file_path = path / f"{new_id}.toml"
 
     # Check if the old file exists
     if not old_file_path.exists():
@@ -41,3 +43,6 @@ async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> N
         new_file_path = get_project_assets_directory(asset_type) / f"{new_id}{extension}"
         if old_file_path.exists():
             old_file_path.rename(new_file_path)
+
+    if asset_type == AssetType.MATERIAL:
+        await commit_changes(path, f"moved material from {old_id} to {new_id}")

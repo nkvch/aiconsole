@@ -16,6 +16,7 @@
 
 import os
 import sys
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -46,6 +47,8 @@ if TYPE_CHECKING:
 _materials: "assets.Assets | None" = None
 _agents: "assets.Assets | None" = None
 _project_initialized = False
+#todo: remove logger
+_log = logging.getLogger(__name__)
 
 
 async def _clear_project():
