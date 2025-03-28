@@ -13,20 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 from send2trash import send2trash
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
 from aiconsole.core.git.utils import commit_sync
 
-_log = logging.getLogger(__name__)
 
 def delete_asset_from_fs(asset_type: AssetType, id):
     """
     Delete a specific agent. Need to delete the agent file and the agent avatar file.
     """
-    _log.info(f"Deleting the material!!! {asset_type} {id}")
     extensions = [".toml", ".jpeg", ".jpg", ".png", ".gif", ".SVG"]
     # check if the file exists in project directory
     for extension in extensions:
