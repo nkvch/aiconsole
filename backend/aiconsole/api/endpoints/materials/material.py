@@ -36,6 +36,8 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.git.utils import get_changelog_async
 
 router = APIRouter()
 
@@ -114,6 +116,19 @@ def fibonacci(n):
 """.strip()
     else:
         raise ValueError("Invalid material content type")
+
+
+@router.get("/changelog")
+async def get_changelog():
+    """
+    API endpoint to get the changelog from a Git repository.
+    """
+    try:
+        path = get_project_assets_directory(AssetType.MATERIAL)
+        changelog = await get_changelog_async(path)
+        return JSONResponse(content={"changelog": changelog})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{material_id}")

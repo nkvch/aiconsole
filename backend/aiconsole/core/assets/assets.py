@@ -31,6 +31,7 @@ from aiconsole.core.project.paths import get_project_assets_directory
 from aiconsole.core.settings.settings import settings
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
+from aiconsole.core.git.utils import init_git_repo
 
 _log = logging.getLogger(__name__)
 
@@ -47,10 +48,13 @@ class Assets:
 
         self.observer = watchdog.observers.Observer()
 
-        get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
+        asset_dir = get_project_assets_directory(asset_type)
+        asset_dir.mkdir(parents=True, exist_ok=True)
+        if asset_type == AssetType.MATERIAL:
+            init_git_repo(asset_dir)
         self.observer.schedule(
             BatchingWatchDogHandler(self.reload),
-            get_project_assets_directory(asset_type),
+            asset_dir,
             recursive=True,
         )
         self.observer.start()
