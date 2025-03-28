@@ -18,6 +18,7 @@ def init_git_repo(directory: Path) -> None:
         except Exception as e:
             _log.error(f"Error: {e}")
 
+
 def commit_sync(directory: Path, message: str) -> None:
     try:
         repo = Repo(directory)
@@ -32,7 +33,37 @@ def commit_sync(directory: Path, message: str) -> None:
     except Exception as e:
         _log.error(f"Error: {e}")
 
+
 async def commit_async(directory: Path, message: str) -> None:
     """Commit changes in the given git repository asynchronously."""
     await asyncio.to_thread(commit_sync, directory, message)
 
+
+def commit_to_dict(commit):
+    """serializes commit data"""
+    return {
+        "commit": commit.hexsha[:7],
+        "author": commit.author.name,
+        "email": commit.author.email,
+        "date": commit.committed_datetime.isoformat(),
+        "message": commit.message.strip()
+    }
+
+
+def get_changelog_sync(directory: Path) -> list[dict]:
+    """
+    Synchronously retrieves the changelog for a material from a Git repository.
+    """
+    try:
+        repo = Repo(directory)
+        return [commit_to_dict(commit) for commit in repo.iter_commits()]
+
+    except GitCommandError as e:
+        raise RuntimeError(f"Git error: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to retrieve changelog: {e}")
+
+
+async def get_changelog_async(directory: Path) -> str:
+    """Asynchronous wrapper for get_changelog_sync"""
+    return await asyncio.to_thread(get_changelog_sync, directory)

@@ -36,6 +36,8 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.git.utils import get_changelog_async
 
 router = APIRouter()
 
@@ -178,3 +180,16 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.get("/changelog")
+async def get_changelog():
+    path = get_project_assets_directory(asset_type=AssetType.MATERIAL)
+    """
+    API endpoint to get the changelog from a Git repository.
+    """
+    try:
+        changelog = await get_changelog_async(path)
+        return JSONResponse(content={"changelog": changelog})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
