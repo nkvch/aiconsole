@@ -7,6 +7,8 @@ from git import GitCommandError, Repo
 _log = logging.getLogger(__name__)
 
 
+
+
 def init_git_repo(directory: Path) -> None:
     """Initialize a git repository in the given directory if it doesn't exist."""
     if not (directory / ".git").exists():
@@ -17,7 +19,7 @@ def init_git_repo(directory: Path) -> None:
             _log.warning(f"Warning: Failed to initialize git repository in {directory}: {e}")
         except Exception as e:
             _log.error(f"Error: {e}")
-
+            
 
 def commit_sync(directory: Path, message: str) -> None:
     try:
@@ -37,6 +39,7 @@ def commit_sync(directory: Path, message: str) -> None:
 async def commit_async(directory: Path, message: str) -> None:
     """Commit changes in the given git repository asynchronously."""
     await asyncio.to_thread(commit_sync, directory, message)
+
 
 
 def commit_to_dict(commit):
