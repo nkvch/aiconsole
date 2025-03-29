@@ -1,11 +1,7 @@
-from typing import Type
+from .languages import Python, AppleScript, MCPPythonCodeInterpreter
 
-from .base_code_interpreter import BaseCodeInterpreter
-from .language import LanguageStr
-from .languages.applescript import AppleScript
-from .languages.python import Python
-
-language_map: dict[LanguageStr, Type[BaseCodeInterpreter]] = {
+language_map = {
     "python": Python,
-    "applescript": AppleScript,
+    "python-mcp": MCPPythonCodeInterpreter,
+    "applescript": AppleScript
 }
