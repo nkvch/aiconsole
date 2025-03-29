@@ -38,6 +38,7 @@ import Tooltip from '../common/Tooltip';
 import { Icon } from '../common/icons/Icon';
 import { ActorAvatar } from '../editables/chat/ActorAvatar';
 import { Spinner } from '../editables/chat/Spinner';
+import { Checkbox } from '../common/Checkbox';
 
 const MAX_CHATS_TO_DISPLAY = 3;
 interface CounterItemProps {
@@ -56,9 +57,19 @@ const CounterItem = ({ icon, count, className }: CounterItemProps) => (
 export type ProjectCardProps = Omit<RecentProject, 'recent_chats' | 'incorrect_path'> & {
   recentChats: string[];
   incorrectPath: boolean;
+  selected?: boolean;
+  onSelect?: (selected: boolean) => void;
 };
 
-export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: ProjectCardProps) {
+export function ProjectCard({
+  name,
+  path,
+  recentChats,
+  incorrectPath,
+  stats,
+  selected = false,
+  onSelect,
+}: ProjectCardProps) {
   const chooseProject = useProjectStore((state) => state.chooseProject);
   const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
   const [isShowingContext, setIsShowingContext] = useState(false);
@@ -189,119 +200,92 @@ export function ProjectCard({ name, path, recentChats, incorrectPath, stats }: P
   );
 
   return (
-    <ContextMenu
-      options={incorrectPath ? contextMenuItemsIncorrectPath : contextMenuItems}
-      ref={triggerRef}
-      onOpenChange={handleOpenContextChange}
+    <div
+      className={cn(
+        'relative flex flex-col gap-[10px] rounded-[10px] border border-gray-800 bg-gray-900 p-[15px]',
+        'hover:border-gray-700 transition-colors cursor-pointer',
+        selected && 'border-blue-500',
+      )}
+      onClick={(e) => {
+        // Предотвращаем переход в проект при клике на чекбокс
+        if ((e.target as HTMLElement).closest('.checkbox-container')) {
+          return;
+        }
+        goToProjectChat(e as any);
+      }}
     >
-      <div
-        className={cn(
-          'border-2 border-gray-600 p-[30px] pb-[20px] rounded-[20px] w-full transition-bg duration-150  cursor-pointer bg-gray-900 hover:bg-project-item-gradient flex flex-col justify-between relative',
-          {
-            'bg-project-item-gradient': isShowingContext,
-            'opacity-50 hover:bg-gray-900 cursor-default': isProjectSwitchFetching,
-            group: !isProjectSwitchFetching,
-            'opacity-50': incorrectPath,
-          },
-        )}
-        onMouseDown={incorrectPath ? () => openModal(ProjectModalMode.LOCATE, path, name) : goToProjectChat}
-      >
-        <div className="flex flex-row items-center w-full mb-[15px]">
-          <div className="flex-grow align-left h-[40px]">
-            {isEditing ? (
-              <input
-                className="outline-none h-full border border-gray-500 rounded-[4px] w-full bg-transparent px-[10px] py-[5px] text-white text-[22px] font-black"
-                value={inputText}
-                ref={inputRef}
-                onBlur={handleRename}
-                onKeyDown={handleKeyDown}
-                onChange={(e) => setInputText(e.target.value)}
-              />
-            ) : (
-              <div className="flex items-center gap-[10px]">
-                {incorrectPath && (
-                  <Tooltip
-                    label="We can't find the project"
-                    position="top"
-                    align="center"
-                    sideOffset={10}
-                    disableAnimation
-                    withArrow
-                  >
-                    <div>
-                      <Icon icon={AlertTriangle} width={24} height={24} className="text-gray-400" />
-                    </div>
-                  </Tooltip>
-                )}
-                <h3
-                  className={cn(
-                    'text-[22px] font-black transition-colors text-gray-400  group-hover:text-white duration-150',
-                    {
-                      'text-white': isShowingContext,
-                    },
-                  )}
-                >
-                  {name}
-                </h3>
-              </div>
-            )}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <div className="checkbox-container">
+            <Checkbox checked={selected} onChange={(checked) => onSelect?.(checked)} className="mt-1" />
           </div>
-
-          {!isEditing ? (
-            <Icon
-              icon={MoreVertical}
-              className={cn('min-h-[16px] min-w-[16px] ml-auto hidden group-hover:text-white group-hover:block', {
-                block: isShowingContext,
-              })}
-              width={20}
-              height={20}
-              onMouseDown={handleMoreIconClick}
-            />
-          ) : null}
-        </div>
-        <div className="relative flex flex-col gap-2.5 h-[87px]">
-          <div
-            className={cn(
-              'bg-project-item-gradient-2  w-[calc(100%+40px)] absolute -left-[20px] -right-[20px] top-0 bottom-[-5px] z-10 group-hover:hidden',
-              {
-                hidden: isShowingContext || projectModalMode !== ProjectModalMode.CLOSED,
-              },
-            )}
-          />
-          {recentChats?.map((command, index) =>
-            index < MAX_CHATS_TO_DISPLAY ? (
-              <div key={index} className="flex flex-row items-center gap-2 text-white text-[15px]">
-                <div className="flex-grow truncate">{command} </div>
-              </div>
-            ) : null,
-          )}
-        </div>
-
-        <div className="flex gap-2 justify-between w-full mt-[15px] mb-0">
-          {chats_count ? <CounterItem icon={MessageSquare} count={chats_count} className="text-purple-400" /> : null}
-          {materials_note_count ? <CounterItem icon={StickyNote} count={materials_note_count} /> : null}
-          {materials_dynamic_note_count ? <CounterItem icon={ScanText} count={materials_dynamic_note_count} /> : null}
-          {materials_python_api_count ? <CounterItem icon={Blocks} count={materials_python_api_count} /> : null}
-          {agents.count ? (
-            <div className="flex items-center text-[15px] text-gray-300">
-              <ActorAvatar actorType="agent" actorId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
-              <ActorAvatar
-                actorType="agent"
-                actorId={agents.agent_ids[1] || '2'}
-                type="extraSmall"
-                className="relative -left-[12px] mb-0"
-              />
-              <span className="-ml-[2px]">{agents.count}</span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-[10px]">
+              <span className="text-[15px] font-medium text-white">{name}</span>
+              {incorrectPath && (
+                <Tooltip label="Project path is incorrect">
+                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                </Tooltip>
+              )}
             </div>
-          ) : null}
+            <span className="text-[13px] text-gray-400">{path}</span>
+          </div>
         </div>
 
-        {isCurrentProjectFetching && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 z-30">
-            <Spinner />
-          </div>
+        {!isEditing ? (
+          <Icon
+            icon={MoreVertical}
+            className={cn('min-h-[16px] min-w-[16px] ml-auto hidden group-hover:text-white group-hover:block', {
+              block: isShowingContext,
+            })}
+            width={20}
+            height={20}
+            onMouseDown={handleMoreIconClick}
+          />
+        ) : null}
+      </div>
+      <div className="relative flex flex-col gap-2.5 h-[87px]">
+        <div
+          className={cn(
+            'bg-project-item-gradient-2  w-[calc(100%+40px)] absolute -left-[20px] -right-[20px] top-0 bottom-[-5px] z-10 group-hover:hidden',
+            {
+              hidden: isShowingContext || projectModalMode !== ProjectModalMode.CLOSED,
+            },
+          )}
+        />
+        {recentChats?.map((command, index) =>
+          index < MAX_CHATS_TO_DISPLAY ? (
+            <div key={index} className="flex flex-row items-center gap-2 text-white text-[15px]">
+              <div className="flex-grow truncate">{command} </div>
+            </div>
+          ) : null,
         )}
       </div>
-    </ContextMenu>
+
+      <div className="flex gap-2 justify-between w-full mt-[15px] mb-0">
+        {chats_count ? <CounterItem icon={MessageSquare} count={chats_count} className="text-purple-400" /> : null}
+        {materials_note_count ? <CounterItem icon={StickyNote} count={materials_note_count} /> : null}
+        {materials_dynamic_note_count ? <CounterItem icon={ScanText} count={materials_dynamic_note_count} /> : null}
+        {materials_python_api_count ? <CounterItem icon={Blocks} count={materials_python_api_count} /> : null}
+        {agents.count ? (
+          <div className="flex items-center text-[15px] text-gray-300">
+            <ActorAvatar actorType="agent" actorId={agents.agent_ids[0] || '1'} type="extraSmall" className="mb-0" />
+            <ActorAvatar
+              actorType="agent"
+              actorId={agents.agent_ids[1] || '2'}
+              type="extraSmall"
+              className="relative -left-[12px] mb-0"
+            />
+            <span className="-ml-[2px]">{agents.count}</span>
+          </div>
+        ) : null}
+      </div>
+
+      {isCurrentProjectFetching && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 z-30">
+          <Spinner />
+        </div>
+      )}
+    </div>
   );
 }

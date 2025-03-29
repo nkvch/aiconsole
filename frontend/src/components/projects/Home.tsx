@@ -19,12 +19,13 @@ import { HomeTopBarElements } from '@/components/projects/HomeTopBarElements';
 import { ProjectModalMode, useProjectFileManagerStore } from '@/store/projects/useProjectFileManagerStore';
 import { useRecentProjectsStore } from '@/store/projects/useRecentProjectsStore';
 import { useSettingsStore } from '@/store/settings/useSettingsStore';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useProjectStore } from '../../store/projects/useProjectStore';
 import AlertDialog from '../common/AlertDialog';
 import BackgroundGradient from '../common/BackgroundGradient';
 import { ProjectCard } from './ProjectCard';
 import { RecentProjectsEmpty } from './RecentProjectsEmpty';
+import { BulkActions } from '../common/BulkActions';
 
 export function Home() {
   const openAiApiKey = useSettingsStore((state) => state.openAiApiKey);
@@ -39,6 +40,7 @@ export function Home() {
   const openProjectConfirmation = useProjectFileManagerStore((state) => state.openProjectConfirmation);
   const initProject = useProjectFileManagerStore((state) => state.initProject);
   const projectName = useProjectFileManagerStore((state) => state.projectName);
+  const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
 
   const deleteProject = useCallback(
     (path: string) => async () => {
@@ -117,6 +119,25 @@ export function Home() {
     }
   }, [openProjectConfirmation, projectModalMode, isProjectDirectory]);
 
+  const handleProjectSelect = (projectPath: string, selected: boolean) => {
+    setSelectedProjects((prev) => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(projectPath);
+      } else {
+        newSet.delete(projectPath);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    for (const projectPath of selectedProjects) {
+      await removeRecentProject(projectPath);
+    }
+    setSelectedProjects(new Set());
+  };
+
   return (
     <div className="min-h-[100vh] relative overflow-x-hidden">
       <BackgroundGradient />
@@ -138,25 +159,26 @@ export function Home() {
                     </h1>
                     <div className="px-4 pb-[30px] text-center opacity-75 text-gray-400">Recent projects:</div>
                   </div>
-                  <div className="w-full flex flex-wrap justify-center gap-[20px] mx-auto overflow-auto pr-5">
-                    {recentProjects.map(({ name, path, recent_chats, stats, incorrect_path }) => (
-                      <div
-                        key={path}
-                        className="w-full md:w-[calc(50%-10px)] xl:w-[calc(33.333%-13.33px)] 2xl:w-[calc(25%-15px)]"
-                      >
-                        <ProjectCard
-                          name={name}
-                          path={path}
-                          recentChats={recent_chats}
-                          incorrectPath={incorrect_path}
-                          stats={stats}
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+                    {recentProjects.map((project) => (
+                      <ProjectCard
+                        key={project.path}
+                        name={project.name}
+                        path={project.path}
+                        recentChats={project.recent_chats}
+                        incorrectPath={project.incorrect_path}
+                        stats={project.stats}
+                        selected={selectedProjects.has(project.path)}
+                        onSelect={(selected) => handleProjectSelect(project.path, selected)}
+                      />
                     ))}
                   </div>
                 </div>
+                <BulkActions selectedCount={selectedProjects.size} onDelete={handleBulkDelete} />
               </div>
-            ) : <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />}
+            ) : (
+              <RecentProjectsEmpty openAiApiKey={openAiApiKey} isApiKeyValid={isApiKeyValid} />
+            )}
           </>
         )}
       </div>

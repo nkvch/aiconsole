@@ -14,33 +14,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as ReactCheckbox from '@radix-ui/react-checkbox';
-import { Check } from 'lucide-react';
-import { FC } from 'react';
+import React from 'react';
 
-type CheckboxProps = {
+interface CheckboxProps {
   checked: boolean;
-  id: string;
   onChange: (checked: boolean) => void;
-  disabled?: boolean;
-};
+  label?: string;
+  className?: string;
+}
 
-const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange, disabled }) => {
-  const handleCheckedChange = (isChecked: ReactCheckbox.CheckedState) => onChange(isChecked === true);
-
+export const Checkbox: React.FC<CheckboxProps> = ({ checked, onChange, label, className = '' }) => {
   return (
-    <ReactCheckbox.Root
-      className="hover:bg-violet3 flex h-[24px] w-[24px] appearance-none items-center justify-center rounded-[4px] bg-transparent outline outline-1 outline-gray-500 m-[1px] text-white focus:outline-gray-400 hover:outline-gray-400 disabled:hover:outline-gray-500"
-      checked={checked}
-      id={id}
-      onCheckedChange={handleCheckedChange}
-      disabled={disabled}
-    >
-      <ReactCheckbox.Indicator>
-        <Check />
-      </ReactCheckbox.Indicator>
-    </ReactCheckbox.Root>
+    <div className={`flex items-center ${className}`}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+      />
+      {label && <label className="ml-2 text-sm text-gray-700">{label}</label>}
+    </div>
   );
 };
-
-export default Checkbox;
