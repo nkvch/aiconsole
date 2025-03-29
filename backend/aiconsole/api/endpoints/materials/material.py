@@ -14,10 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import cast
+from typing import cast, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from aiconsole.api.endpoints.registry import materials
 from aiconsole.api.endpoints.services import (
@@ -178,3 +179,15 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+class BulkDeleteRequest(BaseModel):
+    material_ids: List[str]
+
+
+@router.delete("/bulk")
+async def bulk_delete_materials(request: BulkDeleteRequest):
+    """Delete multiple materials by their IDs"""
+    for material_id in request.material_ids:
+        await delete_material(material_id)
+    return {"status": "success", "message": f"Successfully deleted {len(request.material_ids)} materials"}
