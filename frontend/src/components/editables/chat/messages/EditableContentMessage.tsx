@@ -16,7 +16,7 @@
 
 import { useCallback, useState } from 'react';
 import { MessageControls } from './MessageControls';
-import { CodeInput } from '../../assets/CodeInput';
+import { TipTapEditor } from '../../assets/TipTapEditor';
 import { cn } from '@/utils/common/cn';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 
@@ -34,43 +34,47 @@ interface EditableContentMessageProps {
 
 export function EditableContentMessage({
   initialContent,
-  children,
   language,
-  handleAcceptedContent,
+  children,
   handleRemoveClick,
-  hideControls,
+  handleAcceptedContent,
   className,
+  hideControls,
   isEditing,
   setIsEditing,
 }: EditableContentMessageProps) {
-  const isBeingProcessed = useChatStore((state) => !!state.chat?.lock_id);
   const [content, setContent] = useState(initialContent);
+  const [isBeingProcessed, setIsBeingProcessed] = useState(false);
+  const lastUsedChat = useChatStore((state) => state.lastUsedChat);
 
-  const handleEditClick = () => {
-    if (isBeingProcessed) {
-      return;
-    }
-    setContent(initialContent);
-    setIsEditing(true);
-  };
-
-  const handleCancelEditClick = useCallback(() => {
-    setIsEditing(false);
-    setContent(initialContent);
-  }, [initialContent, setIsEditing, setContent]);
-
-  const handleOnChange = (value: string) => setContent(value);
+  const handleOnChange = useCallback((value: string) => {
+    setContent(value);
+  }, []);
 
   const handleSaveClick = useCallback(async () => {
-    await handleAcceptedContent(content);
-    setIsEditing(false);
+    setIsBeingProcessed(true);
+    try {
+      await handleAcceptedContent(content);
+      setIsEditing(false);
+    } finally {
+      setIsBeingProcessed(false);
+    }
   }, [content, handleAcceptedContent, setIsEditing]);
+
+  const handleCancelEditClick = useCallback(() => {
+    setContent(initialContent);
+    setIsEditing(false);
+  }, [initialContent, setIsEditing]);
+
+  const handleEditClick = useCallback(() => {
+    setIsEditing(true);
+  }, [setIsEditing]);
 
   return (
     <div className={cn('flex flex-row items-start overflow-auto', className)}>
       {isEditing ? (
         <div className="rounded-md flex-grow ">
-          <CodeInput
+          <TipTapEditor
             className="resize-none border-0 bg-transparent w-full outline-none"
             value={content}
             onChange={handleOnChange}

@@ -17,6 +17,7 @@ import traceback
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
+import markdown
 
 from aiconsole.core.assets.materials.documentation_from_code import (
     documentation_from_code,
@@ -40,6 +41,7 @@ class MaterialContentType(str, Enum):
     STATIC_TEXT = "static_text"
     DYNAMIC_TEXT = "dynamic_text"
     API = "api"
+    MARKDOWN = "markdown"
 
 
 class Material(Asset):
@@ -98,6 +100,8 @@ class Material(Asset):
                 return await self._handle_dynamic_text_content(context, header)
             case MaterialContentType.API:
                 return await self._handle_api_content(context, header)
+            case MaterialContentType.MARKDOWN:
+                return await self._handle_markdown_content(context, header)
             case _:
                 raise ValueError("Material has no content")
 
@@ -126,6 +130,17 @@ class Material(Asset):
             await internal_events().emit(MaterialRenderErrorEvent(), details=f"Error in API material `{self.id}`")
             error_details = RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
             raise ValueError("Error in Python API material", error_details)
+
+    async def _handle_markdown_content(self, context, header):
+        try:
+            content = self.inlined_content
+            # Преобразуем Markdown в HTML
+            html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
+            return RenderedMaterial(id=self.id, content=header + html_content, error="")
+        except Exception:
+            await internal_events().emit(MaterialRenderErrorEvent(), details=f"Error in MARKDOWN material `{self.id}`")
+            error_details = RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
+            raise ValueError("Error in Markdown material", error_details)
 
 
 class MaterialWithStatus(Material):
