@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import AsyncGenerator, Protocol
+from typing import AsyncGenerator, Protocol, Optional
 
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.code_running.virtual_env.create_dedicated_venv import WaitForEnvEvent
@@ -16,44 +16,34 @@ _log = logging.getLogger(__name__)
 
 
 class BaseCodeInterpreter(Protocol):
-    """
-    .run is a generator that yields a dict with attributes: active_line, output
-    """
-
-    async def initialize(self):  # fmt: off
+    async def initialize(self, use_mcp: bool = False) -> None:
+        """Initialize the interpreter, optionally with MCP support"""
         ...
 
-    def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:  # fmt: off
+    async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
+        """Run code and yield output"""
+        yield ""
+
+    def terminate(self) -> None:
+        """Terminate the interpreter"""
         ...
 
-    def terminate(self) -> None:  # fmt: off
-        ...
+    def preprocess_code(self, code: str, materials: list[Material]) -> str:
+        """Preprocess code before execution"""
+        return code
 
     def get_environment_variables(self) -> dict[str, str]:
         path = os.environ.get("PATH") or ""
-
-        # replace the first element in the PATH with the venv bin path
-        # this is the one we've added to get the correct embedded interpreter when the app is starting
         sep = str(os.pathsep)
         _path = sep.join([str(get_current_project_venv_bin_path()), *path.split(sep)])
-        r = {
+        return {
             **os.environ,
-            # just in case for correct questions about the venv locations and similar
             "VIRTUAL_ENV": str(get_current_project_venv_path()),
+            "PATH": _path
         }
-        r["PATH"] = _path
-        return r
 
     async def wait_for_path(self, timeout: int = 100, check_interval: int = 5):
-        """
-        Waits for a virtual environment path to exist, with a timeout and check interval.
-
-        :param timeout: Total time to wait for the path in seconds.
-        :param check_interval: Time interval between checks in seconds.
-        :raises RuntimeError: If the path does not exist after the timeout period.
-        """
         venv_path: Path = get_current_project_venv_path() / "aic_version"
-
         if not venv_path.exists():
             await internal_events().emit(WaitForEnvEvent())
 
