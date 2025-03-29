@@ -6,7 +6,7 @@ import { useAssetStore } from '@/store/editables/asset/useAssetStore';
 import { Material, RenderedMaterial } from '@/types/editables/assetTypes';
 import { MarkdownSupported } from '../MarkdownSupported';
 import { CodeEditorLabelContent } from './CodeEditorLabelContent';
-import { CodeInput } from './CodeInput';
+import { TipTapEditor } from './TipTapEditor';
 import { TextInput } from './TextInput';
 import { useMaterialEditorContent } from './useMaterialEditorContent';
 
@@ -59,7 +59,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
       <FormGroup className="w-full flex flex-col">
         <div className="flex-1">
           {codeEditorSectionContent ? (
-            <CodeInput
+            <TipTapEditor
               label={codeEditorSectionContent.label}
               labelContent={
                 <CodeEditorLabelContent showPreview={showPreview} onClick={() => setShowPreview((prev) => !prev)} />
@@ -69,6 +69,7 @@ export const MaterialForm = ({ material }: MaterialFormProps) => {
               codeLanguage={codeEditorSectionContent.codeLanguage}
               onChange={codeEditorSectionContent.onChange}
               readOnly={showPreview}
+              withFullscreen
             />
           ) : null}
           <MarkdownSupported />
