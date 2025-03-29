@@ -21,16 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-#     ____                      ____      __                            __
-#    / __ \____  ___  ____     /  _/___  / /____  _________  ________  / /____  _____
-#   / / / / __ \/ _ \/ __ \    / // __ \/ __/ _ \/ ___/ __ \/ ___/ _ \/ __/ _ \/ ___/
-#  / /_/ / /_/ /  __/ / / /  _/ // / / / /_/  __/ /  / /_/ / /  /  __/ /_/  __/ /
-#  \____/ .___/\___/_/ /_/  /___/_/ /_/\__/\___/_/  / .___/_/   \___/\__/\___/_/
-#      /_/                                         /_/
-#
-# This file has been taken and slighly modified from the wonderful project
-# "open-interpreter" by Killian Lucas https://github.com/KillianLucas/open-interpreter
-#
+import os
 import asyncio
 import logging
 import platform
@@ -39,24 +30,33 @@ import subprocess
 import threading
 import time
 import traceback
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 from aiconsole.core.assets.materials.material import Material
 
 from .base_code_interpreter import BaseCodeInterpreter
+from .languages.mcp_python import MCPPythonCodeInterpreter
 
 _log = logging.getLogger(__name__)
 
 
 class SubprocessCodeInterpreter(BaseCodeInterpreter):
     def __init__(self):
+        super().__init__()
         self.start_cmd = ""
         self.process = None
-        self.output_queue: "queue.Queue[str]" = queue.Queue()
+        self.output_queue: queue.Queue[str] = queue.Queue()
         self.done = threading.Event()
+        self.mcp_interpreter: Optional[MCPPythonCodeInterpreter] = None
 
-    async def initialize(self):
-        pass
+    async def initialize(self, use_mcp: bool = False):
+        # This line checks the environment variable
+        if os.environ.get("DISABLE_MCP", "").lower() == "true":
+            use_mcp = False  # Force-disable MCP regardless of other settings
+        
+        if use_mcp:
+            self.mcp_interpreter = MCPPythonCodeInterpreter()
+            await self.mcp_interpreter.initialize(use_mcp=True)
 
     def detect_end_of_execution(self, line):
         return None
@@ -68,16 +68,15 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
         """
         This needs to insert an end_of_execution marker of some kind,
         which can be detected by detect_end_of_execution.
-
-        Optionally, add active line markers for detect_active_line.
         """
         return code
 
     def terminate(self):
         if self.process:
             self.process.terminate()
-        else:
-            raise Exception("Process not started")
+        if self.mcp_interpreter:
+            self.mcp_interpreter.terminate()
+        self.done.set()
 
     def start_process(self):
         if self.process:
@@ -85,14 +84,11 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
 
         self.process = subprocess.Popen(
             self.start_cmd.split(),
-            # TODO: add executable, care with Windows. https://docs.python.org/3/library/subprocess.html#popen-constructor
-            # this does not work on windows, with and without str()
-            # executable=str(repr(get_current_project_venv_python_path())),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=self.get_environment_variables(),
-            shell=True if platform.system() == "Windows" else False,
+            shell=platform.system() == "Windows",
             text=True,
             bufsize=0,
             universal_newlines=True,
@@ -109,6 +105,17 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
         ).start()
 
     async def run(self, code: str, materials: list[Material]) -> AsyncGenerator[str, None]:
+        # Try MCP execution first if enabled
+        if self.mcp_interpreter:
+            try:
+                async for output in self.mcp_interpreter.run(code, materials):
+                    yield output
+                return
+            except Exception as e:
+                yield f"MCP Error: {str(e)}"
+                # Fall through to subprocess execution
+
+        # Original subprocess implementation
         retry_count = 0
         max_retries = 3
 
@@ -134,18 +141,14 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
                 break
             except:  # noqa E722
                 if retry_count != 0:
-                    # For UX, I like to hide this if it happens once. Obviously feels better to not see errors
-                    # Most of the time it doesn't matter, but we should figure out why it happens frequently with:
-                    # applescript
                     yield traceback.format_exc()
                     yield f"Retrying... ({retry_count}/{max_retries})"
                     yield "Restarting process."
 
                 self.start_process()
-
                 retry_count += 1
                 if retry_count > max_retries:
-                    yield "Maximum retries reached. Could not execute code.."
+                    yield "Maximum retries reached. Could not execute code."
                     return
 
         while True:
@@ -154,15 +157,10 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
             else:
                 await asyncio.sleep(0.1)
             try:
-                output = self.output_queue.get(timeout=0.3)  # Waits for 0.3 seconds
-                # _log.info(f"OUTPUT: {output}")
+                output = self.output_queue.get(timeout=0.3)
                 yield output
             except queue.Empty:
-                # AIConsole Fix: Added proces.pool check to fix hanging
                 if self.done.is_set() or (self.process and self.process.poll() is not None):
-                    # Try to yank 3 more times from it... maybe there's something in there...
-                    # (I don't know if this actually helps. Maybe we just need to yank 1 more time)
-
                     for _ in range(3):
                         if not self.output_queue.empty():
                             yield self.output_queue.get()
@@ -176,7 +174,7 @@ class SubprocessCodeInterpreter(BaseCodeInterpreter):
             line = self.line_postprocessor(line)
 
             if line is None:
-                continue  # `line = None` is the postprocessor's signal to discard completely
+                continue
 
             if self.detect_end_of_execution(line):
                 self.done.set()
