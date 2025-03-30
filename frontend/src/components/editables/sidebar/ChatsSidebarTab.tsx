@@ -17,14 +17,26 @@
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import useGroupByDate from '@/utils/editables/useGroupByDate';
-import { useEffect } from 'react';
+import {
+  useEffect,
+  useReducer,
+} from 'react';
 import SideBarItem from './SideBarItem';
+import {SideBarContentHeader} from "./SideBarContentHeader.tsx";
+import {bulkSelectChatReducer} from "@/store/editables/bulkSelectChatReducer.ts";
 
 export const ChatsSidebarTab = () => {
   const chatHeadlines = useEditablesStore((state) => state.chats);
   const chat = useChatStore((state) => state.chat);
   const { today, yesterday, previous7Days, older } = useGroupByDate(chatHeadlines);
   const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
+  const [selectState, selectDispatch] = useReducer(bulkSelectChatReducer, {
+    selectedItems: [],
+    collection: [],
+  });
+  useEffect(() => {
+    selectDispatch({type: "setCollection", payload: {collection: chatHeadlines.map(chat => chat.id)}});
+  }, [chatHeadlines]);
 
   useEffect(() => {
     if (chat?.id) {
@@ -43,15 +55,30 @@ export const ChatsSidebarTab = () => {
     <div className="h-full flex flex-col justify-between">
       <div className="flex flex-col justify-between content-between relative overflow-y-auto">
         <div className="overflow-y-auto min-h-[100px] px-5">
+          <SideBarContentHeader
+            assetType={"chat"}
+            allItemsChecked={selectState.selectedItems.length === selectState.collection.length && selectState.collection.length !== 0}
+            checkedItems={selectState.selectedItems}
+            restrictedItems={[]}
+            onCheckAll={(isChecked) => isChecked ? selectDispatch({type: "selectAll"}) : selectDispatch({type: "selectNone"})}
+          />
           {sections.map(
             (section) =>
               section.headlines.length > 0 && (
                 <div key={section.title}>
-                  <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px]">
+                  <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px] border-b border-gray-400 mb-2">
                     {section.title}
                   </h3>
                   {section.headlines.map((chat) => (
-                    <SideBarItem key={chat.id} editableObject={chat} editableObjectType="chat" />
+                    <SideBarItem
+                      key={chat.id}
+                      editableObject={chat}
+                      editableObjectType="chat"
+                      isChecked={selectState.selectedItems.includes(chat.id)}
+                      onCheck={(isChecked) => isChecked ?
+                        selectDispatch({type: "selectItem", payload: {chatId: chat.id}}) :
+                        selectDispatch({type: "deselectItem", payload: {chatId: chat.id}})}
+                    />
                   ))}
                 </div>
               ),

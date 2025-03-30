@@ -14,8 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {useEffect, useReducer} from "react";
 import { Asset, AssetStatus, AssetType } from '@/types/editables/assetTypes';
 import SideBarItem from './SideBarItem';
+import {SideBarContentHeader} from "./SideBarContentHeader.tsx";
+import {bulkSelectAssetReducer} from "@/store/editables/bulkSelectAssetReducer.ts";
 
 const getTitle = (status: AssetStatus, isAgentChosen: boolean, assetType: AssetType) => {
   switch (status) {
@@ -49,17 +52,42 @@ export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; 
   const groupedAssets = groupAssetsByStatus(assets);
   const hasForcedAssets = Boolean(groupedAssets[0][1].length);
 
+  const [selectState, selectDispatch] = useReducer(bulkSelectAssetReducer, {
+    selectedItems: [],
+    restrictedItems: [],
+    collection: [],
+  });
+
+  useEffect(() => {
+    selectDispatch({type: "setCollection", payload: {collection: assets}});
+  }, [assets]);
+
   return (
-    <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full">
+    <div className="flex flex-col gap-[5px] overflow-y-auto h-full">
+      <SideBarContentHeader
+        assetType={assetType}
+        allItemsChecked={selectState.selectedItems.length === selectState.collection.length && selectState.collection.length !== 0}
+        checkedItems={selectState.selectedItems}
+        restrictedItems={selectState.restrictedItems}
+        onCheckAll={(isChecked) => isChecked ? selectDispatch({type: "selectAll"}) : selectDispatch({type: "selectNone"})}
+      />
       {groupedAssets.map(([status, assets]) => {
         const title = getTitle(status, hasForcedAssets, assetType);
 
         return (
           assets.length > 0 && (
             <div key={status}>
-              <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px]">{title}</h3>
+              <h3 className="uppercase px-[9px] pb-[5px] text-gray-400 text-[12px] leading-[18px] border-b border-gray-400 mb-2">{title}</h3>
               {assets.map((asset) => (
-                <SideBarItem key={asset.id} editableObject={asset} editableObjectType={assetType} />
+                <SideBarItem
+                  key={asset.id}
+                  editableObject={asset}
+                  editableObjectType={assetType}
+                  isChecked={selectState.selectedItems.includes(asset.id)}
+                  onCheck={(isChecked) => isChecked ?
+                    selectDispatch({type: "selectItem", payload: {asset}}) :
+                    selectDispatch({type: "deselectItem", payload: {asset}})}
+                />
               ))}
             </div>
           )

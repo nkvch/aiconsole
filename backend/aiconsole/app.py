@@ -45,7 +45,9 @@ async def lifespan(app: FastAPI):
 
 
 def app():
-    origin = os.getenv("CORS_ORIGIN", None)
+    # As discussed with @Stas in Discord thread, I should set this value directly in code.
+    # origin = os.getenv("CORS_ORIGIN", None)
+    origin = "*"
 
     if origin is None:
         raise Exception("CORS_ORIGIN environment variable not set")

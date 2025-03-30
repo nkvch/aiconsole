@@ -30,7 +30,7 @@ const Checkbox: FC<CheckboxProps> = ({ checked, id, onChange, disabled }) => {
 
   return (
     <ReactCheckbox.Root
-      className="hover:bg-violet3 flex h-[24px] w-[24px] appearance-none items-center justify-center rounded-[4px] bg-transparent outline outline-1 outline-gray-500 m-[1px] text-white focus:outline-gray-400 hover:outline-gray-400 disabled:hover:outline-gray-500"
+      className="hover:bg-violet3 h-[24px] aspect-square appearance-none items-center justify-center rounded-[4px] bg-transparent outline outline-1 outline-gray-500 m-[1px] text-white focus:outline-gray-400 hover:outline-gray-400 disabled:hover:outline-gray-500"
       checked={checked}
       id={id}
       onCheckedChange={handleCheckedChange}

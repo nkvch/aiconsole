@@ -17,10 +17,11 @@
 
 from fastapi import APIRouter
 
-from aiconsole.api.endpoints.chats import chat, chat_options, index
+from aiconsole.api.endpoints.chats import bulk, chat, chat_options, index
 
 router = APIRouter()
 
 router.include_router(index.router)
+router.include_router(bulk.router)
 router.include_router(chat.router)
 router.include_router(chat_options.router)

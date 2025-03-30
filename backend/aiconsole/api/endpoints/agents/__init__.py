@@ -17,9 +17,10 @@
 
 from fastapi import APIRouter
 
-from . import agent, index
+from . import agent, bulk, index
 
 router = APIRouter()
 
 router.include_router(agent.router)
+router.include_router(bulk.router)
 router.include_router(index.router)

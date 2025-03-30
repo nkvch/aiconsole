@@ -40,9 +40,11 @@ interface ButtonProps {
   fullWidth?: boolean;
   iconOnly?: boolean;
   small?: boolean;
+  smallNoPadding?: boolean;
   bold?: boolean;
   active?: boolean;
   transparent?: boolean;
+  borderless?: boolean;
   classNames?: string;
   dataAutofocus?: boolean;
   autoFocus?: boolean;
@@ -65,6 +67,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       iconOnly,
       disabled,
       small,
+      smallNoPadding,
       statusColor,
       bold,
       active,
@@ -72,6 +75,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       autoFocus,
       dataAutofocus,
       transparent,
+      borderless,
       onContextMenu,
       type = 'button',
       ...props
@@ -113,11 +117,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'p-[18px] button-icon-only max-w-[60px]': iconOnly,
             'px-[20px] py-[14.5px] max-h-[48px]': small,
             'p-[12px] max-h-[48px]': small && iconOnly,
+            'p-[0]': smallNoPadding,
             'bg-gray-700 border-gray-500  text-gray-500 cursor-not-allowed hover:border-gray-500 hover:bg-gray-700 hover:text-gray-500 focus:bg-gray-700 focus:border-gray-500 focus:text-gray-500 [&>svg]:text-gray-500 [&>svg]:hover:text-gray-500 [&>svg]focus:text-white pointer-events-none':
               disabled,
             'font-semibold': bold,
             'opacity-30 pointer-events-none focus:bg-yellow focus:text-gray-900': active,
             'bg-transparent': transparent,
+            'border-0': borderless,
           },
           classNames,
         )}

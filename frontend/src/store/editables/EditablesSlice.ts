@@ -24,6 +24,7 @@ import { isAsset } from '@/utils/editables/isAsset';
 
 export type EditablesSlice = {
   deleteEditableObject: (editableObjectType: EditableObjectType, id: string) => Promise<void>;
+  deleteEditableObjects: (editableObjectType: EditableObjectType, ids: string[]) => Promise<void>;
   canOpenFinderForEditable(editable: EditableObject): boolean;
   openFinderForEditable: (editable: EditableObject) => void;
 };
@@ -36,6 +37,16 @@ export const createEditablesSlice: StateCreator<EditablesStore, [], [], Editable
     set((state) => ({
       [editableObjectTypePlural]: (state[editableObjectTypePlural] || []).filter(
         (editableObject) => editableObject.id !== id,
+      ),
+    }));
+  },
+  deleteEditableObjects: async (editableObjectType: EditableObjectType, ids: string[]) => {
+    await EditablesAPI.deleteEditableObjects(editableObjectType, ids);
+    const editableObjectTypePlural = (editableObjectType + 's') as EditableObjectTypePlural;
+
+    set((state) => ({
+      [editableObjectTypePlural]: (state[editableObjectTypePlural] || []).filter(
+        (editableObject) => !ids.includes(editableObject.id),
       ),
     }));
   },

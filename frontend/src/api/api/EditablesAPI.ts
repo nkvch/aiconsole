@@ -52,6 +52,15 @@ async function setAssetStatus(assetType: AssetType, id: string, status: AssetSta
     .json();
 }
 
+// Prepared for extending bulk operations. I didn't have enough time to finish it though.
+// The principal is the same as in case of delete operation; send IDs to change in request body.
+async function setAssetsStatus(assetType: AssetType, ids: string[], status: AssetStatus) {
+  return ky.post(`${getBaseURL()}/api/${assetType}s/bulk/status-change`, {
+    json: {ids, status, to_global: false},
+    hooks: API_HOOKS,
+  });
+}
+
 async function fetchEditableObject<T extends EditableObject>({
   editableObjectType,
   id,
@@ -161,6 +170,13 @@ async function deleteEditableObject(editableObjectType: EditableObjectType, id: 
   });
 }
 
+async function deleteEditableObjects(editableObjectType: EditableObjectType, ids: string[]) {
+  return ky.delete(`${getBaseURL()}/api/${editableObjectType}s/bulk/delete`, {
+    json: {ids},
+    hooks: API_HOOKS,
+  });
+}
+
 async function getPathForEditableObject(editableObjectType: EditableObjectType, id: string) {
   return (
     (await ky
@@ -177,9 +193,11 @@ async function setAgentAvatar(agentId: string, avatar: FormData) {
 
 export const EditablesAPI = {
   deleteEditableObject,
+  deleteEditableObjects,
   fetchEditableObjects,
   fetchEditableObject,
   setAssetStatus,
+  setAssetsStatus,
   doesEdibleExist,
   previewMaterial,
   saveNewEditableObject,

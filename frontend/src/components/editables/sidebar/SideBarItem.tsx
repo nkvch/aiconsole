@@ -29,13 +29,18 @@ import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuFo
 import { MoreVertical } from 'lucide-react';
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import Checkbox from "@/components/common/Checkbox.tsx";
 
 const SideBarItem = ({
   editableObjectType,
   editableObject,
+  isChecked,
+  onCheck,
 }: {
   editableObject: EditableObject;
   editableObjectType: EditableObjectType;
+  isChecked: boolean;
+  onCheck: (isChecked: boolean) => void;
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -177,8 +182,10 @@ const SideBarItem = ({
             forced && editableObjectType === 'agent' && 'text-agent',
             forced && editableObjectType === 'material' && 'text-material',
             disabled && 'opacity-50',
+            'flex items-center gap-[12px]'
           )}
         >
+          <Checkbox id={editableObject.id} checked={isChecked} onChange={(isChecked) => onCheck(isChecked)}/>
           <NavLink
             className={({ isActive, isPending }) => {
               return cn(
