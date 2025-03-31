@@ -16,26 +16,22 @@ _log = logging.getLogger(__name__)
 
 def migrate_from_filesystem(db: Session):
     """Migrate materials from filesystem to database."""
-    # Get both core and project materials directories
+
     core_materials_dir = get_core_assets_directory(AssetType.MATERIAL)
     project_materials_dir = get_project_assets_directory(AssetType.MATERIAL)
 
-    # Process both directories
     for materials_dir in [core_materials_dir, project_materials_dir]:
         if not materials_dir.exists():
             continue
 
-        # Determine if this is core or project materials
         is_core = materials_dir == core_materials_dir
 
-        # Process all .toml files
         for toml_file in materials_dir.glob("*.toml"):
             try:
-                # Read TOML file
+
                 with open(toml_file, "r", encoding="utf-8") as f:
                     data = rtoml.load(f)
 
-                # Convert to database model
                 material_data = {
                     "id": toml_file.stem,
                     "name": data["name"],
@@ -48,7 +44,6 @@ def migrate_from_filesystem(db: Session):
                     "usage_examples": data.get("usage_examples", []),
                 }
 
-                # Create or update material in database
                 material = MaterialDB.from_dict(material_data)
                 db.merge(material)
 
@@ -58,7 +53,6 @@ def migrate_from_filesystem(db: Session):
                 _log.error(f"Error migrating material from {toml_file}: {str(e)}")
                 continue
 
-    # Commit all changes
     db.commit()
 
 
@@ -66,14 +60,11 @@ def run_migrations():
     """Run all database migrations."""
     db_config = DatabaseConfig()
 
-    # Create tables if they don't exist
     db_config.create_tables()
 
-    # Get database session
     db = db_config.SessionLocal()
 
     try:
-        # Run filesystem to database migration
         migrate_from_filesystem(db)
     finally:
         db.close()

@@ -29,15 +29,12 @@ class DatabaseConfig:
 
         db_path = project_dir / "aiconsole.db"
 
-        # Create SQLite database URL
         SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
 
-        # Create engine
         self._engine = create_engine(
             SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}  # Needed for SQLite
         )
 
-        # Create session factory
         self._SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self._engine)
 
     @property
