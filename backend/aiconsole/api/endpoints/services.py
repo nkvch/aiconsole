@@ -15,14 +15,10 @@ class AssetWithGivenNameAlreadyExistError(Exception):
 class _Assets:
     async def _create(self, assets: Assets, asset_id: str, asset: Asset) -> None:
         self._validate_existance(assets, asset_id)
-
         await assets.save_asset(asset, old_asset_id=asset_id, create=True)
 
     async def _partially_update(self, assets: Assets, old_asset_id: str, asset: Asset) -> None:
-        # if asset.id != old_asset_id:
-        #     self._validate_existance(assets, asset.id)
-
-        await assets.save_asset(asset, old_asset_id=old_asset_id, create=True)
+        await assets.save_asset(asset, old_asset_id=old_asset_id, create=False)
 
     def _validate_existance(self, assets: Assets, asset_id: str) -> None:
         existing_asset = assets.get_asset(asset_id)
@@ -54,3 +50,7 @@ class Materials(_Assets):
     async def partially_update_material(self, material_id: str, material: Material) -> None:
         materials = project.get_project_materials()
         await self._partially_update(materials, material_id, material)
+
+    async def delete_material(self, material_id: str) -> None:
+        materials = project.get_project_materials()
+        await materials.delete_asset(material_id)

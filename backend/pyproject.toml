@@ -38,6 +38,8 @@ types-send2trash = "^1.8.2.7"
 jupyter-client = "^8.6.0"
 ipykernel = "^6.29.2"
 matplotlib = "^3.8.2"
+sqlalchemy = "^2.0.27"
+alembic = "^1.13.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.13.2"
@@ -66,7 +68,9 @@ dev = "aiconsole.init:aiconsole_dev"
 
 [tool.pytest.ini_options]
 python_files = "*_tests.py test_*.py"
-addopts = "-s --ignore=aiconsole/tests"
+addopts = "-s"
+testpaths = ["aiconsole/tests"]
+pythonpath = ["."]
 
 [tool.isort]
 known_first_party = "aiconsole,aiconsole_toolkit"
