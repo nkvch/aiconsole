@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
+from aiconsole.api.endpoints.registry import materials
+from aiconsole.api.endpoints.services import Materials
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
 
@@ -24,7 +26,7 @@ router = APIRouter()
 
 
 @router.get("/")
-async def fetch_materials():
+async def fetch_materials(materials_service: Materials = Depends(materials)):
     return JSONResponse(
         [
             {

@@ -35,7 +35,6 @@ from aiconsole.core.assets.materials.material import (
     MaterialWithStatus,
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
-from aiconsole.core.project import project
 
 router = APIRouter()
 
@@ -97,7 +96,6 @@ def print_list():
     print("List")
 
 
-
 def fibonacci(n):
     '''
     Use it to calculate and return the nth term of the Fibonacci sequence.
@@ -144,14 +142,18 @@ async def partially_update_material(
 ):
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
+        return JSONResponse({"status": "ok"})
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Material not found")
 
 
 @router.post("/{asset_id}")
 async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
+        return JSONResponse({"status": "ok"})
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -162,9 +164,9 @@ async def material_status_change(material_id: str, body: StatusChangePostBody):
 
 
 @router.delete("/{material_id}")
-async def delete_material(material_id: str):
+async def delete_material(material_id: str, materials_service: Materials = Depends(materials)):
     try:
-        await project.get_project_materials().delete_asset(material_id)
+        await materials_service.delete_material(material_id)
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
