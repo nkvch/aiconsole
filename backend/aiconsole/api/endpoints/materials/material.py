@@ -16,7 +16,8 @@
 
 from typing import cast
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from aiconsole.models.BulkDeleteRequest import BulkDeleteRequest
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from aiconsole.api.endpoints.registry import materials
@@ -168,6 +169,26 @@ async def delete_material(material_id: str):
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
+
+
+@router.delete("/bulk/delete", status_code=status.HTTP_204_NO_CONTENT)
+async def bulk_delete_materials(delete_request: BulkDeleteRequest):
+    deleted_count = 0
+    
+    for item_id in delete_request.ids:
+        try:
+            await project.get_project_materials().delete_asset(item_id)
+            deleted_count += 1
+        except KeyError:
+            continue
+    
+    if deleted_count == 0:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum item encontrado com os IDs fornecidos"
+        )
+    return None
+    
 
 
 @router.get("/{asset_id}/exists")

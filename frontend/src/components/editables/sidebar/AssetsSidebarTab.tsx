@@ -16,6 +16,10 @@
 
 import { Asset, AssetStatus, AssetType } from '@/types/editables/assetTypes';
 import SideBarItem from './SideBarItem';
+import { Icon } from '@/components/common/icons/Icon';
+import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useBulkDeleteEditableObjectWithUserInteraction } from '@/utils/editables/useBulkDeleteEditableObjectWithUserInteraction';
 
 const getTitle = (status: AssetStatus, isAgentChosen: boolean, assetType: AssetType) => {
   switch (status) {
@@ -48,8 +52,39 @@ function groupAssetsByStatus(assets: Asset[]) {
 export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; assets: Asset[] }) => {
   const groupedAssets = groupAssetsByStatus(assets);
   const hasForcedAssets = Boolean(groupedAssets[0][1].length);
+  
+  const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
+  const handleDelete = useBulkDeleteEditableObjectWithUserInteraction(assetType);
+
+  const handleBulkDelete = () => {
+    handleDelete(selectedAssets);
+    setSelectedAssets([]);
+  };
+
+  const handleBulkSelect = (id: string, isSelected: boolean) => {
+    setSelectedAssets((prevSelected: any[]) =>
+      isSelected
+        ? [...prevSelected, id]
+        : prevSelected.filter((itemId: string) => itemId !== id)
+    );
+  };
 
   return (
+    <>
+    <div className="h-8 w-full flex justify-end">
+      { selectedAssets.length > 0 &&
+      <button
+        onClick={handleBulkDelete}
+        className="mb-2 p-2 bg-red-500 text-white rounded-md disabled:opacity-50"
+      >
+        <Icon 
+          icon={Trash2}
+          className="w-4 h-4"
+        />
+      </button>
+      }
+    </div>
+
     <div className="flex flex-col gap-[5px] pr-[20px] overflow-y-auto h-full">
       {groupedAssets.map(([status, assets]) => {
         const title = getTitle(status, hasForcedAssets, assetType);
@@ -59,12 +94,18 @@ export const AssetsSidebarTab = ({ assetType, assets }: { assetType: AssetType; 
             <div key={status}>
               <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px]">{title}</h3>
               {assets.map((asset) => (
-                <SideBarItem key={asset.id} editableObject={asset} editableObjectType={assetType} />
+                <SideBarItem 
+                  key={asset.id} 
+                  editableObject={asset} 
+                  editableObjectType={assetType} 
+                  onBulkSelect={handleBulkSelect}
+                />
               ))}
             </div>
           )
         );
       })}
     </div>
+    </>
   );
 };

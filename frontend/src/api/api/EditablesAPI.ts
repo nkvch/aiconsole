@@ -161,6 +161,13 @@ async function deleteEditableObject(editableObjectType: EditableObjectType, id: 
   });
 }
 
+async function bulkDeleteEditableObjects(editableObjectType: EditableObjectType, ids: string[]) {
+    return ky.delete(`${getBaseURL()}/api/${editableObjectType}s/bulk/delete`, {
+      json: {"ids": ids},
+      hooks: API_HOOKS,
+    });
+}
+
 async function getPathForEditableObject(editableObjectType: EditableObjectType, id: string) {
   return (
     (await ky
@@ -177,6 +184,7 @@ async function setAgentAvatar(agentId: string, avatar: FormData) {
 
 export const EditablesAPI = {
   deleteEditableObject,
+  bulkDeleteEditableObjects,
   fetchEditableObjects,
   fetchEditableObject,
   setAssetStatus,

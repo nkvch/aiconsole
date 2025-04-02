@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from aiconsole.models.BulkDeleteRequest import BulkDeleteRequest
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -92,6 +93,25 @@ async def delete_agent(agent_id: str):
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Agent not found")
+    
+
+@router.delete("/bulk/delete", status_code=status.HTTP_204_NO_CONTENT)
+async def bulk_delete_materials(delete_request: BulkDeleteRequest):
+    deleted_count = 0
+    
+    for item_id in delete_request.ids:
+        try:
+            await delete_agent(item_id)
+            deleted_count += 1
+        except KeyError:
+            continue
+    
+    if deleted_count == 0:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum item encontrado com os IDs fornecidos"
+        )
+    return None
 
 
 @router.get("/{asset_id}/exists")

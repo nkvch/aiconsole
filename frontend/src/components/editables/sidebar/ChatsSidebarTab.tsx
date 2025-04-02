@@ -17,14 +17,20 @@
 import { useChatStore } from '@/store/editables/chat/useChatStore';
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
 import useGroupByDate from '@/utils/editables/useGroupByDate';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import SideBarItem from './SideBarItem';
+import { Icon } from '@/components/common/icons/Icon';
+import { Trash2 } from "lucide-react";
+import { useBulkDeleteEditableObjectWithUserInteraction } from '@/utils/editables/useBulkDeleteEditableObjectWithUserInteraction';
 
 export const ChatsSidebarTab = () => {
   const chatHeadlines = useEditablesStore((state) => state.chats);
   const chat = useChatStore((state) => state.chat);
   const { today, yesterday, previous7Days, older } = useGroupByDate(chatHeadlines);
   const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
+
+  const [selectedChats, setSelectedChats] = useState<string[]>([]);
+  const handleDelete = useBulkDeleteEditableObjectWithUserInteraction("chat");
 
   useEffect(() => {
     if (chat?.id) {
@@ -39,22 +45,53 @@ export const ChatsSidebarTab = () => {
     { title: 'Older than 7 days', headlines: older },
   ];
 
+  const handleBulkDelete = () => {
+    handleDelete(selectedChats);
+    setSelectedChats([]);
+  };
+
+  const handleBulkSelect = (id: string, isSelected: boolean) => {
+    setSelectedChats((prevSelected: any[]) =>
+      isSelected
+        ? [...prevSelected, id]
+        : prevSelected.filter((itemId: string) => itemId !== id)
+    );
+  };
+
   return (
     <div className="h-full flex flex-col justify-between">
       <div className="flex flex-col justify-between content-between relative overflow-y-auto">
+      <div className="h-8 w-full flex justify-end">
+        { selectedChats.length > 0 &&
+        <button
+          onClick={handleBulkDelete}
+          className="mb-2 mr-4 p-2 bg-red-500 text-white rounded-md disabled:opacity-50"
+        >
+          <Icon 
+            icon={Trash2}
+            className="w-4 h-4"
+          />
+        </button>
+        }
+      </div>
         <div className="overflow-y-auto min-h-[100px] px-5">
-          {sections.map(
+        {sections.map(
             (section) =>
               section.headlines.length > 0 && (
                 <div key={section.title}>
-                  <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px] leading-[18px]">
+                  <h3 className="uppercase px-[9px] py-[5px] text-gray-400 text-[12px]">
                     {section.title}
                   </h3>
                   {section.headlines.map((chat) => (
-                    <SideBarItem key={chat.id} editableObject={chat} editableObjectType="chat" />
+                    <SideBarItem
+                      key={chat.id}
+                      editableObject={chat}
+                      editableObjectType="chat"
+                      onBulkSelect={handleBulkSelect}
+                    />
                   ))}
                 </div>
-              ),
+              )
           )}
         </div>
       </div>
