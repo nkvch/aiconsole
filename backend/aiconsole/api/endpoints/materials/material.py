@@ -24,6 +24,7 @@ from aiconsole.api.endpoints.services import (
     AssetWithGivenNameAlreadyExistError,
     Materials,
 )
+from aiconsole.api.utils import changelog_materials
 from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
@@ -116,6 +117,11 @@ def fibonacci(n):
         raise ValueError("Invalid material content type")
 
 
+@router.get("/{material_id}/changelog")
+async def get_material_changelog_entries(material_id: str):
+    return changelog_materials.get_changelog_of_material(material_id)
+
+
 @router.get("/{material_id}")
 async def get_material(request: Request, material_id: str):
     type = cast(MaterialContentType, request.query_params.get("type", ""))
@@ -144,6 +150,12 @@ async def partially_update_material(
 ):
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
+
+        if asset_id != material.id:
+            changelog_materials.rename_material(asset_id, material.id)
+        else:
+            changelog_materials.update_material(asset_id)
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -152,6 +164,8 @@ async def partially_update_material(
 async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
+        changelog_materials.create_material(asset_id)
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -165,6 +179,8 @@ async def material_status_change(material_id: str, body: StatusChangePostBody):
 async def delete_material(material_id: str):
     try:
         await project.get_project_materials().delete_asset(material_id)
+        changelog_materials.delete_material(material_id)
+
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
