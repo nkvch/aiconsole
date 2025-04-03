@@ -19,6 +19,7 @@ import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Icon } from '@/components/common/icons/Icon';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { useSelectionStore } from '@/store/useSelectionStore';
 import { Asset, EditableObject, EditableObjectType } from '@/types/editables/assetTypes';
 import { Chat } from '@/types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
@@ -41,7 +42,6 @@ const SideBarItem = ({
   const navigate = useNavigate();
 
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
-
   const renameChat = useChatStore((state) => state.renameChat);
   const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
 
@@ -59,10 +59,15 @@ const SideBarItem = ({
   });
 
   const EditableIcon = getEditableObjectIcon(editableObject);
-
   const [inputText, setInputText] = useState(editableObject.name);
-
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { selectedItems, toggleSelection } = useSelectionStore(state => ({
+    selectedItems: state.selectedItems,
+    toggleSelection: state.toggleSelection,
+  }));
+
+  const isSelected = selectedItems.includes(editableObject.id);
 
   useEffect(() => {
     if (isEditing) {
@@ -150,7 +155,12 @@ const SideBarItem = ({
 
   const triggerRef = useRef<ContextMenuRef>(null);
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      toggleSelection(editableObject.id);
+      return;
+    }
     if (editableObjectType === 'chat' && editableObject.id !== useChatStore.getState().chat?.id) {
       setIsChatLoading(true);
     } else if (editableObjectType !== 'chat') {
@@ -169,6 +179,10 @@ const SideBarItem = ({
     setIsShowingContext(open);
   };
 
+  const handleCheckboxClick = () => {
+    toggleSelection(editableObject.id);
+  };
+
   return (
     <ContextMenu options={menuItems} ref={triggerRef} onOpenChange={handleOpenContextChange}>
       <div className="max-w-[295px] mb-[5px]">
@@ -177,12 +191,23 @@ const SideBarItem = ({
             forced && editableObjectType === 'agent' && 'text-agent',
             forced && editableObjectType === 'material' && 'text-material',
             disabled && 'opacity-50',
+            'flex flex-row'
           )}
         >
+          <div 
+            className="flex items-center mr-2" 
+            onClick={handleCheckboxClick}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}                    
+              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600"
+            />
+          </div>
           <NavLink
             className={({ isActive, isPending }) => {
               return cn(
-                'group flex items-center gap-[12px] overflow-hidden p-[9px] rounded-[8px] cursor-pointer relative  hover:bg-gray-700',
+                'group flex items-center gap-[12px] overflow-hidden p-[9px] rounded-[8px] cursor-pointer relative hover:bg-gray-700',
                 {
                   'bg-gray-700 text-white ': isActive || isPending || isShowingContext,
                 },
@@ -205,7 +230,7 @@ const SideBarItem = ({
                 {/* TODO: add validation for empty input value */}
                 {isEditing ? (
                   <input
-                    className="font-normal outline-none border h-[24px] border-gray-400 text-[14px] p-[5px] w-full text-white bg-gray-600 focus:border-primary resize-none overflow-hidden rounded-[4px]  focus:outline-none"
+                    className="font-normal outline-none border h-[24px] border-gray-400 text-[14px] p-[5px] w-full text-white bg-gray-600 focus:border-primary resize-none overflow-hidden rounded-[4px] focus:outline-none"
                     value={inputText}
                     ref={inputRef}
                     onBlur={handleBlur}
@@ -230,7 +255,7 @@ const SideBarItem = ({
                 </div>
                 <div
                   className={cn(
-                    'absolute bottom-[-15px] hidden left-[0px] opacity-[0.3] blur-[10px]  h-[34px] w-[34px] group-hover:block',
+                    'absolute bottom-[-15px] hidden left-[0px] opacity-[0.3] blur-[10px] h-[34px] w-[34px] group-hover:block',
                     editableObjectType === 'chat' && 'fill-chat bg-chat',
                     editableObjectType === 'agent' && 'fill-agent bg-agent',
                     editableObjectType === 'material' && 'fill-material bg-material',
