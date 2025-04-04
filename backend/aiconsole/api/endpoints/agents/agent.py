@@ -32,6 +32,7 @@ from aiconsole.core.project.paths import (
     get_project_assets_directory,
 )
 from aiconsole.core.project.project import is_project_initialized
+from aiconsole.api.utils.bulk_operations import BulkDeleteRequest
 
 router = APIRouter()
 
@@ -83,6 +84,23 @@ async def create_agent(agent_id: str, agent: AICAgent, agents_service: Agents = 
 @router.post("/{agent_id}/status-change")
 async def agent_status_change(agent_id: str, body: StatusChangePostBody):
     await asset_status_change(AssetType.AGENT, agent_id, body)
+
+
+@router.delete("/bulk")
+async def bulk_delete_agents(request: BulkDeleteRequest):
+    agents = project.get_project_agents()
+    results = {"deleted": [], "errors": []}
+    
+    for agent_id in request.ids:
+        try:
+            await agents.delete_asset(agent_id)
+            results["deleted"].append(agent_id)
+        except KeyError:
+            results["errors"].append({"id": agent_id, "reason": "not_found"})
+        except Exception as e:
+            results["errors"].append({"id": agent_id, "reason": str(e)})
+    
+    return JSONResponse(results)
 
 
 @router.delete("/{agent_id}")

@@ -63,8 +63,8 @@ const SideBarItem = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { selectedItems, toggleSelection } = useSelectionStore(state => ({
-    selectedItems: state.selectedItems,
-    toggleSelection: state.toggleSelection,
+    selectedItems: state.selections[editableObjectType + 's' as keyof typeof state.selections],
+    toggleSelection: (id: string) => state.toggleSelection(editableObjectType + 's' as keyof typeof state.selections, id),
   }));
 
   const isSelected = selectedItems.includes(editableObject.id);
@@ -183,6 +183,10 @@ const SideBarItem = ({
     toggleSelection(editableObject.id);
   };
 
+  const handleToggleSelection = (id: string) => {
+    toggleSelection(id);
+  };
+
   return (
     <ContextMenu options={menuItems} ref={triggerRef} onOpenChange={handleOpenContextChange}>
       <div className="max-w-[295px] mb-[5px]">
@@ -200,7 +204,8 @@ const SideBarItem = ({
           >
             <input
               type="checkbox"
-              checked={isSelected}                    
+              checked={isSelected}
+              onChange={() => {}}
               className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600"
             />
           </div>

@@ -19,9 +19,31 @@ from send2trash import send2trash
 from aiconsole.core.chat.load_chat_history import load_chat_history
 from aiconsole.core.chat.save_chat_history import save_chat_history
 from aiconsole.core.project.paths import get_history_directory
+from aiconsole.api.utils.bulk_operations import BulkDeleteRequest
 
 router = APIRouter()
 
+
+@router.delete("/bulk")
+async def bulk_delete_chats(request: BulkDeleteRequest):
+    results = {"deleted": [], "errors": []}
+    
+    for chat_id in request.ids:
+        file_path = get_history_directory() / f"{chat_id}.json"
+        if file_path.exists():
+            try:
+                send2trash(file_path)
+                results["deleted"].append(chat_id)
+            except Exception as e:
+                results["errors"].append({"id": chat_id, "reason": str(e)})
+        else:
+            results["errors"].append({"id": chat_id, "reason": "not_found"})
+    
+    return Response(
+        status_code=status.HTTP_200_OK,
+        content=str(results),
+    )
+    
 
 @router.delete("/{chat_id}")
 async def delete_history(chat_id: str):
@@ -51,3 +73,4 @@ async def chat_options(chat_id: str, chat_odj: dict):
         chat.name = str(chat_odj.get("name"))
         save_chat_history(chat, scope="name")
     return Response(status_code=status.HTTP_200_OK)
+

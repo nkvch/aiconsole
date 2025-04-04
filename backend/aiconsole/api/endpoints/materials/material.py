@@ -36,6 +36,7 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.api.utils.bulk_operations import BulkDeleteRequest
 
 router = APIRouter()
 
@@ -159,6 +160,23 @@ async def create_material(asset_id: str, material: Material, materials_service: 
 @router.post("/{material_id}/status-change")
 async def material_status_change(material_id: str, body: StatusChangePostBody):
     return await asset_status_change(AssetType.MATERIAL, material_id, body)
+
+
+@router.delete("/bulk")
+async def bulk_delete_materials(request: BulkDeleteRequest):
+    materials = project.get_project_materials()
+    results = {"deleted": [], "errors": []}
+    
+    for material_id in request.ids:
+        try:
+            await materials.delete_asset(material_id)
+            results["deleted"].append(material_id)
+        except KeyError:
+            results["errors"].append({"id": material_id, "reason": "not_found"})
+        except Exception as e:
+            results["errors"].append({"id": material_id, "reason": str(e)})
+    
+    return JSONResponse(results)
 
 
 @router.delete("/{material_id}")

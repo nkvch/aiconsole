@@ -35,9 +35,29 @@ export const useAssets = (assetType: EditableObjectType) => {
     await updateStatusIfNecessary();
   };
 
+  const deleteAsset = async (assetId: string) => {
+    try {
+      await EditablesAPI.deleteEditableObject(assetType, assetId);
+      showToast({
+        title: 'Deleted',
+        message: `The ${assetType} has been successfully deleted.`,
+        variant: 'success',
+      });
+      return true;
+    } catch (error) {
+      showToast({
+        title: 'Error',
+        message: `Failed to delete the ${assetType}.`,
+        variant: 'error',
+      });
+      return false;
+    }
+  };
+
   return {
     updateStatusIfNecessary,
     isAssetStatusChanged,
     renameAsset,
+    deleteAsset,
   };
 };
