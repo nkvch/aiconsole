@@ -15,7 +15,7 @@
 // limitations under the License.
 
 import { useEditablesStore } from '@/store/editables/useEditablesStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AssetsSidebarTab } from './AssetsSidebarTab';
 import { ChatsSidebarTab } from './ChatsSidebarTab';
 import { Tab } from './Tab';
@@ -25,6 +25,7 @@ import { useSelectionStore } from '@/store/useSelectionStore';
 import { Button } from '@/components/common/Button';
 import { Trash } from 'lucide-react';
 import { useToastsStore } from '@/store/common/useToastsStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TABS = [
   { label: 'Chats', key: 'chats' },
@@ -41,75 +42,107 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
     clearSelection: state.clearSelection,
     getSelectedCount: state.getSelectedCount
   }));
-  const deleteEditableObject = useEditablesStore((state) => state.deleteEditableObject);
   const bulkDeleteEditableObjects = useEditablesStore((state) => state.bulkDeleteEditableObjects);
   const showToast = useToastsStore((state) => state.showToast);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab, setActiveTab]);
 
   const handleDeleteSelected = async () => {
-    const activeTabKey = activeTab as 'chats' | 'materials' | 'agents';
-    const selectedIds = selections[activeTabKey];
-    const editableType = activeTab === 'chats' ? 'chat' : activeTab === 'agents' ? 'agent' : 'material';
-    
-    if (selectedIds.length === 0) return;
-    
-    try {
-      await bulkDeleteEditableObjects(editableType, selectedIds);
+    setIsDeleting(true);
+    setTimeout(async () => {
+      const activeTabKey = activeTab as 'chats' | 'materials' | 'agents';
+      const selectedIds = selections[activeTabKey];
+      const editableType = activeTab === 'chats' ? 'chat' : activeTab === 'agents' ? 'agent' : 'material';
       
-      clearSelection(activeTabKey);
+      if (selectedIds.length === 0) return;
       
-      showToast({
-        title: 'Items deleted',
-        message: `Successfully deleted ${selectedIds.length} ${
-          activeTab === 'chats' ? 'chats' : activeTab === 'agents' ? 'agents' : 'materials'
-        }`,
-        variant: 'success',
-      });
-    } catch (error) {
-      console.error('Error while deleting items:', error);
-      showToast({
-        title: 'Error',
-        message: 'There was a problem deleting the items',
-        variant: 'error',
-      });
-    }
+      try {
+        await bulkDeleteEditableObjects(editableType, selectedIds);
+        clearSelection(activeTabKey);
+        setIsDeleting(false);
+        
+        showToast({
+          title: 'Items deleted',
+          message: `Successfully deleted ${selectedIds.length} ${
+            activeTab === 'chats' ? 'chats' : activeTab === 'agents' ? 'agents' : 'materials'
+          }`,
+          variant: 'success',
+        });
+      } catch (error) {
+        console.error('Error while deleting items:', error);
+        setIsDeleting(false);
+        showToast({
+          title: 'Error',
+          message: 'There was a problem deleting the items',
+          variant: 'error',
+        });
+      }
+    }, 300);
   };
 
   const selectedCount = getSelectedCount(activeTab as keyof typeof selections);
 
   return (
     <div
-      className={`min-w-[336px] w-[336px] h-full  bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r  border-gray-600`}
+      className={`min-w-[336px] w-[336px] h-full bg-gray-900 pt-[20px] drop-shadow-md flex flex-col border-r border-gray-600`}
     >
       <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <Tabs.List className="mb-[15px] px-5">
-            {TABS.map(({ label, key }) => (
-              <Tab key={key} value={key} label={label} activeTab={activeTab} />
-            ))}
-          </Tabs.List>
-          {selectedCount > 0 && (
-            <Button 
-              variant="secondary" 
-              small 
-              onClick={handleDeleteSelected}
-              classNames="flex items-center gap-2 text-red-500 hover:text-red-400"
-            >
-              <Trash size={16} />
-              Delete ({selectedCount})
-            </Button>
-          )}
-        <Tabs.Content value="chats" className="flex-1 overflow-hidden">
-          <ChatsSidebarTab />
-        </Tabs.Content>
-        <Tabs.Content value="materials" className="flex-1 overflow-hidden px-5">
-          <AssetsSidebarTab assetType="material" assets={materials || []} />
-        </Tabs.Content>
-        <Tabs.Content value="agents" className="flex-1 overflow-hidden px-5">
-          <AssetsSidebarTab assetType="agent" assets={agents} />
-        </Tabs.Content>
+        <Tabs.List className="mb-[15px] px-5">
+          {TABS.map(({ label, key }) => (
+            <Tab key={key} value={key} label={label} activeTab={activeTab} />
+          ))}
+        </Tabs.List>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <Tabs.Content value="chats" className="h-full">
+              <ChatsSidebarTab />
+            </Tabs.Content>
+            <Tabs.Content value="materials" className="h-full px-5">
+              <AssetsSidebarTab assetType="material" assets={materials || []} />
+            </Tabs.Content>
+            <Tabs.Content value="agents" className="h-full px-5">
+              <AssetsSidebarTab assetType="agent" assets={agents} />
+            </Tabs.Content>
+          </div>
+          <AnimatePresence>
+            {selectedCount > 0 && !isDeleting && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="w-full bg-gray-900/95 backdrop-blur-sm border-t border-gray-700"
+              >
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <motion.span 
+                      key={selectedCount}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="text-sm text-gray-400"
+                    >
+                      {selectedCount} {selectedCount === 1 ? 'item' : 'items'} selected
+                    </motion.span>
+                    <Button 
+                      variant="status" 
+                      small 
+                      onClick={handleDeleteSelected}
+                      classNames="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                    >
+                      <Trash size={16} />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </Tabs.Root>
     </div>
   );

@@ -30,6 +30,7 @@ import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuFo
 import { MoreVertical } from 'lucide-react';
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Checkbox } from '@/components/common/AnimatedCheckbox';
 
 const SideBarItem = ({
   editableObjectType,
@@ -183,10 +184,6 @@ const SideBarItem = ({
     toggleSelection(editableObject.id);
   };
 
-  const handleToggleSelection = (id: string) => {
-    toggleSelection(id);
-  };
-
   return (
     <ContextMenu options={menuItems} ref={triggerRef} onOpenChange={handleOpenContextChange}>
       <div className="max-w-[295px] mb-[5px]">
@@ -199,14 +196,17 @@ const SideBarItem = ({
           )}
         >
           <div 
-            className="flex items-center mr-2" 
-            onClick={handleCheckboxClick}
+            className={cn(
+              "relative flex items-center mr-6",
+              editableObjectType === 'chat' && 'text-chat',
+              editableObjectType === 'material' && 'text-material',
+              editableObjectType === 'agent' && 'text-agent'
+            )}  
           >
-            <input
-              type="checkbox"
+            <Checkbox 
               checked={isSelected}
-              onChange={() => {}}
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600"
+              onChange={handleCheckboxClick}
+              type={editableObjectType}
             />
           </div>
           <NavLink

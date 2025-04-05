@@ -17,7 +17,7 @@
 import { MouseEventHandler, ReactNode, forwardRef } from 'react';
 import { cn } from '@/utils/common/cn';
 
-type StatusColor = 'green' | 'red' | 'purple' | 'base';
+type StatusColor = 'green' | 'red' | 'purple' | 'base' | 'chat' | 'material' | 'agent';
 
 const getStatusColor = (statusColor?: StatusColor) => {
   switch (statusColor) {
@@ -27,6 +27,12 @@ const getStatusColor = (statusColor?: StatusColor) => {
       return 'border-danger text-gray-300 [&>svg]:text-danger bg-gray-700 focus:border-danger hover:border-danger focus:bg-gray-700 hover:bg-gray-700 [&>svg]:hover:text-danger [&>svg]:focus:text-danger';
     case 'purple':
       return 'border-primary text-gray-300 [&>svg]:text-primary bg-gray-700';
+    case 'chat':
+      return 'border-chat text-chat [&>svg]:text-chat bg-gray-700 focus:border-chat hover:border-chat focus:bg-gray-700 hover:bg-gray-700 [&>svg]:hover:text-chat [&>svg]:focus:text-chat';
+    case 'material':
+      return 'border-material text-material [&>svg]:text-material bg-gray-700 focus:border-material hover:border-material focus:bg-gray-700 hover:bg-gray-700 [&>svg]:hover:text-material [&>svg]:focus:text-material';
+    case 'agent':
+      return 'border-agent text-agent [&>svg]:text-agent bg-gray-700 focus:border-agent hover:border-agent focus:bg-gray-700 hover:bg-gray-700 [&>svg]:hover:text-agent [&>svg]:focus:text-agent';
     default:
       return 'border-gray-500 text-gray-300 [&>svg]:text-gray-500 bg-gray-900';
   }
