@@ -19,6 +19,7 @@ import logging
 import threading
 
 import watchdog.events
+from aiconsole.utils.git_utils import commit_changes_to_git
 
 _log = logging.getLogger(__name__)
 
@@ -42,6 +43,11 @@ class BatchingWatchDogHandler(watchdog.events.FileSystemEventHandler):
     def on_modified(self, event):
         if event.is_directory or not event.src_path.endswith(self.extension):
             return
+
+        try:
+            commit_changes_to_git(event)
+        except Exception as e:
+            raise Exception(f"Error committing changes: {e}") from e
 
         with self.lock:
 
