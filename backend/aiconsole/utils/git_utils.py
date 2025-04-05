@@ -2,7 +2,7 @@ import logging
 
 import git
 import git.exc
-from git import Actor
+from git import Actor, Repo
 from datetime import datetime
 import uuid
 from pathlib import Path
@@ -10,9 +10,24 @@ from typing import Optional
 from aiconsole.core.assets.types import AssetType
 from watchdog.events import FileSystemEvent
 import pytz
+from pydantic import BaseModel, Field
 
 
 _log = logging.getLogger(__name__)
+
+
+class Commit(BaseModel):
+    id: str = Field(..., alias="commit_id")
+    author: str
+    message: str
+    date: datetime
+
+    model_config = {
+        "populate_by_name": True
+    }
+
+class CommitHistoryResponse(BaseModel):
+    commits: list[Commit]
 
 
 def is_in_git_repo(file_path: Path) -> bool:
@@ -104,7 +119,27 @@ def initialize_git(path: Path) -> None:
         raise RuntimeError(f"Unexpected error during Git init: {e}")
 
 
+def get_commit_history(materials_path: Path) -> list[Commit]:
+    """
+    Retrieves Git commit history from the materials directory.
+    """
+    if not (materials_path / ".git").exists():
+        raise RuntimeError("The Git repository is not initialized in the specified directory.")
 
+    repo = Repo(materials_path)
+    branch = "main" if "main" in repo.heads else "master"
+    commits = list(repo.iter_commits(branch))
 
+    history = []
+    for commit in commits:
+        commit_data = {
+            "commit_id": commit.hexsha,
+            "author": commit.author.name,
+            "message": commit.message.strip(),
+            "date": commit.committed_date,
+        }
+        history.append(Commit(**commit_data))
+
+    return history
 
 
