@@ -16,6 +16,11 @@
 import datetime
 import logging
 
+from pathlib import Path
+import git
+import subprocess
+
+import git.exc
 import watchdog.events
 import watchdog.observers
 
@@ -47,13 +52,30 @@ class Assets:
 
         self.observer = watchdog.observers.Observer()
 
-        get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
+        assets_directory = get_project_assets_directory(asset_type)
+        assets_directory.mkdir(parents=True, exist_ok=True)
+
+        if asset_type == AssetType.MATERIAL:
+            self._initialize_git(assets_directory)
+
         self.observer.schedule(
             BatchingWatchDogHandler(self.reload),
-            get_project_assets_directory(asset_type),
+            assets_directory,
             recursive=True,
         )
         self.observer.start()
+
+    def _initialize_git(self, path: Path):
+        """Initialize git in the materials folder."""
+        try:
+            if not Path(path / ".git").exists():
+                repo = git.Repo.init(path)
+        
+        except git.exc.GitCommandError as e:
+            _log.error(f"Error when initializing Git in {path}: {e}")
+        except Exception as e:
+            _log.error(f"Unexpected error when initializing Git: {e}")
+
 
     def stop(self):
         self.observer.stop()
