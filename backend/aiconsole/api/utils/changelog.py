@@ -19,22 +19,40 @@ def _get_repo() -> Optional[Repo]:
     return Repo.init(materials_path)
 
 
-def _get_material_path(material_id: str) -> str:
+def _get_material_filename(material_id: str) -> str:
     return material_id + ".toml"
 
 
-def update_material_changelog(material_id: str, message: str):
+def update_material_changelog(material_id: str, message: str) -> None:
     repo = _get_repo()
     if repo is None:
         raise RuntimeError("Repository was not initialized.")
 
     materials_path = get_project_assets_directory(AssetType.MATERIAL)
-    material_name = _get_material_path(material_id)
-    material_path = os.path.join(materials_path, material_name)
+    material_filename = _get_material_filename(material_id)
+    material_path = os.path.join(materials_path, material_filename)
 
     if os.path.isfile(material_path):
-        repo.index.add([material_name])
+        repo.index.add([material_filename])
     else:
-        repo.index.remove([material_name], working_tree=True)
+        repo.index.remove([material_filename], working_tree=True)
 
     repo.index.commit(message)
+
+
+def get_material_changelog(material_id: str) -> list[dict]:
+    repo = _get_repo()
+    material_filename = _get_material_filename(material_id)
+
+    commits = list(repo.iter_commits(paths=material_filename))
+
+    changelog = []
+    for commit in commits:
+        changelog.append(
+            {
+                "date": commit.committed_datetime.isoformat(),
+                "action": commit.message.strip(),
+            }
+        )
+
+    return changelog
