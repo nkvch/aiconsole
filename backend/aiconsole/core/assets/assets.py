@@ -19,6 +19,7 @@ import logging
 import watchdog.events
 import watchdog.observers
 
+from aiconsole.api.utils.changelog import update_material_changelog
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import AssetsUpdatedServerMessage
 from aiconsole.core.assets.fs.delete_asset_from_fs import delete_asset_from_fs
@@ -93,6 +94,14 @@ class Assets:
 
         new_asset = await save_asset_to_fs(asset, old_asset_id)
 
+        if asset.type == AssetType.MATERIAL:
+            if rename:
+                update_material_changelog(asset.id, f"Renamed material from {old_asset_id} to {asset.id}")
+            elif create:
+                update_material_changelog(asset.id, f"Created new material {asset.id}")
+            else:
+                update_material_changelog(asset.id, f"Updated material {asset.id}")
+
         if asset.id not in self._assets:
             self._assets[asset.id] = []
 
@@ -118,6 +127,9 @@ class Assets:
             del self._assets[asset_id]
 
         delete_asset_from_fs(self.asset_type, asset_id)
+
+        if self.asset_type == AssetType.MATERIAL:
+            update_material_changelog(asset_id, f"Deleted material {asset_id}")
 
         self._suppress_notification()
 
