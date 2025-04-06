@@ -26,7 +26,7 @@ def _get_material_filename(material_id: str) -> str:
 def update_material_changelog(material_id: str, message: str) -> None:
     repo = _get_repo()
     if repo is None:
-        raise RuntimeError("Repository was not initialized.")
+        raise RuntimeError("Project was not initialized.")
 
     materials_path = get_project_assets_directory(AssetType.MATERIAL)
     material_filename = _get_material_filename(material_id)
