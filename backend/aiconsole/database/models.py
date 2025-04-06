@@ -1,12 +1,10 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional, TypeAlias
-from datetime import datetime
-from uuid import UUID, uuid4
+from typing import List
+from uuid import uuid4
 
+from sqlmodel import Field, Relationship, SQLModel
 
-from aiconsole.core.assets.types import AssetType, AssetLocation, AssetStatus
 from aiconsole.core.assets.materials.material import MaterialContentType
-MaterialId: TypeAlias = UUID
+from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 
 
 class MaterialBase(SQLModel):
@@ -14,7 +12,6 @@ class MaterialBase(SQLModel):
     name: str
     version: str = "0.0.1"
     usage: str
-    usage_examples: list[str] = Field(default_factory=list)
     defined_in: AssetLocation
     default_status: AssetStatus = AssetStatus.ENABLED
     status: AssetStatus = AssetStatus.ENABLED
@@ -24,5 +21,12 @@ class MaterialBase(SQLModel):
     type: AssetType = AssetType.MATERIAL
 
 
+class UsageExample(SQLModel, table=True):
+    id: str = Field(default_factory=lambda: str(uuid4()), primary_key=True)
+    material_id: str = Field(foreign_key="materialdb.id")
+    example: str
+    material: "MaterialDB" = Relationship(back_populates="usage_examples")
+
+
 class MaterialDB(MaterialBase, table=True):
-    ...
+    usage_examples: List[UsageExample] = Relationship(back_populates="material")
