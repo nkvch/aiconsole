@@ -27,6 +27,7 @@ from aiconsole.api.endpoints.services import (
 from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
+from aiconsole.api.utils.changelog import get_material_changelog
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import (
@@ -178,3 +179,11 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.get("/{asset_id}/changelog")
+async def get_changelog(asset_id: str):
+    try:
+        return JSONResponse(get_material_changelog(asset_id))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
