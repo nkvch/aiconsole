@@ -13,13 +13,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sqlite3
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project.paths import get_project_assets_directory
 
 
 async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> None:
+    conn = sqlite3.connect('local_db_AIConsole.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT id FROM asset_info WHERE id = ?', (old_id,))
+        table = cursor.fetchone()
+
+        if table:
+            cursor.execute('''
+                UPDATE asset_info
+                SET id = ?,
+                    name = ?
+                WHERE id = ?
+            ''', (
+                new_id,
+                new_id,
+                old_id
+            ))
+            conn.commit()
+            return
+
+    except sqlite3.Error as e:
+        print(f"An error occurred while saving the database: {e}")
+
+    finally:
+        conn.close()
+
     old_file_path = get_project_assets_directory(asset_type) / f"{old_id}.toml"
     new_file_path = get_project_assets_directory(asset_type) / f"{new_id}.toml"
 

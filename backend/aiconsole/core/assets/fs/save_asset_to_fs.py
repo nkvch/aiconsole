@@ -1,3 +1,4 @@
+
 # The AIConsole Project
 #
 # Copyright 2023 10Clouds
@@ -15,6 +16,7 @@
 # limitations under the License.
 
 import shutil
+import sqlite3
 
 import tomlkit
 
@@ -52,63 +54,100 @@ async def save_asset_to_fs(asset: Asset, old_asset_id: str) -> Asset:
     # Join version number
     asset.version = ".".join(current_version_parts)
 
-    # Save to .toml file
-    with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
-        # FIXME: preserve formatting and comments in the file using tomlkit
+    if isinstance(asset, Material):
+        material: Material = asset
 
-        model_dump = asset.model_dump(exclude_none=True)
+        # Connect to SQLite database
+        conn = sqlite3.connect('local_db_AIConsole.db')
+        cursor = conn.cursor()
 
-        def make_sure_starts_and_ends_with_newline(s: str):
-            if not s.startswith("\n"):
-                s = "\n" + s
+        try:
+            cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS asset_info (
+                        id TEXT PRIMARY KEY,
+                        name TEXT,
+                        version TEXT,
+                        usage TEXT,
+                        usage_examples TEXT,
+                        default_status TEXT,
+                        content TEXT,
+                        content_type TEXT,
+                        path TEXT
+                    )
+                ''')
 
-            if not s.endswith("\n"):
-                s = s + "\n"
+            cursor.execute('SELECT id FROM asset_info where id = ?', (asset.id,))
+            table = cursor.fetchall()
 
-            return s
+            if table:
+                cursor.execute('''
+                           UPDATE asset_info
+                           SET name = ?,
+                               version = ?,
+                               usage = ?,
+                               usage_examples = ?,
+                               default_status = ?,
+                               content = ?,
+                               path = ?
+                           WHERE id = ?
+                ''', (
+                    asset.name,
+                    asset.version,
+                    asset.usage,
+                    str(asset.usage_examples),
+                    asset.default_status,
+                    material.content,
+                    str(path),
+                    asset.id
+                ))
+                conn.commit()
+            else:
+                cursor.execute('''
+                    INSERT INTO asset_info (id, name, version, usage, usage_examples, default_status, content, content_type, path) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                asset.id,
+                asset.name,
+                asset.version,
+                asset.usage,
+                str(asset.usage_examples),
+                asset.default_status,
+                material.content,
+                material.content_type,
+                str(path)
+            ))
 
-        doc = tomlkit.document()
-        doc.append("name", tomlkit.string(asset.name))
-        doc.append("version", tomlkit.string(asset.version))
-        doc.append("usage", tomlkit.string(asset.usage))
-        doc.append("usage_examples", tomlkit.item(asset.usage_examples))
-        doc.append("default_status", tomlkit.string(asset.default_status))
+            conn.commit()
+            cursor.execute('''
+                    Select * from asset_info
+                ''')
+            text = cursor.fetchall()
+            print(text)
 
-        if isinstance(asset, Material):
-            material: Material = asset
+        except sqlite3.Error as e:
+            print(f"An error occurred while saving asset information: {e}")
 
-            doc.append("content_type", tomlkit.string(asset.content_type))
+        finally:
+            conn.close()
 
-            {
-                MaterialContentType.STATIC_TEXT: lambda: doc.append(
-                    "content_static_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.DYNAMIC_TEXT: lambda: doc.append(
-                    "content_dynamic_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.API: lambda: doc.append(
-                    "content_api",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-            }[asset.content_type]()
+    elif isinstance(asset, AICAgent):
+        # Save to .toml file
+        with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
+            # FIXME: preserve formatting and comments in the file using tomlkit
 
-        if isinstance(asset, AICAgent):
+            model_dump = asset.model_dump(exclude_none=True)
+
+            doc = tomlkit.document()
+            doc.append("name", tomlkit.string(asset.name))
+            doc.append("version", tomlkit.string(asset.version))
+            doc.append("usage", tomlkit.string(asset.usage))
+            doc.append("usage_examples", tomlkit.item(asset.usage_examples))
+            doc.append("default_status", tomlkit.string(asset.default_status))
             doc.append("system", tomlkit.string(asset.system))
             doc.append("gpt_mode", tomlkit.string(asset.gpt_mode))
             doc.append("execution_mode", tomlkit.string(asset.execution_mode))
 
-        file.write(doc.as_string())
+            file.write(doc.as_string())
 
     extensions = [".jpeg", ".jpg", ".png", ".gif", ".SVG"]
     for extension in extensions:

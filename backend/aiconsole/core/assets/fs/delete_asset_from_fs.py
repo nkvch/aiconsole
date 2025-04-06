@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sqlite3
 
 from send2trash import send2trash
 
@@ -32,3 +33,16 @@ def delete_asset_from_fs(asset_type: AssetType, id):
             send2trash(asset_file_path)
             # return
     # raise KeyError(f"{asset_type} with ID {id} not found")
+
+    conn = sqlite3.connect('local_db_AIConsole.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('Delete FROM asset_info where id = ?', (id,))
+        conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"An error occurred while deleting asset: {e}")
+
+    finally:
+        conn.close()

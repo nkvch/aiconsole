@@ -1,5 +1,7 @@
 import os
+import sqlite3
 from pathlib import Path
+from typing import Any, Coroutine
 
 from aiconsole.api.websockets.connection_manager import connection_manager
 from aiconsole.api.websockets.server_messages import ErrorServerMessage
@@ -13,7 +15,7 @@ from aiconsole.core.project.paths import (
 from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
 
 
-async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
+async def load_all_assets(asset_type: AssetType) -> dict[str, list[Any]]:
     _assets: dict[str, list[Asset]] = {}
 
     locations = [
@@ -29,24 +31,41 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
                 if os.path.splitext(Path(path))[-1] == ".toml"
             ]
         )
+    if asset_type == AssetType.MATERIAL:
+        conn = sqlite3.connect('local_db_AIConsole.db')
+        cursor = conn.cursor()
 
-        for id in ids:
-            try:
-                asset = await load_asset_from_fs(asset_type, id, location)
+        try:
+            cursor.execute('SELECT id FROM asset_info')
+            rows = cursor.fetchall()
+            conn.commit()
 
-                # Legacy support (for v. prior to 0.2.11)
-                if Assets.get_status(asset.type, asset.id) == AssetStatus.FORCED:
-                    Assets.set_status(asset.type, asset.id, AssetStatus.ENABLED)
+            for row in rows:
+                ids.add(row[0])
 
-                if id not in _assets:
-                    _assets[id] = []
-                _assets[id].append(asset)
-            except Exception as e:
-                await connection_manager().send_to_all(
-                    ErrorServerMessage(
-                        error=f"Invalid {asset_type} {id} {e}",
-                    )
+        except sqlite3.Error as e:
+            print(f"An error occurred while saving asset information: {e}")
+
+        finally:
+            conn.close()
+
+    for id in ids:
+
+        try:
+            asset = await load_asset_from_fs(asset_type, id, location)
+
+            if Assets.get_status(asset.type, asset.id) == AssetStatus.FORCED:
+                Assets.set_status(asset.type, asset.id, AssetStatus.ENABLED)
+
+            if id not in _assets:
+                _assets[id] = []
+            _assets[id].append(asset)
+        except Exception as e:
+            await connection_manager().send_to_all(
+                ErrorServerMessage(
+                    error=f"Invalid {asset_type} {id} {e}",
                 )
-                continue
+            )
+            continue
 
     return _assets

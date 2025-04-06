@@ -108,6 +108,10 @@ class Assets:
         self._assets[asset.id].insert(0, new_asset)
 
         self._suppress_notification()
+        
+        assets_instance = Assets(asset_type=AssetType.MATERIAL)
+
+        await assets_instance.reload(initial=True)
 
         return rename
 

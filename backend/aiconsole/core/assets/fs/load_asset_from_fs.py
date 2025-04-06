@@ -16,6 +16,7 @@
 
 import logging
 import os
+import sqlite3
 
 import rtoml
 
@@ -43,6 +44,42 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
     project_dir_path = get_project_assets_directory(asset_type)
     core_resource_path = get_core_assets_directory(asset_type)
 
+    conn = sqlite3.connect('local_db_AIConsole.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT * FROM asset_info WHERE id = ?', (asset_id,))
+        table = cursor.fetchone()
+
+        if table:
+            params = {
+                "id": asset_id, 
+                "name": str(table[1]), 
+                "version": str(table[2]), 
+                "defined_in": AssetLocation.PROJECT_DIR,
+                "usage": str(table[3]),
+                "usage_examples": [table[4]],
+                "default_status": AssetStatus(str(table[5])),
+                "override": False
+            }
+
+
+            material = Material(
+                **params,
+                content_type=MaterialContentType(str(table[7]).strip())
+            )
+
+            material.content = str(table[6])
+
+            return material
+
+    except sqlite3.Error as e:
+        print(f"An error occurred while accessing the database: {e}")
+
+    finally:
+        conn.close()
+
+
     if (project_dir_path / f"{asset_id}.toml").exists() and (
         location is None or location == AssetLocation.PROJECT_DIR
     ):
@@ -57,6 +94,7 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
         path = core_resource_path / f"{asset_id}.toml"
     else:
         raise KeyError(f"Asset {asset_id} not found")
+
 
     with open(path, "r", encoding="utf8", errors="replace") as file:
         tomldoc = rtoml.loads(file.read())
@@ -73,7 +111,6 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
         "default_status": AssetStatus(str(tomldoc.get("default_status", "enabled")).strip()),
         "override": location == AssetLocation.PROJECT_DIR and (core_resource_path / f"{asset_id}.toml").exists(),
     }
-
     if asset_type == AssetType.MATERIAL:
         material = Material(
             **params,
@@ -91,6 +128,7 @@ async def load_asset_from_fs(asset_type: AssetType, asset_id: str, location: Ass
 
         if "content_api" in tomldoc and material.content_type == MaterialContentType.API:
             material.content = str(tomldoc["content_api"]).strip()
+
 
         return material
 
