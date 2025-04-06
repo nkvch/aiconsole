@@ -36,6 +36,10 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from backend.aiconsole.utils import git_utils
+
+
+git_utils.init_git_repo()
 
 router = APIRouter()
 
@@ -178,3 +182,8 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.get("/changelog")
+async def get_material_changelog():
+    return git_utils.get_changelog()
