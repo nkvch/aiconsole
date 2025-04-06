@@ -2,9 +2,12 @@ import logging
 import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
+from typing import Annotated
 
-from sqlmodel import SQLModel, create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from fastapi import Depends
+from sqlmodel import SQLModel
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.exc import OperationalError
 
 
@@ -71,3 +74,31 @@ class Database:
         except asyncio.TimeoutError:
             logger.warning("⚠️ Database disposal timed out - forcing shutdown")
             self.engine.sync_engine.dispose()
+
+
+db_instance = None
+
+
+def get_db_instance() -> Database:
+    """Retrieve the singleton database instance."""
+    global db_instance
+    if db_instance is None:
+        raise RuntimeError("Database not initialized")
+    return db_instance
+
+
+async def init_db_instance(db_url: str, retry_attempts: int = 5, retry_delay: float = 2.0) -> None:
+    """Initialize the global database instance."""
+    global db_instance
+    if db_instance is None:
+        db_instance = Database(db_url, retry_attempts, retry_delay)
+        await db_instance.init_db()
+
+
+async def get_db_session() -> AsyncIterator[AsyncSession]:
+    """Get a database session"""
+    db = get_db_instance()
+    async with db.session() as session:
+        yield session
+
+DBSession = Annotated[AsyncSession, Depends(get_db_session)]
