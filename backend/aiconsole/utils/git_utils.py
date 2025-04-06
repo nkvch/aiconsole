@@ -13,7 +13,7 @@ def init_git_repo():
 
 
 def get_changelog() -> List[Dict[str, str]]:
-    repo_path = find_git_root()
+    repo_path = DEFAULT_MATERIALS_PATH
     rel_path = os.path.relpath(DEFAULT_MATERIALS_PATH, repo_path)
     result = subprocess.run(
         [
@@ -36,13 +36,3 @@ def get_changelog() -> List[Dict[str, str]]:
                 'message': message
             })
     return changelog
-
-
-
-def find_git_root() -> str:
-    path = os.path.abspath(DEFAULT_MATERIALS_PATH)
-    while path != os.path.dirname(path):
-        if os.path.isdir(os.path.join(path, '.git')):
-            return path
-        path = os.path.dirname(path)
-    raise FileNotFoundError("No git repository found in hierarchy.")
