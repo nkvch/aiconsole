@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
 from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -36,6 +37,12 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.core.project.git_versioning import (
+    commit_material_change,
+    find_existing_material_file,
+    get_material_changelog,
+)
+from aiconsole.core.project.paths import get_project_assets_directory
 
 router = APIRouter()
 
@@ -144,6 +151,19 @@ async def partially_update_material(
 ):
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
+
+        materials_path = get_project_assets_directory(AssetType.MATERIAL)
+        material_file_path = find_existing_material_file(materials_path, asset_id)
+
+        if material_file_path and material_file_path.exists():
+            commit_material_change(
+                materials_path=materials_path,
+                file_path=material_file_path,
+                message=f"Updated material: {asset_id}",
+            )
+        else:
+            print(f"[Git] Warning: Updated material file not found for {asset_id}, skipping commit.")
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -152,6 +172,20 @@ async def partially_update_material(
 async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
+
+        materials_path = get_project_assets_directory(AssetType.MATERIAL)
+
+        material_file_path = find_existing_material_file(materials_path, asset_id)
+
+        if material_file_path and material_file_path.exists():
+            commit_material_change(
+                materials_path=materials_path,
+                file_path=material_file_path,
+                message=f"Created material: {asset_id}",
+            )
+        else:
+            print(f"[Git] Warning: Material file not found for {asset_id}, skipping Git commit.")
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -165,7 +199,21 @@ async def material_status_change(material_id: str, body: StatusChangePostBody):
 async def delete_material(material_id: str):
     try:
         await project.get_project_materials().delete_asset(material_id)
+
+        materials_path = get_project_assets_directory(AssetType.MATERIAL)
+        material_file_path = find_existing_material_file(materials_path, material_id)
+
+        if material_file_path and material_file_path.exists():
+            material_file_path.unlink()
+
+            commit_material_change(
+                materials_path=materials_path,
+                file_path=material_file_path,
+                message=f"Deleted material: {material_id}",
+            )
+
         return JSONResponse({"status": "ok"})
+
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
 
@@ -178,3 +226,15 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.get("/{material_id}/changelog")
+async def get_material_git_changelog(material_id: str):
+    materials_path = get_project_assets_directory(AssetType.MATERIAL)
+    file_path = find_existing_material_file(materials_path, material_id)
+
+    if file_path and file_path.exists():
+        changelog = get_material_changelog(materials_path, file_path)
+        return JSONResponse(content={"changelog": changelog})
+    else:
+        raise HTTPException(status_code=404, detail="Material file not found")
