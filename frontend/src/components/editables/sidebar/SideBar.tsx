@@ -23,7 +23,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { useSidebarStore } from '@/store/common/useSidebarStore';
 import { useSelectionStore } from '@/store/useSelectionStore';
 import { Button } from '@/components/common/Button';
-import { Trash } from 'lucide-react';
+import { Trash, CheckSquare, Square } from 'lucide-react';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -37,10 +37,12 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
   const agents = useEditablesStore((state) => state.agents);
   const materials = useEditablesStore((state) => state.materials);
   const { activeTab, setActiveTab } = useSidebarStore();
-  const { selections, clearSelection, getSelectedCount } = useSelectionStore(state => ({ 
+  const { selections, clearSelection, getSelectedCount, isSelectionMode, setSelectionMode } = useSelectionStore(state => ({ 
     selections: state.selections as Record<'chats' | 'materials' | 'agents', string[]>,
     clearSelection: state.clearSelection,
-    getSelectedCount: state.getSelectedCount
+    getSelectedCount: state.getSelectedCount,
+    isSelectionMode: state.isSelectionMode,
+    setSelectionMode: state.setSelectionMode
   }));
   const bulkDeleteEditableObjects = useEditablesStore((state) => state.bulkDeleteEditableObjects);
   const showToast = useToastsStore((state) => state.showToast);
@@ -59,14 +61,33 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
       
       if (selectedIds.length === 0) return;
       
+      // Filter out non-deletable items
+      const deletableIds = selectedIds.filter(id => {
+        if (editableType === 'chat') return true;
+        const asset = editableType === 'agent' 
+          ? agents.find(a => a.id === id)
+          : materials.find(m => m.id === id);
+        return asset?.defined_in === 'project';
+      });
+
+      if (deletableIds.length === 0) {
+        setIsDeleting(false);
+        showToast({
+          title: 'Cannot delete',
+          message: 'Selected items cannot be deleted',
+          variant: 'error',
+        });
+        return;
+      }
+      
       try {
-        await bulkDeleteEditableObjects(editableType, selectedIds);
+        await bulkDeleteEditableObjects(editableType, deletableIds);
         clearSelection(activeTabKey);
         setIsDeleting(false);
         
         showToast({
           title: 'Items deleted',
-          message: `Successfully deleted ${selectedIds.length} ${
+          message: `Successfully deleted ${deletableIds.length} ${
             activeTab === 'chats' ? 'chats' : activeTab === 'agents' ? 'agents' : 'materials'
           }`,
           variant: 'success',
@@ -95,6 +116,47 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
             <Tab key={key} value={key} label={label} activeTab={activeTab} />
           ))}
         </Tabs.List>
+        <div className="px-5 mb-4">
+          <Button
+            variant="status"
+            small
+            onClick={() => {
+              if (isSelectionMode) {
+                clearSelection();
+              }
+              setSelectionMode(!isSelectionMode);
+            }}
+            classNames="w-full"
+          >
+            <motion.div
+              animate={{ 
+                x: isSelectionMode ? 5 : 0
+              }}
+              transition={{ 
+                type: "spring",
+                stiffness: 400,
+                damping: 25
+              }}
+            >
+              {isSelectionMode ? (
+                  <Square className="w-3 h-3 mr-2" />
+              ) : (
+                <CheckSquare className="w-3 h-3 mr-2" />
+              )}
+            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={isSelectionMode ? 'exit' : 'enter'}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isSelectionMode ? 'Exit Selection Mode' : 'Enter Selection Mode'}
+              </motion.span>
+            </AnimatePresence>
+          </Button>
+        </div>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
             <Tabs.Content value="chats" className="h-full">

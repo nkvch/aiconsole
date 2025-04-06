@@ -4,9 +4,11 @@ type Section = 'chats' | 'materials' | 'agents';
 
 interface SelectionState {
   selections: Record<Section, string[]>;
+  isSelectionMode: boolean;
   toggleSelection: (section: Section, id: string) => void;
   clearSelection: (section?: Section) => void;
   getSelectedCount: (section: Section) => number;
+  setSelectionMode: (enabled: boolean) => void;
 }
 
 export const useSelectionStore = create<SelectionState>((set, get) => ({
@@ -15,6 +17,7 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     materials: [],
     agents: [],
   },
+  isSelectionMode: false,
   toggleSelection: (section, id) =>
     set((state) => ({
       selections: {
@@ -34,4 +37,5 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     const selections = get().selections;
     return selections && selections[section] ? selections[section].length : 0;
   },
+  setSelectionMode: (enabled) => set({ isSelectionMode: enabled }),
 })); 
