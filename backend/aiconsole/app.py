@@ -22,11 +22,22 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+
 from aiconsole.api.routers import app_router
 from aiconsole.consts import log_config
 from aiconsole.core.project.paths import get_project_directory_safe
 from aiconsole.core.settings.fs.settings_file_storage import SettingsFileStorage
 from aiconsole.core.settings.settings import settings
+from aiconsole.database.db import init_db_instance
+
+
+settings_instance = settings()
+db_url = settings_instance.db_url
+
+
+async def init_db():
+    await init_db_instance(db_url=db_url)
+
 
 if "BE_SENTRY_DSN" in os.environ:
     sentry_sdk.init(
@@ -41,6 +52,8 @@ logger = getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
+    await init_db()
+    
     yield
 
 
