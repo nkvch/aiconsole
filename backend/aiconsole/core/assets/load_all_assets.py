@@ -11,10 +11,13 @@ from aiconsole.core.project.paths import (
     get_project_assets_directory,
 )
 from aiconsole.utils.list_files_in_file_system import list_files_in_file_system
+from aiconsole.core.assets.materials.save_materials_to_db import save_materials_to_db
+from aiconsole.database.models import MaterialDB
 
 
 async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
     _assets: dict[str, list[Asset]] = {}
+    material_assets: list[MaterialDB] = []
 
     locations = [
         [AssetLocation.PROJECT_DIR, get_project_assets_directory(asset_type)],
@@ -34,6 +37,10 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
             try:
                 asset = await load_asset_from_fs(asset_type, id, location)
 
+                if asset_type == AssetType.MATERIAL and location == AssetLocation.AICONSOLE_CORE:
+                    material_db = MaterialDB(**asset.model_dump())
+                    material_assets.append(material_db)
+
                 # Legacy support (for v. prior to 0.2.11)
                 if Assets.get_status(asset.type, asset.id) == AssetStatus.FORCED:
                     Assets.set_status(asset.type, asset.id, AssetStatus.ENABLED)
@@ -48,5 +55,6 @@ async def load_all_assets(asset_type: AssetType) -> dict[str, list[Asset]]:
                     )
                 )
                 continue
-
+    if material_assets:
+        await save_materials_to_db(material_assets)
     return _assets
