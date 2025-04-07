@@ -5,15 +5,14 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS materials (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        version TEXT,
-        usage TEXT,
-        defined_in TEXT,
-        content_type TEXT,
-        content TEXT,
-        status TEXT
-    );
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE,
+    version TEXT,
+    usage TEXT,
+    content_type TEXT,
+    content TEXT,
+    status TEXT
+);
     """)
 
     conn.commit()
