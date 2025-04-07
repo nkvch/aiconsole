@@ -8,7 +8,6 @@ from aiconsole.core.settings.settings import settings
 
 
 settings_instance = settings()
-print(settings_instance.db_url)
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
