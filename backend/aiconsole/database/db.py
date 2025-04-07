@@ -7,8 +7,10 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession as SQLModelAsyncSession
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.exc import OperationalError
+
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,9 @@ class Database:
         self.retry_delay = retry_delay
 
         self.engine = create_async_engine(self.db_url, echo=False, future=True)
-        self.session_factory = async_sessionmaker(self.engine, expire_on_commit=False)
+        self.session_factory = async_sessionmaker(
+            self.engine, class_=SQLModelAsyncSession, expire_on_commit=False
+        )
 
     async def init_db(self) -> None:
         """It initializes the database and creates tables if there are none."""
@@ -100,5 +104,3 @@ async def get_db_session() -> AsyncIterator[AsyncSession]:
     db = get_db_instance()
     async with db.session() as session:
         yield session
-
-DBSession = Annotated[AsyncSession, Depends(get_db_session)]
