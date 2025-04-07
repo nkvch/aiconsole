@@ -16,7 +16,7 @@
 
 from typing import cast
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 
 from aiconsole.api.endpoints.registry import materials
@@ -36,6 +36,7 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.core.assets.fs.materials_changelog import commit_to_changelog, get_changelog
 
 router = APIRouter()
 
@@ -140,18 +141,23 @@ async def get_material(request: Request, material_id: str):
 
 @router.patch("/{asset_id}")
 async def partially_update_material(
-    asset_id: str, material: Material, materials_service: Materials = Depends(materials)
+    asset_id: str, material: Material, backgroundTask : BackgroundTasks, materials_service: Materials = Depends(materials)
 ):
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
+        if asset_id != material.id:
+            backgroundTask.add_task(commit_to_changelog, f"Renamed {asset_id}.toml to {material.id}.toml")
+        else:
+            backgroundTask.add_task(commit_to_changelog, f"Updated {material.id}.toml")
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
 
 @router.post("/{asset_id}")
-async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
+async def create_material(asset_id: str, material: Material, backgroundTask : BackgroundTasks, materials_service: Materials = Depends(materials)):
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
+        backgroundTask.add_task(commit_to_changelog, f"Saved {asset_id}.toml")
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -162,9 +168,10 @@ async def material_status_change(material_id: str, body: StatusChangePostBody):
 
 
 @router.delete("/{material_id}")
-async def delete_material(material_id: str):
+async def delete_material(material_id: str, backgroundTask : BackgroundTasks):
     try:
         await project.get_project_materials().delete_asset(material_id)
+        backgroundTask.add_task(commit_to_changelog, f"Deleted {material_id}.toml")
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
@@ -178,3 +185,9 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.post("/{material_id}/changelog")
+async def get_materials_changelog(material_id: str):
+    changelog = get_changelog(material_id)
+    return changelog

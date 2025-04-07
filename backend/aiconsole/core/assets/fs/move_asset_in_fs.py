@@ -20,8 +20,9 @@ from aiconsole.core.project.paths import get_project_assets_directory
 
 
 async def move_asset_in_fs(asset_type: AssetType, old_id: str, new_id: str) -> None:
-    old_file_path = get_project_assets_directory(asset_type) / f"{old_id}.toml"
-    new_file_path = get_project_assets_directory(asset_type) / f"{new_id}.toml"
+    dir = get_project_assets_directory(asset_type)
+    old_file_path = dir / f"{old_id}.toml"
+    new_file_path = dir / f"{new_id}.toml"
 
     # Check if the old file exists
     if not old_file_path.exists():
