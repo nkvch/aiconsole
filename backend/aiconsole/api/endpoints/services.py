@@ -1,15 +1,38 @@
-from fastapi import UploadFile
+from typing import Optional
+
+from fastapi import UploadFile, HTTPException
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
 
 from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.assets import Assets
-from aiconsole.core.assets.materials.material import Material
+from aiconsole.core.assets.materials.material import Material, MaterialCreate, StatusChangePostResponse
 from aiconsole.core.assets.types import Asset, AssetType
 from aiconsole.core.project import project
 from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.database.models import MaterialDB, material_to_db, db_to_material
 
 
-class AssetWithGivenNameAlreadyExistError(Exception):
-    pass
+class DomainError(Exception):
+    """Base class for all domain-specific exceptions."""
+
+    status_code: int = 400
+    detail: str = "A domain error occurred."
+
+    def __init__(self, detail: str | None = None):
+        if detail:
+            self.detail = detail
+        super().__init__(self.detail)
+
+
+class AssetWithGivenNameAlreadyExistError(DomainError):
+    status_code = 409
+    detail = "Resource already exists."
+
+
+class NotFoundError(DomainError):
+    status_code = 404
+    detail = "Resource not found."
 
 
 class _Assets:
@@ -46,11 +69,58 @@ class Agents(_Assets):
             avatar_file.write(content)
 
 
-class Materials(_Assets):
-    async def create_material(self, material_id: str, material: Material) -> None:
-        materials = project.get_project_materials()
-        await self._create(materials, material_id, material)
+class MaterialService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
 
-    async def partially_update_material(self, material_id: str, material: Material) -> None:
-        materials = project.get_project_materials()
-        await self._partially_update(materials, material_id, material)
+    async def create_material(self, material_id: str, material: MaterialCreate) -> str:
+        existing = await self.session.get(MaterialDB, material_id)
+        if existing:
+            raise AssetWithGivenNameAlreadyExistError()
+
+        material_data = material.model_dump()
+        material_data["name"] = material_id
+
+        db_material = MaterialDB(**material_data)
+        self.session.add(db_material)
+        await self.session.commit()
+        return db_material.id
+
+    async def partially_update_material(self, material_id: str, material: Material) -> MaterialDB:
+        db_material = await self.session.get(MaterialDB, material_id)
+        if not db_material:
+            raise NotFoundError(material_id)
+
+        updated = material_to_db(material)
+        updated_data = updated.model_dump(exclude_unset=True)
+
+        for field, value in updated_data.items():
+            setattr(db_material, field, value)
+        await self.session.commit()
+        return updated
+
+    async def delete_material(self, material_id: str) -> None:
+        db_material = await self.session.get(MaterialDB, material_id)
+        if not db_material:
+            raise NotFoundError(material_id)
+        await self.session.delete(db_material)
+        await self.session.commit()
+
+    async def get_material(self, material_id: str) -> Optional[Material]:
+        statement = select(MaterialDB).where(MaterialDB.id == material_id)
+        result = await self.session.exec(statement)
+        db_material = result.first()
+        if not db_material:
+            raise HTTPException(status_code=404, detail=f"Material with ID '{material_id}' not found.")
+        return db_to_material(db_material)
+
+    async def material_exists(self, material_id: str) -> bool:
+        return await self.session.get(MaterialDB, material_id) is not None
+
+    async def update_material_status(self, material_id: str, status: str) -> StatusChangePostResponse:
+        db_material = await self.session.get(MaterialDB, material_id)
+        if not db_material:
+            raise NotFoundError(material_id)
+        db_material.status = status
+        await self.session.commit()
+        return StatusChangePostResponse(id=material_id, status=status)
