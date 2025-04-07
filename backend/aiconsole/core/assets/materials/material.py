@@ -16,7 +16,10 @@
 import traceback
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
 
 from aiconsole.core.assets.materials.documentation_from_code import (
     documentation_from_code,
@@ -113,7 +116,9 @@ class Material(Asset):
             else:
                 raise ValueError("No callable content function found!")
         except Exception:
-            await internal_events().emit(MaterialRenderErrorEvent(), details=f"Error in DYNAMIC_TEXT material `{self.id}`")
+            await internal_events().emit(
+                MaterialRenderErrorEvent(), details=f"Error in DYNAMIC_TEXT material `{self.id}`"
+            )
             error_details = RenderedMaterial(id=self.id, content="", error=traceback.format_exc())
             raise ValueError("Error in Dynamic Note material", error_details)
 
@@ -130,3 +135,33 @@ class Material(Asset):
 
 class MaterialWithStatus(Material):
     status: AssetStatus = AssetStatus.ENABLED
+
+
+class MaterialBaseCommon(BaseModel):
+    version: str = "0.0.1"
+    usage: str
+    usage_examples: list[str] = Field(default_factory=list)
+    defined_in: AssetLocation
+    type: AssetType = AssetType.MATERIAL
+    default_status: AssetStatus = AssetStatus.ENABLED
+    status: AssetStatus = AssetStatus.ENABLED
+    override: bool = False
+    content_type: MaterialContentType = MaterialContentType.STATIC_TEXT
+    content: str = ""
+
+
+class MaterialBase(MaterialBaseCommon):
+    name: str
+
+
+class MaterialCreate(MaterialBaseCommon):
+    id: Optional[str] = Field(default_factory=lambda: str(uuid4()))
+
+
+class MaterialCreateResponse(BaseModel):
+    id: str
+
+
+class StatusChangePostResponse(BaseModel):
+    id: str
+    status: str
