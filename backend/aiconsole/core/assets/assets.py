@@ -15,8 +15,6 @@
 # limitations under the License.
 import datetime
 import logging
-
-import watchdog.events
 import watchdog.observers
 
 from aiconsole.api.websockets.connection_manager import connection_manager
@@ -31,6 +29,7 @@ from aiconsole.core.project.paths import get_project_assets_directory
 from aiconsole.core.settings.settings import settings
 from aiconsole.utils.BatchingWatchDogHandler import BatchingWatchDogHandler
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
+from aiconsole.utils.git_utils import initialize_git
 
 _log = logging.getLogger(__name__)
 
@@ -47,10 +46,15 @@ class Assets:
 
         self.observer = watchdog.observers.Observer()
 
-        get_project_assets_directory(asset_type).mkdir(parents=True, exist_ok=True)
+        assets_directory = get_project_assets_directory(asset_type)
+        assets_directory.mkdir(parents=True, exist_ok=True)
+
+        if asset_type == AssetType.MATERIAL:
+            initialize_git(assets_directory)
+
         self.observer.schedule(
             BatchingWatchDogHandler(self.reload),
-            get_project_assets_directory(asset_type),
+            assets_directory,
             recursive=True,
         )
         self.observer.start()

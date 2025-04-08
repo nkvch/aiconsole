@@ -1,11 +1,13 @@
 from fastapi import UploadFile
+from pathlib import Path
 
 from aiconsole.core.assets.agents.agent import AICAgent
 from aiconsole.core.assets.assets import Assets
 from aiconsole.core.assets.materials.material import Material
 from aiconsole.core.assets.types import Asset, AssetType
 from aiconsole.core.project import project
-from aiconsole.core.project.paths import get_project_assets_directory
+from aiconsole.core.project.paths import get_project_assets_directory, get_project_directory
+from aiconsole.utils.git_utils import get_commit_history, Commit, CommitHistoryResponse
 
 
 class AssetWithGivenNameAlreadyExistError(Exception):
@@ -54,3 +56,8 @@ class Materials(_Assets):
     async def partially_update_material(self, material_id: str, material: Material) -> None:
         materials = project.get_project_materials()
         await self._partially_update(materials, material_id, material)
+
+    async def get_commit_history(self) -> CommitHistoryResponse | None:
+        project_dir = Path(get_project_directory())
+        materials_path = project_dir / "materials"
+        return CommitHistoryResponse(commits=get_commit_history(materials_path))

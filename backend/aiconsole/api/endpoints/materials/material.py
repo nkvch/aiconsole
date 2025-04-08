@@ -18,6 +18,7 @@ from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from pathlib import Path
 
 from aiconsole.api.endpoints.registry import materials
 from aiconsole.api.endpoints.services import (
@@ -36,6 +37,8 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.core.project.project import is_project_initialized
+from aiconsole.core.project.paths import get_project_directory
 
 router = APIRouter()
 
@@ -178,3 +181,8 @@ async def material_exists(request: Request, asset_id: str):
 @router.get("/{asset_id}/path")
 async def material_path(request: Request, asset_id: str):
     return asset_path(AssetType.MATERIAL, request, asset_id)
+
+
+@router.get("/commits")
+async def get_materials_commit_history(materials_service: Materials = Depends(materials)):
+    return materials_service.get_commit_history()
