@@ -167,14 +167,17 @@ const SideBarItem = ({
       }
       
       const asset = editableObject as Asset;
-      if (asset.defined_in === 'project') {
+      if (asset.defined_in !== 'project') {
+        const isSelected = selectedItems.includes(editableObject.id);
         toggleSelection(editableObject.id);
-      } else {
-        showToast({
-          title: 'Cannot select',
-          message: 'This item cannot be selected for deletion',
-          variant: 'error',
-        });
+        
+        if (!isSelected) {
+          showToast({
+            title: 'Cannot select',
+            message: 'This item cannot be selected for deletion',
+            variant: 'error',
+          });
+        }
       }
       return;
     }
@@ -203,12 +206,13 @@ const SideBarItem = ({
     }
     
     const asset = editableObject as Asset;
-    if (asset.defined_in === 'project') {
-      toggleSelection(editableObject.id);
-    } else {
+    const isSelected = selectedItems.includes(editableObject.id);
+    toggleSelection(editableObject.id);
+    
+    if (asset.defined_in !== 'project' && !isSelected) {
       showToast({
         title: 'Cannot select',
-        message: 'This item cannot be selected for deletion',
+        message: 'Function to delete is unavailable for selected items',
         variant: 'error',
       });
     }

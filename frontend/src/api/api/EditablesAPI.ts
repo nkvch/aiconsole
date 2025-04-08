@@ -185,6 +185,17 @@ async function setAgentAvatar(agentId: string, avatar: FormData) {
   return ky.post(`${getBaseURL()}/api/agents/${agentId}/avatar`, { body: avatar, hooks: API_HOOKS });
 }
 
+async function bulkChangeStatus(type: 'agent' | 'material', status_changes: Record<string, 'enabled' | 'disabled'>) {
+  if (Object.keys(status_changes).length === 0) {
+    return Promise.resolve();
+  }
+  console.log({status_changes});
+  return ky.post(`${getBaseURL()}/api/${type}s/bulk/status-change`, {
+    json: { status_changes },
+    hooks: API_HOOKS,
+  }).json();
+}
+
 export const EditablesAPI = {
   deleteEditableObject,
   bulkDeleteEditableObjects,
@@ -198,4 +209,5 @@ export const EditablesAPI = {
   getPathForEditableObject,
   closeChat,
   setAgentAvatar,
+  bulkChangeStatus,
 };

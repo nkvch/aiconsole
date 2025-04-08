@@ -23,9 +23,10 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { useSidebarStore } from '@/store/common/useSidebarStore';
 import { useSelectionStore } from '@/store/useSelectionStore';
 import { Button } from '@/components/common/Button';
-import { Trash, CheckSquare, Square } from 'lucide-react';
+import { Trash, CheckSquare, Square, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EditablesAPI } from '@/api/api/EditablesAPI';
 
 const TABS = [
   { label: 'Chats', key: 'chats' },
@@ -47,6 +48,7 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
   const bulkDeleteEditableObjects = useEditablesStore((state) => state.bulkDeleteEditableObjects);
   const showToast = useToastsStore((state) => state.showToast);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -61,12 +63,11 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
       
       if (selectedIds.length === 0) return;
       
-      // Filter out non-deletable items
       const deletableIds = selectedIds.filter(id => {
         if (editableType === 'chat') return true;
         const asset = editableType === 'agent' 
           ? agents.find(a => a.id === id)
-          : materials.find(m => m.id === id);
+          : materials?.find(m => m.id === id);
         return asset?.defined_in === 'project';
       });
 
@@ -104,7 +105,102 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
     }, 300);
   };
 
+  const handleChangeStatus = async () => {
+    if (isChangingStatus) return;
+    setIsChangingStatus(true);
+    
+    try {
+      const activeTabKey = activeTab as 'chats' | 'materials' | 'agents';
+      const selectedIds = selections[activeTabKey];
+      const editableType = activeTab === 'chats' ? 'chat' : activeTab === 'agents' ? 'agent' : 'material';
+      
+      if (selectedIds.length === 0) {
+        setIsChangingStatus(false);
+        showToast({
+          title: 'Cannot change status',
+          message: 'No items selected',
+          variant: 'error',
+        });
+        return;
+      }
+
+      const status_changes: Record<string, 'enabled' | 'disabled'> = {};
+      let newStatus: 'enabled' | 'disabled' = 'disabled';
+      
+      for (const id of selectedIds) {
+        const asset = editableType === 'agent' 
+          ? agents.find(a => a.id === id)
+          : materials?.find(m => m.id === id);
+        
+        if (asset) {
+          newStatus = asset.status === 'enabled' ? 'disabled' : 'enabled';
+          status_changes[id] = newStatus;
+        }
+      }
+
+      if (Object.keys(status_changes).length === 0) {
+        setIsChangingStatus(false);
+        showToast({
+          title: 'Cannot change status',
+          message: 'No valid items found to change status',
+          variant: 'error',
+        });
+        return;
+      }
+
+      console.log('Sending status changes:', {
+        type: editableType,
+        status: newStatus,
+        to_global: false,
+        status_changes
+      });
+      
+      await EditablesAPI.bulkChangeStatus(
+        editableType as 'agent' | 'material', 
+        status_changes,
+        newStatus,
+        false
+      );
+      
+      clearSelection(activeTabKey);
+      setIsChangingStatus(false);
+      
+      showToast({
+        title: 'Status changed',
+        message: `Successfully changed status of ${selectedIds.length} ${
+          activeTab === 'agents' ? 'agents' : 'materials'
+        }`,
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('Error while changing status:', error);
+      setIsChangingStatus(false);
+      showToast({
+        title: 'Error',
+        message: 'There was a problem changing the status',
+        variant: 'error',
+      });
+    }
+  };
+
   const selectedCount = getSelectedCount(activeTab as keyof typeof selections);
+  
+  const canDeleteSelected = () => {
+    const activeTabKey = activeTab as 'chats' | 'materials' | 'agents';
+    const selectedIds = selections[activeTabKey];
+    const editableType = activeTab === 'chats' ? 'chat' : activeTab === 'agents' ? 'agent' : 'material';
+    
+    if (selectedIds.length === 0) return false;
+    
+    if (editableType === 'chat') return true;
+    
+    return selectedIds.every(id => {
+      const asset = editableType === 'agent' 
+        ? agents.find(a => a.id === id)
+        : materials?.find(m => m.id === id);
+      return asset?.defined_in === 'project';
+    });
+  };
 
   return (
     <div
@@ -170,7 +266,7 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
             </Tabs.Content>
           </div>
           <AnimatePresence>
-            {selectedCount > 0 && !isDeleting && (
+            {selectedCount > 0 && !isDeleting && !isChangingStatus && (
               <motion.div 
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
@@ -190,15 +286,36 @@ const SideBar = ({ initialTab }: { initialTab: string }) => {
                     >
                       {selectedCount} {selectedCount === 1 ? 'item' : 'items'} selected
                     </motion.span>
-                    <Button 
-                      variant="status" 
-                      small 
-                      onClick={handleDeleteSelected}
-                      classNames="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                    >
-                      <Trash size={16} />
-                      Delete
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="status" 
+                        small 
+                        onClick={handleChangeStatus}
+                        classNames="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                      >
+                        <ToggleRight size={16} />
+                        Status
+                      </Button>
+                      <Button 
+                        variant="status" 
+                        small 
+                        onClick={() => {
+                          if (canDeleteSelected()) {
+                            handleDeleteSelected();
+                          } else {
+                            showToast({
+                              title: 'Cannot delete',
+                              message: 'Selected items cannot be deleted',
+                              variant: 'error',
+                            });
+                          }
+                        }}
+                        classNames="flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                      >
+                        <Trash size={16} />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.div>

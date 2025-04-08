@@ -28,6 +28,7 @@ from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
+from aiconsole.api.utils.bulk_status_change import BulkStatusChangePostBody, bulk_asset_status_change
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import (
     Material,
@@ -138,6 +139,10 @@ async def get_material(request: Request, material_id: str):
         ),
     )
 
+
+@router.post("/bulk/status-change")
+async def bulk_material_status_change(body: BulkStatusChangePostBody):
+    return await bulk_asset_status_change(AssetType.MATERIAL, body)
 
 @router.patch("/{asset_id}")
 async def partially_update_material(
