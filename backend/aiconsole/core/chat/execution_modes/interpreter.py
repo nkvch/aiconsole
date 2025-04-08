@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import os
+from pathlib import Path
 
 from pydantic import Field
 
@@ -28,12 +30,12 @@ from aiconsole.core.chat.execution_modes.utils.generate_response_message_with_co
 from aiconsole.core.chat.execution_modes.utils.get_agent_system_message import (
     get_agent_system_message,
 )
-from aiconsole.core.chat.execution_modes.utils.run_code import run_code
 from aiconsole.core.chat.types import AICToolCallLocation
 from aiconsole.core.gpt.create_full_prompt_with_materials import (
     create_full_prompt_with_materials,
 )
 from aiconsole.core.gpt.function_calls import OpenAISchema
+from aiconsole.core.mcp.client import mcp_client
 from aiconsole.core.settings.settings import settings
 
 _log = logging.getLogger(__name__)
@@ -140,11 +142,21 @@ async def _execution_mode_accept_code(
 
     tool_call = tool_call_location.tool_call
 
-    await run_code(
-        chat_mutator=chat_mutator,
-        materials=materials,
-        tool_call_id=tool_call.id,
-    )
+    # Execute code using MCP client
+    try:
+        output = await mcp_client.execute_code(tool_call.code, tool_call.language or "python")
+        await chat_mutator.mutate(
+            "SetToolCallOutputMutation",
+            tool_call_id=tool_call.id,
+            output=output,
+        )
+    except Exception as e:
+        _log.error(f"Error executing code: {str(e)}")
+        await chat_mutator.mutate(
+            "SetToolCallOutputMutation",
+            tool_call_id=tool_call.id,
+            output=f"Error executing code: {str(e)}",
+        )
 
     await _check_for_all_code_executed(
         tool_call_location=tool_call_location,
