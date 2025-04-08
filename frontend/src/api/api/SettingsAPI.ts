@@ -21,13 +21,14 @@ import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 const checkKey = (key: string) => {
   return ky.get(`${getBaseURL()}/api/key`, {
     searchParams: `key=${key}`,
-    hooks: API_HOOKS,
+    hooks: API_HOOKS, 
+    credentials: 'include',
   });
 };
 
 async function getUserAvatar(email?: string): Promise<Avatar> {
   const response = await ky
-    .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined })
+    .get(`${getBaseURL()}/profile`, { searchParams: email ? { email } : undefined, credentials: 'include' })
     .json<Avatar>();
 
   return {
@@ -38,16 +39,16 @@ async function getUserAvatar(email?: string): Promise<Avatar> {
 
 // TODO: this is not working now - backend is not ready
 async function setUserAvatar(avatar: FormData) {
-  return ky.post(`${getBaseURL()}/profile_image`, { body: avatar, hooks: API_HOOKS });
+  return ky.post(`${getBaseURL()}/profile_image`, { body: avatar, hooks: API_HOOKS, credentials: 'include' });
 }
 
 async function saveSettings(params: { to_global: boolean } & Settings) {
   console.log(params);
-  return ky.patch(`${getBaseURL()}/api/settings`, { json: params, hooks: API_HOOKS });
+  return ky.patch(`${getBaseURL()}/api/settings`, { json: params, hooks: API_HOOKS, credentials: 'include' });
 }
 
 async function getSettings(): Promise<Settings> {
-  return ky.get(`${getBaseURL()}/api/settings`, { hooks: API_HOOKS, timeout: 60000 }).json();
+  return ky.get(`${getBaseURL()}/api/settings`, { hooks: API_HOOKS, credentials: 'include', timeout: 60000 }).json();
 }
 
 export const SettingsAPI = {

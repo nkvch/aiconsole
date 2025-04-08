@@ -37,6 +37,7 @@ const runCode = async ({
     signal,
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 };
 
@@ -45,6 +46,7 @@ const patchChatOptions = (chatId: string, body: object) =>
     json: { ...body },
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 
 // Commands
@@ -56,6 +58,7 @@ const saveCommandToHistory = (body: object) =>
     json: { ...body },
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 
 export const ChatAPI = {

@@ -24,6 +24,7 @@ const generateCode = (prompt: string) =>
     json: { prompt: prompt },
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 
 export const GenUIAPI = {

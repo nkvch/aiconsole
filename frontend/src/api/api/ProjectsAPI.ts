@@ -18,13 +18,14 @@ import ky from 'ky';
 import { API_HOOKS, getBaseURL } from '../../store/useAPIStore';
 import { RecentProject } from '@/types/projects/RecentProject';
 
-const closeProject = () => ky.post(`${getBaseURL()}/api/projects/close`, { hooks: API_HOOKS });
+const closeProject = () => ky.post(`${getBaseURL()}/api/projects/close`, { hooks: API_HOOKS, credentials: 'include' });
 
 const chooseProject = (path?: string) => {
   if (!path) return;
   return ky.post(`${getBaseURL()}/api/projects/switch`, {
     json: { directory: path },
     hooks: API_HOOKS,
+    credentials: 'include',
     timeout: false, // infinite timeout
   });
 };
@@ -35,6 +36,7 @@ const isProjectDirectory = async (path: string) =>
       searchParams: { directory: path },
       hooks: API_HOOKS,
       timeout: false,
+      credentials: 'include',
     })
     .json()) as {
     is_project: boolean;
@@ -45,20 +47,23 @@ const getInitialPath = async () =>
     .post(`${getBaseURL()}/api/projects/choose_directory`, {
       hooks: API_HOOKS,
       timeout: false,
+      credentials: 'include',
     })
     .json()) as {
     directory: string;
   };
 
-const getCurrentProject = () => ky.get(`${getBaseURL()}/api/projects/current`, { hooks: API_HOOKS });
+const getCurrentProject = () =>
+  ky.get(`${getBaseURL()}/api/projects/current`, { hooks: API_HOOKS, credentials: 'include' });
 
 async function getRecentProjects(): Promise<RecentProject[]> {
-  return ky.get(`${getBaseURL()}/api/projects/recent`, { hooks: API_HOOKS }).json();
+  return ky.get(`${getBaseURL()}/api/projects/recent`, { hooks: API_HOOKS, credentials: 'include' }).json();
 }
 
 async function removeRecentProject(path: string) {
   return ky.delete(`${getBaseURL()}/api/projects/recent`, {
     json: { path },
+    credentials: "include",
     hooks: API_HOOKS,
   });
 }
