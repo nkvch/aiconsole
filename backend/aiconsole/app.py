@@ -40,6 +40,7 @@ logger = getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Initialize settings
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
     yield
 
@@ -50,7 +51,13 @@ def app():
     if origin is None:
         raise Exception("CORS_ORIGIN environment variable not set")
 
-    app = FastAPI(title="AI Console", lifespan=lifespan)
+    app = FastAPI(
+        title="AI Console",
+        lifespan=lifespan,
+        # Add OpenAPI info
+        docs_url="/docs",
+        redoc_url="/redoc",
+    )
 
     app.add_middleware(
         CORSMiddleware,
