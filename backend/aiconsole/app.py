@@ -16,17 +16,23 @@
 
 import os
 from contextlib import asynccontextmanager
-from logging import config, getLogger
 
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from aiconsole.api.routers import app_router
-from aiconsole.consts import log_config
 from aiconsole.core.project.paths import get_project_directory_safe
 from aiconsole.core.settings.fs.settings_file_storage import SettingsFileStorage
 from aiconsole.core.settings.settings import settings
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from aiconsole.core.settings.settings import settings
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 if "BE_SENTRY_DSN" in os.environ:
     sentry_sdk.init(
@@ -34,14 +40,28 @@ if "BE_SENTRY_DSN" in os.environ:
         enable_tracing=True,
     )
 
-config.dictConfig(log_config)
-logger = getLogger(__name__)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings().configure(SettingsFileStorage(project_path=get_project_directory_safe()))
     yield
+
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        protected_paths = ["/api/project", "/api/projects", "/api/chats", "/api/agents", "/api/materials"]
+        logger.info(f"Request path: {request.url.path}, Method: {request.method}, Cookies: {request.cookies}")
+
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
+        if any(request.url.path.startswith(p) for p in protected_paths):
+            if not request.cookies.get("user"):
+                logger.warning("No 'user' cookie found, raising 401")
+                raise HTTPException(status_code=401, detail="Unauthorized")
+
+        response = await call_next(request)
+        return response
 
 
 def app():
@@ -53,11 +73,19 @@ def app():
     app = FastAPI(title="AI Console", lifespan=lifespan)
 
     app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings().session_secret_key,
+    )
+
+    app.add_middleware(
         CORSMiddleware,
         allow_origins=[origin],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+    )
+    app.add_middleware(
+        AuthMiddleware,
     )
 
     app.include_router(app_router)
