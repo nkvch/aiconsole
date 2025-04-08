@@ -16,6 +16,8 @@
 
 import OpenAiApiKeyForm from '@/components/settings/OpenAiApiKeyForm';
 import { ProjectButtons } from './ProjectButtons';
+import { GithubLogin } from '../auth/GithubLogin';
+import { useUser } from '@/store/users/useUser';
 
 interface RecentProjectsEmptyProps {
   openAiApiKey: string | null | undefined;
@@ -23,14 +25,44 @@ interface RecentProjectsEmptyProps {
 }
 
 export function RecentProjectsEmpty({ openAiApiKey, isApiKeyValid }: RecentProjectsEmptyProps) {
+  const { user, isLoading, error, loginWithGithub } = useUser();
   const isApiKeySet = openAiApiKey && isApiKeyValid;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[100vh]">
+        <p className="text-white">Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[100vh]">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center flex-col min-h-[100vh] px-[60px] relative">
+        <div className="my-[180px]">
+          <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto" alt="Logo" />
+          <h1 className="text-center font-black text-white">
+            Welcome to <span className="text-primary">AIConsole</span>
+          </h1>
+          <GithubLogin onLogin={loginWithGithub} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center flex-col min-h-[100vh] px-[60px] relative">
       <div className="my-[180px]">
-        <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto " alt="Logo" />
+        <img src="favicon.png" className="shadows-lg w-[60px] h-[60px] mx-auto" alt="Logo" />
         <h1 className="text-center font-black text-white">
-          Welcome to <span className=" text-primary">AIConsole</span>
+          Welcome to <span className="text-primary">AIConsole</span>
         </h1>
 
         {isApiKeySet ? (
