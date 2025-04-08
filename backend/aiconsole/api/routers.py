@@ -29,6 +29,7 @@ from aiconsole.api.endpoints import (
     projects,
     settings,
     ws,
+    auth
 )
 
 app_router = APIRouter()
@@ -45,3 +46,4 @@ app_router.include_router(projects.router, prefix="/api/projects", tags=["Projec
 app_router.include_router(settings.router, prefix="/api/settings", tags=["Project Settings"])
 app_router.include_router(commands_history.router)
 app_router.include_router(ws.router)
+app_router.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
