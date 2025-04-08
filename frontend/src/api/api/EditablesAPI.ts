@@ -36,11 +36,12 @@ const previewMaterial: (material: Material) => Promise<RenderedMaterial> = async
       json: { ...material },
       timeout: 60000,
       hooks: API_HOOKS,
+      credentials: 'include',
     })
     .json();
 
 async function fetchEditableObjects<T extends EditableObject>(editableObjectType: EditableObjectType): Promise<T[]> {
-  return ky.get(`${getBaseURL()}/api/${editableObjectType}s/`, { hooks: API_HOOKS }).json();
+  return ky.get(`${getBaseURL()}/api/${editableObjectType}s/`, { hooks: API_HOOKS, credentials: 'include' }).json();
 }
 
 async function setAssetStatus(assetType: AssetType, id: string, status: AssetStatus) {
@@ -48,6 +49,7 @@ async function setAssetStatus(assetType: AssetType, id: string, status: AssetSta
     .post(`${getBaseURL()}/api/${assetType}s/${id}/status-change`, {
       json: { status, to_global: false },
       hooks: API_HOOKS,
+      credentials: 'include',
     })
     .json();
 }
@@ -81,6 +83,7 @@ async function fetchEditableObject<T extends EditableObject>({
     .get(`${getBaseURL()}/api/${editableObjectType}s/${id}`, {
       searchParams: { location: location || '', type: type || '' },
       hooks: API_HOOKS,
+      credentials: 'include',
     })
     .json() as Promise<T>;
 }
@@ -131,6 +134,7 @@ async function saveNewEditableObject(editableObjectType: EditableObjectType, ass
     json: { ...asset },
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 }
 
@@ -152,12 +156,14 @@ async function updateEditableObject(
     json: { ...editableObject },
     timeout: 60000,
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 }
 
 async function deleteEditableObject(editableObjectType: EditableObjectType, id: string) {
   return ky.delete(`${getBaseURL()}/api/${editableObjectType}s/${id}`, {
     hooks: API_HOOKS,
+    credentials: 'include',
   });
 }
 
@@ -166,13 +172,18 @@ async function getPathForEditableObject(editableObjectType: EditableObjectType, 
     (await ky
       .get(`${getBaseURL()}/api/${editableObjectType}s/${id}/path`, {
         hooks: API_HOOKS,
+        credentials: 'include',
       })
       .json()) as { path: string }
   ).path;
 }
 
 async function setAgentAvatar(agentId: string, avatar: FormData) {
-  return ky.post(`${getBaseURL()}/api/agents/${agentId}/avatar`, { body: avatar, hooks: API_HOOKS });
+  return ky.post(`${getBaseURL()}/api/agents/${agentId}/avatar`, {
+    body: avatar,
+    hooks: API_HOOKS,
+    credentials: 'include',
+  });
 }
 
 export const EditablesAPI = {

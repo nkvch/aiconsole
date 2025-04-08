@@ -24,6 +24,10 @@ from aiconsole.core.settings.utils.merge_settings_data import merge_settings_dat
 from aiconsole.utils.events import internal_events
 from aiconsole_toolkit.settings.partial_settings_data import PartialSettingsData
 from aiconsole_toolkit.settings.settings_data import SettingsData
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 _log = logging.getLogger(__name__)
 
@@ -31,6 +35,14 @@ _log = logging.getLogger(__name__)
 class Settings:
     _storage: SettingsStorage | None = None
     _settings_notifications: SettingsNotifications | None = None
+    github_cliend_id: str
+    github_client_secret: str
+    session_secret_key: str
+
+    def __init__(self) -> None:
+        self.github_client_id = os.getenv("GITHUB_CLIENT_ID")
+        self.github_client_secret = os.getenv("GITHUB_CLIENT_SECRET")
+        self.session_secret_key = os.getenv("SESSION_SECRET_KEY")
 
     def configure(self, storage: SettingsStorage):
         self.destroy()
