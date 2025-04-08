@@ -29,6 +29,7 @@ import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuFo
 import { MoreVertical } from 'lucide-react';
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useEditablesStore } from '@/store/editables/useEditablesStore';
 
 const SideBarItem = ({
   editableObjectType,
@@ -107,6 +108,7 @@ const SideBarItem = ({
           navigate(`/${editableObjectType}s/${newId}`);
         }
       }
+      await useEditablesStore.getState().initMaterials();
       showToast({
         title: 'Overwritten',
         message: `The ${editableObjectType} has been successfully overwritten.`,

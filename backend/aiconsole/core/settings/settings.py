@@ -15,7 +15,10 @@
 # limitations under the License.
 
 import logging
+import os
 from functools import lru_cache
+
+from dotenv import load_dotenv
 
 from aiconsole.core.settings.fs.settings_file_storage import SettingsUpdatedEvent
 from aiconsole.core.settings.settings_notifications import SettingsNotifications
@@ -31,6 +34,13 @@ _log = logging.getLogger(__name__)
 class Settings:
     _storage: SettingsStorage | None = None
     _settings_notifications: SettingsNotifications | None = None
+    db_url: str | None = None
+
+    def __init__(self) -> None:
+        load_dotenv()
+        self.db_url = os.getenv("DB_URL")
+        if not self.db_url:
+            raise ValueError("DB_URL not found in .env file")
 
     def configure(self, storage: SettingsStorage):
         self.destroy()

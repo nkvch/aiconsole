@@ -14,23 +14,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
 
 from aiconsole.core.assets.types import AssetType
 from aiconsole.core.project import project
+from aiconsole.database.db import get_db_session
+from aiconsole.database.models import MaterialDB
+from aiconsole.api.endpoints.registry import materials
 
 router = APIRouter()
 
 
 @router.get("/")
-async def fetch_materials():
+async def fetch_materials(session: AsyncSession = Depends(get_db_session)):
+    result = await session.exec(select(MaterialDB))
+    materials = result.all()
+
     return JSONResponse(
         [
             {
                 **material.model_dump(exclude_none=True),
-                "status": project.get_project_agents().get_status(AssetType.MATERIAL, material.id),
+                "status": project.get_project_materials().get_status(AssetType.MATERIAL, material.id),
             }
-            for material in project.get_project_materials().all_assets()
+            for material in materials
         ]
     )

@@ -38,6 +38,7 @@ import { AssetInfoBar } from './AssetInfoBar';
 import { MaterialForm } from './MaterialForm';
 import { ErrorObject, checkErrors } from './TextInput';
 import { useAssetEditor } from './useAssetEditor';
+import { useEditablesStore } from '@/store/editables/useEditablesStore';
 
 const { setItem } = localStorageTyped<boolean>('isAssetChanged');
 
@@ -171,6 +172,8 @@ export function AssetEditor({ assetType }: { assetType: AssetType }) {
       if (!asset.override && isNew) {
         await EditablesAPI.saveNewEditableObject(editableObjectType, asset.id, asset);
         await updateStatusIfNecessary();
+
+        await useEditablesStore.getState().initMaterials();
 
         showToast({
           title: 'Saved',
