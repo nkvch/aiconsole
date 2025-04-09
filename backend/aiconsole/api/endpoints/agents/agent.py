@@ -23,6 +23,7 @@ from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
+from aiconsole.api.utils.bulk_status_change import BulkStatusChangePostBody, bulk_asset_status_change
 from aiconsole.core.assets.agents.agent import AgentWithStatus, AICAgent
 from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
@@ -32,6 +33,7 @@ from aiconsole.core.project.paths import (
     get_project_assets_directory,
 )
 from aiconsole.core.project.project import is_project_initialized
+from aiconsole.api.utils.bulk_operations import BulkDeleteRequest
 
 router = APIRouter()
 
@@ -65,6 +67,10 @@ async def partially_update_agent(agent_id: str, agent: AICAgent, agents_service:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot create agent with 'user' name")
 
 
+@router.post("/bulk/status-change")
+async def bulk_agent_status_change(body: BulkStatusChangePostBody):
+    return await bulk_asset_status_change(AssetType.AGENT, body)
+
 @router.post("/{agent_id}/avatar")
 async def set_agent_avatar(agent_id: str, avatar: UploadFile = File(...), agents_service: Agents = Depends(agents)):
     await agents_service.set_agent_avatar(agent_id=agent_id, avatar=avatar)
@@ -83,6 +89,23 @@ async def create_agent(agent_id: str, agent: AICAgent, agents_service: Agents = 
 @router.post("/{agent_id}/status-change")
 async def agent_status_change(agent_id: str, body: StatusChangePostBody):
     await asset_status_change(AssetType.AGENT, agent_id, body)
+
+
+@router.delete("/bulk")
+async def bulk_delete_agents(request: BulkDeleteRequest):
+    agents = project.get_project_agents()
+    results = {"deleted": [], "errors": []}
+    
+    for agent_id in request.ids:
+        try:
+            await agents.delete_asset(agent_id)
+            results["deleted"].append(agent_id)
+        except KeyError:
+            results["errors"].append({"id": agent_id, "reason": "not_found"})
+        except Exception as e:
+            results["errors"].append({"id": agent_id, "reason": str(e)})
+    
+    return JSONResponse(results)
 
 
 @router.delete("/{agent_id}")

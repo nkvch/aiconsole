@@ -28,6 +28,7 @@ from aiconsole.api.utils.asset_exists import asset_exists, asset_path
 from aiconsole.api.utils.asset_get import asset_get
 from aiconsole.api.utils.asset_status_change import asset_status_change
 from aiconsole.api.utils.status_change_post_body import StatusChangePostBody
+from aiconsole.api.utils.bulk_status_change import BulkStatusChangePostBody, bulk_asset_status_change
 from aiconsole.core.assets.get_material_content_name import get_material_content_name
 from aiconsole.core.assets.materials.material import (
     Material,
@@ -36,6 +37,7 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.api.utils.bulk_operations import BulkDeleteRequest
 
 router = APIRouter()
 
@@ -138,6 +140,10 @@ async def get_material(request: Request, material_id: str):
     )
 
 
+@router.post("/bulk/status-change")
+async def bulk_material_status_change(body: BulkStatusChangePostBody):
+    return await bulk_asset_status_change(AssetType.MATERIAL, body)
+
 @router.patch("/{asset_id}")
 async def partially_update_material(
     asset_id: str, material: Material, materials_service: Materials = Depends(materials)
@@ -159,6 +165,23 @@ async def create_material(asset_id: str, material: Material, materials_service: 
 @router.post("/{material_id}/status-change")
 async def material_status_change(material_id: str, body: StatusChangePostBody):
     return await asset_status_change(AssetType.MATERIAL, material_id, body)
+
+
+@router.delete("/bulk")
+async def bulk_delete_materials(request: BulkDeleteRequest):
+    materials = project.get_project_materials()
+    results = {"deleted": [], "errors": []}
+    
+    for material_id in request.ids:
+        try:
+            await materials.delete_asset(material_id)
+            results["deleted"].append(material_id)
+        except KeyError:
+            results["errors"].append({"id": material_id, "reason": "not_found"})
+        except Exception as e:
+            results["errors"].append({"id": material_id, "reason": str(e)})
+    
+    return JSONResponse(results)
 
 
 @router.delete("/{material_id}")

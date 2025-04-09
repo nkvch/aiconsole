@@ -24,6 +24,7 @@ import { isAsset } from '@/utils/editables/isAsset';
 
 export type EditablesSlice = {
   deleteEditableObject: (editableObjectType: EditableObjectType, id: string) => Promise<void>;
+  bulkDeleteEditableObjects: (editableObjectType: EditableObjectType, ids: string[]) => Promise<void>;
   canOpenFinderForEditable(editable: EditableObject): boolean;
   openFinderForEditable: (editable: EditableObject) => void;
 };
@@ -39,6 +40,24 @@ export const createEditablesSlice: StateCreator<EditablesStore, [], [], Editable
       ),
     }));
   },
+  
+  bulkDeleteEditableObjects: async (editableObjectType: EditableObjectType, ids: string[]) => {
+    // Jeśli lista jest pusta, nie robimy nic
+    if (ids.length === 0) return;
+    
+    // Wykonujemy masowe usuwanie przez API
+    await EditablesAPI.bulkDeleteEditableObjects(editableObjectType, ids);
+    
+    // Aktualizujemy stan aplikacji, usuwając wszystkie usunięte elementy
+    const editableObjectTypePlural = (editableObjectType + 's') as EditableObjectTypePlural;
+    
+    set((state) => ({
+      [editableObjectTypePlural]: (state[editableObjectTypePlural] || []).filter(
+        (editableObject) => !ids.includes(editableObject.id),
+      ),
+    }));
+  },
+  
   canOpenFinderForEditable: (editable: EditableObject) => {
     const editableObjectType = getEditableObjectType(editable);
 

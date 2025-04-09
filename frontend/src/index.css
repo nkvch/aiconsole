@@ -173,24 +173,30 @@ h3 {
 .CollapsibleContent {
   overflow: hidden;
 }
+
 .CollapsibleContent[data-state='open'] {
   animation: slideDown 150ms ease-out;
 }
+
 .CollapsibleContent[data-state='closed'] {
   animation: slideUp 150ms ease-out;
 }
+
 @keyframes slideDown {
   from {
     height: 0;
   }
+
   to {
     height: var(--radix-collapsible-content-height);
   }
 }
+
 @keyframes slideUp {
   from {
     height: var(--radix-collapsible-content-height);
   }
+
   to {
     height: 0;
   }
@@ -199,10 +205,12 @@ h3 {
 /* Blinking cursor */
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
@@ -210,4 +218,70 @@ h3 {
 
 .blinking-cursor {
   animation: blink 1s step-start 0s infinite;
+}
+
+.check svg {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.check:hover::before {
+  opacity: 1;
+}
+
+/* Chat context - purple */
+.text-chat .check:hover svg,
+.text-chat #cbx:checked+.check svg {
+  stroke: #8A2BE2;
+}
+
+/* Materials context - yellow */
+.text-material .check:hover svg,
+.text-material #cbx:checked+.check svg {
+  stroke: #FFD700;
+}
+
+/* Agents context - blue */
+.text-agent .check:hover svg,
+.text-agent #cbx:checked+.check svg {
+  stroke: #4285F4;
+}
+
+#cbx:checked+.check svg path {
+  stroke-dashoffset: 60;
+  transition: all 0.3s linear;
+  stroke-width: 1.5;
+}
+
+#cbx:checked+.check svg polyline {
+  stroke-dashoffset: 42;
+  transition: all 0.2s linear;
+  transition-delay: 0.15s;
+  stroke-width: 1.5;
+}
+
+#cbx:not(:checked)+.check svg path {
+  stroke-dashoffset: 0;
+  transition: all 0.3s linear;
+  transition-delay: 0.2s;
+  stroke-width: 1.5;
+}
+
+#cbx:not(:checked)+.check svg polyline {
+  stroke-dashoffset: 66;
+  transition: all 0.2s linear;
+  stroke-width: 1.5;
+}
+
+.svg polyline {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 66;
+  stroke-width: 1.5;
+}
+
+.svg path {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 0;
+  stroke-width: 1.5;
 }

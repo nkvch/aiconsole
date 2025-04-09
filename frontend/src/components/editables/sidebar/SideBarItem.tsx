@@ -19,6 +19,7 @@ import { ContextMenu, ContextMenuRef } from '@/components/common/ContextMenu';
 import { Icon } from '@/components/common/icons/Icon';
 import { useToastsStore } from '@/store/common/useToastsStore';
 import { useChatStore } from '@/store/editables/chat/useChatStore';
+import { useSelectionStore } from '@/store/useSelectionStore';
 import { Asset, EditableObject, EditableObjectType } from '@/types/editables/assetTypes';
 import { Chat } from '@/types/editables/chatTypes';
 import { cn } from '@/utils/common/cn';
@@ -29,6 +30,8 @@ import { useEditableObjectContextMenu } from '@/utils/editables/useContextMenuFo
 import { MoreVertical } from 'lucide-react';
 import { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Checkbox } from '@/components/common/AnimatedCheckbox';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SideBarItem = ({
   editableObjectType,
@@ -41,7 +44,6 @@ const SideBarItem = ({
   const navigate = useNavigate();
 
   const setLastUsedChat = useChatStore((state) => state.setLastUsedChat);
-
   const renameChat = useChatStore((state) => state.renameChat);
   const setIsChatLoading = useChatStore((state) => state.setIsChatLoading);
 
@@ -59,10 +61,16 @@ const SideBarItem = ({
   });
 
   const EditableIcon = getEditableObjectIcon(editableObject);
-
   const [inputText, setInputText] = useState(editableObject.name);
-
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { selectedItems, toggleSelection, isSelectionMode } = useSelectionStore(state => ({
+    selectedItems: state.selections[editableObjectType + 's' as keyof typeof state.selections],
+    toggleSelection: (id: string) => state.toggleSelection(editableObjectType + 's' as keyof typeof state.selections, id),
+    isSelectionMode: state.isSelectionMode,
+  }));
+
+  const isSelected = selectedItems.includes(editableObject.id);
 
   useEffect(() => {
     if (isEditing) {
@@ -150,7 +158,29 @@ const SideBarItem = ({
 
   const triggerRef = useRef<ContextMenuRef>(null);
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      if (editableObjectType === 'chat') {
+        toggleSelection(editableObject.id);
+        return;
+      }
+      
+      const asset = editableObject as Asset;
+      if (asset.defined_in !== 'project') {
+        const isSelected = selectedItems.includes(editableObject.id);
+        toggleSelection(editableObject.id);
+        
+        if (!isSelected) {
+          showToast({
+            title: 'Cannot select',
+            message: 'This item cannot be selected for deletion',
+            variant: 'error',
+          });
+        }
+      }
+      return;
+    }
     if (editableObjectType === 'chat' && editableObject.id !== useChatStore.getState().chat?.id) {
       setIsChatLoading(true);
     } else if (editableObjectType !== 'chat') {
@@ -169,6 +199,25 @@ const SideBarItem = ({
     setIsShowingContext(open);
   };
 
+  const handleCheckboxClick = () => {
+    if (editableObjectType === 'chat') {
+      toggleSelection(editableObject.id);
+      return;
+    }
+    
+    const asset = editableObject as Asset;
+    const isSelected = selectedItems.includes(editableObject.id);
+    toggleSelection(editableObject.id);
+    
+    if (asset.defined_in !== 'project' && !isSelected) {
+      showToast({
+        title: 'Cannot select',
+        message: 'Function to delete is unavailable for selected items',
+        variant: 'error',
+      });
+    }
+  };
+
   return (
     <ContextMenu options={menuItems} ref={triggerRef} onOpenChange={handleOpenContextChange}>
       <div className="max-w-[295px] mb-[5px]">
@@ -177,71 +226,101 @@ const SideBarItem = ({
             forced && editableObjectType === 'agent' && 'text-agent',
             forced && editableObjectType === 'material' && 'text-material',
             disabled && 'opacity-50',
+            'flex flex-row'
           )}
         >
-          <NavLink
-            className={({ isActive, isPending }) => {
-              return cn(
-                'group flex items-center gap-[12px] overflow-hidden p-[9px] rounded-[8px] cursor-pointer relative  hover:bg-gray-700',
-                {
-                  'bg-gray-700 text-white ': isActive || isPending || isShowingContext,
-                },
-              );
-            }}
-            to={`/${editableObjectType}s/${editableObject.id}`}
-            onClick={handleLinkClick}
+          <div 
+            className={cn(
+              "relative flex items-center",
+              editableObjectType === 'chat' && 'text-chat',
+              editableObjectType === 'material' && 'text-material',
+              editableObjectType === 'agent' && 'text-agent'
+            )}  
           >
-            {({ isActive }) => (
-              <>
-                <Icon
-                  icon={EditableIcon}
-                  className={cn(
-                    'min-w-[24px] min-h-[24px] w-[24px] h-[24px]',
-                    editableObjectType === 'chat' && 'text-chat',
-                    editableObjectType === 'agent' && 'text-agent',
-                    editableObjectType === 'material' && 'text-material',
-                  )}
-                />
-                {/* TODO: add validation for empty input value */}
-                {isEditing ? (
-                  <input
-                    className="font-normal outline-none border h-[24px] border-gray-400 text-[14px] p-[5px] w-full text-white bg-gray-600 focus:border-primary resize-none overflow-hidden rounded-[4px]  focus:outline-none"
-                    value={inputText}
-                    ref={inputRef}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
-                    onChange={(e) => setInputText(e.target.value)}
-                    autoFocus
+            <AnimatePresence>
+              {isSelectionMode && (
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -20, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <Checkbox 
+                    checked={isSelected}
+                    onChange={handleCheckboxClick}
+                    type={editableObjectType}
                   />
-                ) : (
-                  <p className="text-[14px] leading-[18.2px] group-hover:text-white truncate">{editableObject.name}</p>
-                )}
-                <div className="flex gap-[10px] ml-auto items-center">
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <motion.div
+            animate={{ x: isSelectionMode ? 24 : 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <NavLink
+              className={({ isActive, isPending }) => {
+                return cn(
+                  'group flex items-center gap-[12px] overflow-hidden p-[9px] rounded-[8px] cursor-pointer relative hover:bg-gray-700',
+                  {
+                    'bg-gray-700 text-white ': isActive || isPending || isShowingContext,
+                  },
+                );
+              }}
+              to={`/${editableObjectType}s/${editableObject.id}`}
+              onClick={handleLinkClick}
+            >
+              {({ isActive }) => (
+                <>
                   <Icon
-                    icon={MoreVertical}
+                    icon={EditableIcon}
                     className={cn(
-                      'min-h-[16px] min-w-[16px] ml-auto hidden group-hover:text-white group-hover:block',
+                      'min-w-[24px] min-h-[24px] w-[24px] h-[24px]',
+                      editableObjectType === 'chat' && 'text-chat',
+                      editableObjectType === 'agent' && 'text-agent',
+                      editableObjectType === 'material' && 'text-material',
+                    )}
+                  />
+                  {isEditing ? (
+                    <input
+                      className="font-normal outline-none border h-[24px] border-gray-400 text-[14px] p-[5px] w-full text-white bg-gray-600 focus:border-primary resize-none overflow-hidden rounded-[4px] focus:outline-none"
+                      value={inputText}
+                      ref={inputRef}
+                      onBlur={handleBlur}
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => setInputText(e.target.value)}
+                      autoFocus
+                    />
+                  ) : (
+                    <p className="text-[14px] leading-[18.2px] group-hover:text-white truncate">{editableObject.name}</p>
+                  )}
+                  <div className="flex gap-[10px] ml-auto items-center">
+                    <Icon
+                      icon={MoreVertical}
+                      className={cn(
+                        'min-h-[16px] min-w-[16px] ml-auto hidden group-hover:text-white group-hover:block',
+                        {
+                          block: isShowingContext,
+                        },
+                      )}
+                      onClick={handleMoreIconClick}
+                    />
+                  </div>
+                  <div
+                    className={cn(
+                      'absolute bottom-[-15px] hidden left-[0px] opacity-[0.3] blur-[10px] h-[34px] w-[34px] group-hover:block',
+                      editableObjectType === 'chat' && 'fill-chat bg-chat',
+                      editableObjectType === 'agent' && 'fill-agent bg-agent',
+                      editableObjectType === 'material' && 'fill-material bg-material',
                       {
-                        block: isShowingContext,
+                        block: isActive,
                       },
                     )}
-                    onClick={handleMoreIconClick}
                   />
-                </div>
-                <div
-                  className={cn(
-                    'absolute bottom-[-15px] hidden left-[0px] opacity-[0.3] blur-[10px]  h-[34px] w-[34px] group-hover:block',
-                    editableObjectType === 'chat' && 'fill-chat bg-chat',
-                    editableObjectType === 'agent' && 'fill-agent bg-agent',
-                    editableObjectType === 'material' && 'fill-material bg-material',
-                    {
-                      block: isActive,
-                    },
-                  )}
-                />
-              </>
-            )}
-          </NavLink>
+                </>
+              )}
+            </NavLink>
+          </motion.div>
         </div>
       </div>
     </ContextMenu>
