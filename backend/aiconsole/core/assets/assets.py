@@ -87,15 +87,15 @@ class Assets:
 
         rename = False
         if create and old_asset_id and not exists_in_project and old_exists:
-            await move_asset_in_fs(asset.type, old_asset_id, asset.id)
+            await move_asset_in_fs(asset.type, old_asset_id, asset.id) 
             Assets.rename_asset(asset.type, old_asset_id, asset.id)
             rename = True
-
+            
         new_asset = await save_asset_to_fs(asset, old_asset_id)
-
+        
         if asset.id not in self._assets:
             self._assets[asset.id] = []
-
+            
         # integrity checks and deleting old assets from structure
         if not create:
             if not self._assets[asset.id] or self._assets[asset.id][0].defined_in != AssetLocation.PROJECT_DIR:
@@ -109,6 +109,11 @@ class Assets:
 
         self._suppress_notification()
 
+        if asset.type == AssetType.MATERIAL:
+            if old_asset_id != asset.id:
+                delete_asset_from_fs(asset.type, old_asset_id)
+            await self.reload()
+        
         return rename
 
     async def delete_asset(self, asset_id):
@@ -134,15 +139,21 @@ class Assets:
         for asset in self._assets[id]:
             if location is None or asset.defined_in == location:
                 return asset
-
+        
         return None
 
     async def reload(self, initial: bool = False):
         from aiconsole.core.assets.load_all_assets import load_all_assets
+        from aiconsole.core.assets.load_materials_from_db import (
+            load_all_assets as load_materials_from_db,
+        )
 
         _log.info(f"Reloading {self.asset_type}s ...")
 
-        self._assets = await load_all_assets(self.asset_type)
+        if self.asset_type == AssetType.MATERIAL:
+            self._assets = await load_materials_from_db(self.asset_type)
+        else:
+            self._assets = await load_all_assets(self.asset_type)
 
         await connection_manager().send_to_all(
             AssetsUpdatedServerMessage(

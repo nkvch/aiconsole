@@ -23,6 +23,8 @@ from aiconsole.core.assets.fs.exceptions import UserIsAnInvalidAgentIdError
 from aiconsole.core.assets.fs.load_asset_from_fs import load_asset_from_fs
 from aiconsole.core.assets.materials.material import Material, MaterialContentType
 from aiconsole.core.assets.types import Asset
+from aiconsole.core.db.database import db_provider
+from aiconsole.core.db.models import Material as db_model_material
 from aiconsole.core.project.paths import (
     get_core_assets_directory,
     get_project_assets_directory,
@@ -52,69 +54,56 @@ async def save_asset_to_fs(asset: Asset, old_asset_id: str) -> Asset:
     # Join version number
     asset.version = ".".join(current_version_parts)
 
-    # Save to .toml file
-    with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
-        # FIXME: preserve formatting and comments in the file using tomlkit
+    if isinstance(asset, AICAgent):
+        # Save to .toml file
+        with (path / f"{asset.id}.toml").open("w", encoding="utf8", errors="replace") as file:
+            # FIXME: preserve formatting and comments in the file using tomlkit
 
-        model_dump = asset.model_dump(exclude_none=True)
+            model_dump = asset.model_dump(exclude_none=True)
 
-        def make_sure_starts_and_ends_with_newline(s: str):
-            if not s.startswith("\n"):
-                s = "\n" + s
-
-            if not s.endswith("\n"):
-                s = s + "\n"
-
-            return s
-
-        doc = tomlkit.document()
-        doc.append("name", tomlkit.string(asset.name))
-        doc.append("version", tomlkit.string(asset.version))
-        doc.append("usage", tomlkit.string(asset.usage))
-        doc.append("usage_examples", tomlkit.item(asset.usage_examples))
-        doc.append("default_status", tomlkit.string(asset.default_status))
-
-        if isinstance(asset, Material):
-            material: Material = asset
-
-            doc.append("content_type", tomlkit.string(asset.content_type))
-
-            {
-                MaterialContentType.STATIC_TEXT: lambda: doc.append(
-                    "content_static_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.DYNAMIC_TEXT: lambda: doc.append(
-                    "content_dynamic_text",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-                MaterialContentType.API: lambda: doc.append(
-                    "content_api",
-                    tomlkit.string(
-                        make_sure_starts_and_ends_with_newline(material.content),
-                        multiline=True,
-                    ),
-                ),
-            }[asset.content_type]()
-
-        if isinstance(asset, AICAgent):
+            doc = tomlkit.document()
+            doc.append("name", tomlkit.string(asset.name))
+            doc.append("version", tomlkit.string(asset.version))
+            doc.append("usage", tomlkit.string(asset.usage))
+            doc.append("usage_examples", tomlkit.item(asset.usage_examples))
+            doc.append("default_status", tomlkit.string(asset.default_status))
             doc.append("system", tomlkit.string(asset.system))
             doc.append("gpt_mode", tomlkit.string(asset.gpt_mode))
             doc.append("execution_mode", tomlkit.string(asset.execution_mode))
+            
+            file.write(doc.as_string())
 
-        file.write(doc.as_string())
+        extensions = [".jpeg", ".jpg", ".png", ".gif", ".SVG"]
+        for extension in extensions:
+            old_file_path = get_core_assets_directory(asset.type) / f"{old_asset_id}{extension}"
+            new_file_path = path / f"{asset.id}{extension}"
+            if old_file_path.exists():
+                shutil.copy(old_file_path, new_file_path)
 
-    extensions = [".jpeg", ".jpg", ".png", ".gif", ".SVG"]
-    for extension in extensions:
-        old_file_path = get_core_assets_directory(asset.type) / f"{old_asset_id}{extension}"
-        new_file_path = path / f"{asset.id}{extension}"
-        if old_file_path.exists():
-            shutil.copy(old_file_path, new_file_path)
+    if isinstance(asset, Material):
+        material: Material = asset
 
+        session = db_provider.SessionLocal()
+        try:
+            model = db_model_material(
+                id=material.id,
+                name=material.name,
+                version=material.version,
+                usage=material.usage,
+                usage_examples=material.usage_examples,
+                default_status=material.default_status,
+                content_type=material.content_type
+            )
+
+            {
+                MaterialContentType.STATIC_TEXT: lambda: setattr(model, "content_static_text", material.content),
+                MaterialContentType.DYNAMIC_TEXT: lambda: setattr(model, "content_api", material.content),
+                MaterialContentType.API: lambda: setattr(model, "content_api", material.content),
+            }[material.content_type]()
+
+            session.add(model)
+            session.commit()
+        finally:
+            session.close()
+            
     return asset
