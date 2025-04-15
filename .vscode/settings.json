@@ -48,5 +48,6 @@
     "backend"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "python.pythonPath": "backend/.venv/bin/python3.11"
 }

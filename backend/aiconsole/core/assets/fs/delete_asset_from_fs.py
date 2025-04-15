@@ -17,6 +17,8 @@
 from send2trash import send2trash
 
 from aiconsole.core.assets.types import AssetType
+from aiconsole.core.db.database import db_provider
+from aiconsole.core.db.models import Material
 from aiconsole.core.project.paths import get_project_assets_directory
 
 
@@ -32,3 +34,13 @@ def delete_asset_from_fs(asset_type: AssetType, id):
             send2trash(asset_file_path)
             # return
     # raise KeyError(f"{asset_type} with ID {id} not found")
+
+    if asset_type == AssetType.MATERIAL:
+        session = db_provider.SessionLocal()
+        try:
+            material_to_delete = session.query(Material).filter(Material.id == id).first()
+            if material_to_delete:
+                session.delete(material_to_delete)
+                session.commit()
+        finally:
+            session.close()
