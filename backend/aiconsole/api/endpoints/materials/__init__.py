@@ -17,10 +17,11 @@
 
 from fastapi import APIRouter
 
-from . import index, material, preview
+from . import index, material, preview, changelog
 
 router = APIRouter()
 
 router.include_router(preview.router)
 router.include_router(material.router)
 router.include_router(index.router)
+router.include_router(changelog.router)
