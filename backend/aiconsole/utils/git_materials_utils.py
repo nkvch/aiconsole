@@ -2,6 +2,7 @@ from git import Repo, GitCommandError
 from pathlib import Path
 from typing import Optional, List
 
+
 class GitMaterialRepo:
     def __init__(self, repo_path: Path):
         self.repo_path = Path(repo_path)
