@@ -1,15 +1,16 @@
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from aiconsole.utils.git_materials_utils import GitMaterialRepo
+from aiconsole.consts import MATERIALS_DIR
 router = APIRouter()
 
 
-HOME_DIR = Path.home()
-MATERIALS_DIR = HOME_DIR / "aiconsole" / "materials"
+
 repo = GitMaterialRepo(MATERIALS_DIR)
 
-@router.get("/materials/{filename}/changelog")
-def get_material_changelog(filename: str):
+@router.get("/{material_id}/changelog")
+def get_material_changelog(material_id: str):
+    filename = f"{material_id}.toml"
     material_path = MATERIALS_DIR / filename
 
     if not material_path.exists():
@@ -20,4 +21,4 @@ def get_material_changelog(filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    return {"filename": filename, "changelog": changelog}
+    return {"material_id": material_id, "changelog": changelog}
