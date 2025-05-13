@@ -102,3 +102,6 @@ log_config = {
         },
     },
 }
+
+HOME_DIR = Path.home()
+MATERIALS_DIR = HOME_DIR / "aiconsole" / "materials"
