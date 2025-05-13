@@ -36,9 +36,13 @@ from aiconsole.core.assets.materials.material import (
 )
 from aiconsole.core.assets.types import AssetLocation, AssetStatus, AssetType
 from aiconsole.core.project import project
+from aiconsole.consts import MATERIALS_DIR
+from aiconsole.utils.git_materials_utils import GitMaterialRepo
+from aiconsole.utils.asset_files import get_asset_path
 
 router = APIRouter()
 
+repo = GitMaterialRepo(MATERIALS_DIR)
 
 def get_default_content_for_type(type: MaterialContentType):
     if type == MaterialContentType.STATIC_TEXT:
@@ -140,10 +144,15 @@ async def get_material(request: Request, material_id: str):
 
 @router.patch("/{asset_id}")
 async def partially_update_material(
-    asset_id: str, material: Material, materials_service: Materials = Depends(materials)
+    asset_id: str, material: Material, request: Request, materials_service: Materials = Depends(materials)
 ):
     try:
         await materials_service.partially_update_material(material_id=asset_id, material=material)
+
+        path = get_asset_path(AssetType.MATERIAL, asset_id)
+        repo = GitMaterialRepo(path.parent)
+        repo.commit_file(path.name, message=f"Updated material {asset_id}")
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -152,6 +161,11 @@ async def partially_update_material(
 async def create_material(asset_id: str, material: Material, materials_service: Materials = Depends(materials)):
     try:
         await materials_service.create_material(material_id=asset_id, material=material)
+
+        path = get_asset_path(AssetType.MATERIAL, asset_id)
+        repo = GitMaterialRepo(path.parent)
+        repo.commit_file(path.name, message=f"Create material {asset_id}")
+
     except AssetWithGivenNameAlreadyExistError:
         raise HTTPException(status_code=400, detail="Material with given name already exists")
 
@@ -165,6 +179,14 @@ async def material_status_change(material_id: str, body: StatusChangePostBody):
 async def delete_material(material_id: str):
     try:
         await project.get_project_materials().delete_asset(material_id)
+
+        path = get_asset_path(AssetType.MATERIAL, material_id)
+        repo = GitMaterialRepo(path.parent)
+        if path.exists():
+            path.unlink()
+        repo.repo.index.remove([str(path)], working_tree=True)
+        repo.repo.index.commit(f"Delete material {material_id}")
+
         return JSONResponse({"status": "ok"})
     except KeyError:
         raise HTTPException(status_code=404, detail="Material not found")
